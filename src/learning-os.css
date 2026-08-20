@@ -325,6 +325,15 @@
 .lo-route-branch > p { color: var(--lo-muted); font-size: 13px; line-height: 1.7; }
 .lo-route-branch > button { width: 100%; margin-top: 16px; }
 .lo-route-branch > button + button { margin-top: 8px; }
+.lo-routes-fallback { display: grid; width: min(680px, 100%); margin: 56px auto; padding: 40px; justify-items: start; border: 1px solid var(--lo-line-strong); border-radius: var(--lo-card-radius); background: var(--lo-surface); box-shadow: var(--lo-shadow); }
+.lo-routes-fallback > svg { width: 34px; height: 34px; color: var(--lo-accent); }
+.lo-routes-fallback > span { margin-top: 24px; color: var(--lo-accent); font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.lo-routes-fallback h1 { margin: 8px 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(34px, 6vw, 52px); font-weight: 500; line-height: 1.1; }
+.lo-routes-fallback p { max-width: 540px; margin: 0; color: var(--lo-muted); line-height: 1.75; }
+.lo-routes-fallback > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.lo-routes-fallback button { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border: 1px solid var(--lo-accent); border-radius: 999px; color: #fff; background: var(--lo-accent); font-weight: 800; cursor: pointer; }
+.lo-routes-fallback button.is-quiet { color: var(--lo-accent-deep); background: transparent; }
+.lo-routes-fallback button svg { width: 16px; }
 
 /* Labs hub */
 .lo-labs-intro { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); align-items: end; gap: 64px; padding: 24px 0 48px; border-bottom: 1px solid var(--lo-line-strong); }

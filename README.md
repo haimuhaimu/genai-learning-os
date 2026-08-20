@@ -109,6 +109,17 @@ node --test
 git diff --check
 ```
 
+### 自动化回归
+
+```bash
+pnpm ci:check
+pnpm test
+pnpm check:a11y
+pnpm check:bundle
+```
+
+CI 会在 Pages 部署前执行自动化回归，拦截测试、无障碍与产物体积回退。
+
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 
 ## 项目结构

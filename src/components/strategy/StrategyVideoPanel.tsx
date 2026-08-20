@@ -13,7 +13,7 @@ export default function StrategyVideoPanel({ videos, remaining = 0, onViewAll }:
 
   return (
     <details className='strategy-video-panel'>
-      <summary>参考视频（可选）</summary>
+      <summary>参考视频库（可选）</summary>
       <div className='strategy-video-panel-content'>
         <header>
           <span>策略摘要之后</span>

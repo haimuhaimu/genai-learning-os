@@ -70,7 +70,7 @@ export default function DecisionMathHub({ go }: { go: Go }) {
 
                 return (
                   <article key={item.id}>
-                    <header><span>案例（Case） {String(index).padStart(2, '0')}</span><small>预计 3–5 分钟</small></header>
+                    <header><span>案例 {String(index).padStart(2, '0')}</span><small>预计 3–5 分钟</small></header>
                     <h3>{item.title}</h3>
                     <dl><dt>核心数学工具</dt><dd>{tools[item.id].label}<small>{tools[item.id].plain}</small></dd></dl>
                     <footer>

@@ -102,7 +102,7 @@ export function AlignmentWorkbench() {
       <div className='method-brief'><span>推荐场景</span><h3>{item.best}</h3><p>{item.advice}</p><div><small>所需数据</small><b>{item.data}</b></div><div className='failure-note'><AlertTriangle /><span><small>首要失败模式</small><b>{item.failure}</b></span></div></div>
       <div className='score-stack'><ScoreBar label='训练稳定性' value={item.stability} good /><ScoreBar label='训练成本' value={item.cost} /><ScoreBar label='行为可控性' value={item.control} good /></div>
     </div>
-    <div className='selection-matrix'>{Object.entries(alignmentMethods).map(([name, value]) => <article className={method === name ? 'selected' : ''} key={name} onClick={() => setMethod(name as keyof typeof alignmentMethods)}><b>{name}</b><span>{value.data}</span><small>{value.failure}</small></article>)}</div>
+    <div className='selection-matrix'>{Object.entries(alignmentMethods).map(([name, value]) => <button type='button' aria-pressed={method === name} className={method === name ? 'selected' : ''} key={name} onClick={() => setMethod(name as keyof typeof alignmentMethods)}><b>{name}</b><span>{value.data}</span><small>{value.failure}</small></button>)}</div>
     <div className='formula-block'><Sigma /><code>方法选择 = f(示范数据, 偏好对, 奖励可验证性, 探索价值, 基础设施成熟度)</code><p>上线前统一检查：pairwise win rate 的置信区间、reward 与长度相关性、KL/多样性、能力回归、过度拒答和风险切片。</p></div>
   </div>
 }

@@ -58,7 +58,10 @@ export default function ProgressPage({ go }: { go: Go }) {
       setConfirming(true)
       return
     }
-    clearProgress()
+    if (!clearProgress()) {
+      setConfirming(false)
+      return
+    }
     setProgress({})
     setConfirming(false)
   }
@@ -83,7 +86,7 @@ export default function ProgressPage({ go }: { go: Go }) {
   return (
     <section className='progress-page lo-progress-page'>
       <header className='lo-progress-heading'>
-        <div><span>本机学习记录</span><h1>我的学习进度</h1><p>所有状态仅保存在本机 localStorage，由打开、手算通过、实验完成与评审自检事件驱动。</p></div>
+        <div><span>本机学习记录</span><h1>我的学习进度</h1><p>所有状态仅保存在本机 localStorage，由浏览内容、手算通过、进入实验与评审自检事件驱动。</p></div>
         <div className='lo-progress-actions'><button type='button' onClick={() => go('unified-map')}><Home />返回首页</button><button type='button' onClick={() => go('routes')}><Route />查看路线</button></div>
       </header>
 
@@ -92,7 +95,7 @@ export default function ProgressPage({ go }: { go: Go }) {
 
       <section className='lo-total-summary' aria-label='算法基础整体进度'>
         <div><span>整体进度</span><strong>{foundationTotal}%</strong></div>
-        <p>算法基础路线共有 {foundationNodes.length} 个机制节点。每个节点依次完成理解、手算、实验和评审。</p>
+        <p>算法基础路线共有 {foundationNodes.length} 个机制节点。每个节点依次浏览内容、通过手算、进入实验并完成评审。</p>
         <div className='lo-progress-stages' aria-hidden='true'>{[25, 50, 75, 100].map((mark) => <i key={mark} className={foundationTotal >= mark ? 'is-done' : ''} />)}</div>
       </section>
 
@@ -111,7 +114,7 @@ export default function ProgressPage({ go }: { go: Go }) {
 
       <div className='progress-insights'>
         <article><TriangleAlert /><div><span>薄弱节点</span><h2>{weak.length ? `${weak.length} 个待补齐` : '暂无已识别薄弱项'}</h2><p>{weak.length ? weak.map((node) => node.title).join('、') : '开始节点学习后，系统会按阶段差距给出建议。'}</p></div></article>
-        <article><TrendingUp /><div><span>状态规则</span><h2>理解 → 手算 → 实验 → 评审</h2><p>状态只前进不倒退；可通过本地 JSON 手动迁移，无需后端。</p></div></article>
+        <article><TrendingUp /><div><span>状态规则</span><h2>浏览 → 手算 → 进入实验 → 评审</h2><p>状态只前进不倒退；可通过本地 JSON 手动迁移，无需后端。</p></div></article>
         <article><TrendingUp /><div><span>Agent Book</span><h2>硬核工程路线</h2><p>章节完成率：{agentBookTotal}% · 实验完成：{labDone}/{agentBookLabs.length} · 评审通过：{reviewDone}/{agentBookReviews.length}</p><button type='button' onClick={() => go('agent-book')}>进入 Agent Book<ArrowRight /></button></div></article>
       </div>
 

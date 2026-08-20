@@ -35,7 +35,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "node scripts/run-tests.mjs",
+    "check:a11y": "node scripts/check-a11y-static.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
     "check:videos": "tsx --test src/resources/videoCatalog.test.mjs",
+    "check:prebuild": "pnpm lint && pnpm test && pnpm check:a11y",
+    "ci:check": "pnpm check:prebuild && pnpm build && pnpm check:bundle",
     "typecheck:case-example": "tsc -p examples/strategy-case/tsconfig.json",
     "lint": "eslint .",
     "preview": "vite preview"

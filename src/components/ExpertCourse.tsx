@@ -38,7 +38,7 @@ export default function ExpertCourse({ modules, track, initialModule, onOpenLab,
         <span>{track === 'llm' ? 'EXPERT TRACK · LLM' : 'EXPERT TRACK · IMAGE'}</span>
         <h2>{track === 'llm' ? '模型系统架构' : '生成系统架构'}</h2>
         <p>{modules.length} 个决策模块 · 生产级评审框架</p>
-        <button type='button' className='strategy-route-entry' onClick={onOpenStrategyCase}>该路线策略 Case<ArrowRight /></button>
+        <button type='button' className='strategy-route-entry' onClick={onOpenStrategyCase}>该路线策略案例<ArrowRight /></button>
       </div>
       <div className='expert-module-list'>
         {modules.map((item, index) => <button key={item.id} className={index === active ? 'active' : ''} onClick={() => changeModule(index)}>

@@ -69,7 +69,7 @@ export default function VideoLibrary() {
     <section className='video-library-page'>
       <header className='video-library-hero'>
         <span><Video aria-hidden='true' />OPTIONAL REFERENCES</span>
-        <h1>参考视频库</h1>
+        <h1>参考视频库（可选）</h1>
         <p>视频不是主线。先做一次策略决策，再按卡点补机制。</p>
         <aside>这里只收录能对应“决策、证据、代价或反馈闭环”的资源；观看不会写入学习进度。</aside>
       </header>

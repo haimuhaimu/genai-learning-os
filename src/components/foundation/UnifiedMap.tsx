@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, FlaskConical, Image as ImageIcon, Network, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpen, BrainCircuit, Calculator, CheckCircle2, FlaskConical, Image as ImageIcon, Network, Sparkles } from 'lucide-react'
 import { foundationNodes } from '../../foundationData'
 import { getNextStep, getPersona, personas, readPersona, savePersona, type PersonaId } from '../../learningPath'
 import { progressPercent, readProgress, stageLabels, type ProgressMap } from '../../progress'
@@ -9,6 +9,7 @@ type Go = (page: string, options?: Record<string, string>) => void
 
 const routes = [
   { label: '算法基础', page: 'foundation', icon: Sparkles, note: '11 个机制节点' },
+  { label: 'AI 决策数学', page: 'decision-math', icon: Calculator, note: '8 个策略练习' },
   { label: 'LLM 系统', page: 'expert-llm', icon: BrainCircuit, note: '架构到服务' },
   { label: 'Agent 系统', page: 'expert-agent', icon: Network, note: '可控任务闭环' },
   { label: 'Agent Book', page: 'agent-book', icon: BookOpen, note: '硬核工程路线' },
@@ -37,7 +38,7 @@ function HeroRouteMap({ go }: { go: Go }) {
         <span><b>并行支线：图像生成</b><small>算法基础后可随时进入</small></span>
         <ArrowRight aria-hidden='true' />
       </button>
-      <footer><span>八条路线按能力目标组织</span><button type='button' onClick={() => go('routes')}>查看路线全图</button></footer>
+      <footer><span>九条路线按能力目标组织</span><button type='button' onClick={() => go('routes')}>查看路线全图</button></footer>
     </aside>
   )
 }
@@ -71,7 +72,7 @@ export default function UnifiedMap({ go }: { go: Go }) {
             <button type='button' className='is-secondary' onClick={() => go('routes')}>选择学习路线</button>
             <button type='button' className='is-secondary' onClick={() => go(next.page, next.options)}>继续上次学习</button>
           </div>
-          <p className='lo-hero-facts'>做决策 → 看证据 → 算代价 → 找反馈；八条路线共用同一套 Strategy Case 协议。</p>
+          <p className='lo-hero-facts'>做决策 → 看证据 → 算代价 → 找反馈；九条路线共用同一套 Strategy Case 协议。</p>
         </div>
         <HeroRouteMap go={go} />
       </div>

@@ -17,7 +17,8 @@ export type SearchDestination = {
 
 const topLevel: SearchDestination[] = [
   ['home', '首页', '统一学习地图', '学习入口 导航 首页', 'unified-map'],
-  ['routes', '学习路线', '六条课程主线与支线', '路径 课程', 'routes'],
+  ['routes', '学习路线', '九条学习路线与前沿支线', '路径 课程', 'routes'],
+  ['decision-math', 'AI 决策数学', '8 个 3–5 分钟 Case：从数字到策略判断', '数学 概率 校准 贝叶斯 相似度 梯度 熵 KL 因果 奖励 误差传播', 'decision-math'],
   ['strategy-cases', '策略案例中心', 'Strategy-first：先做产品决策，再看证据、业务代价与反馈闭环', '策略 决策 case 证据 strategy-first product decisions trade-offs feedback loops 策略案例 业务代价', 'strategy-cases'],
   ['videos', '参考视频库', '先做策略决策，再按卡点补机制', '视频 课程 参考资源 机制 决策', 'videos'],
   ['labs', '实验室', '全部互动实验目录', '实验 lab', 'labs'],
@@ -28,6 +29,7 @@ const topLevel: SearchDestination[] = [
 
 const routes: SearchDestination[] = [
   ['foundation', '算法基础', '分布、优化、Transformer 与 MoE', '数学 机制'],
+  ['decision-math', 'AI 决策数学', '校准、贝叶斯、相似度、优化、因果与序贯决策', 'ECE Beta cosine gradient KL A/B reward 状态转移'],
   ['expert-llm', 'LLM 系统', '训练、推理、服务和评估决策', 'KV Cache RAG'],
   ['expert-image', '图像生成', '扩散、控制与生产评估', 'Diffusion Flow'],
   ['expert-agent', 'Agent 系统', 'Loop、工具、记忆、安全与上线', '智能体 MCP'],
@@ -113,6 +115,7 @@ const strategyCases: SearchDestination[] = strategyCaseCatalog.map((item) => ({
   subtitle: `${item.routeLabel} · ${item.question}`,
   keywords: [
     item.id, item.routeLabel, 'strategy-first', 'product decisions', 'trade-offs', 'feedback loops', '策略案例', '业务代价',
+    ...(item.routeId === 'ai-decision-math' ? ['概率', '统计', '优化', '因果', '序贯决策', '数学练习'] : []),
     ...(flagshipCaseIds.has(item.id) ? ['精选案例', 'flagship'] : []),
   ],
   page: item.page,

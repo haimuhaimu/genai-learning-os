@@ -1,4 +1,4 @@
-export type RouteId = 'foundation' | 'llm' | 'image' | 'agent' | 'agent-book' | 'distill' | 'self-evolving' | 'world-model'
+export type RouteId = 'foundation' | 'ai-decision-math' | 'llm' | 'image' | 'agent' | 'agent-book' | 'distill' | 'self-evolving' | 'world-model'
 export type ControlValue = string | number | boolean
 export type ControlValues = Record<string, ControlValue>
 

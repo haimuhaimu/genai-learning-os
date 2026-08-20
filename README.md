@@ -4,7 +4,7 @@
 
 [在线体验](https://haimuhaimu.github.io/genai-learning-os/) · [从策略案例开始](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [查看贡献指南](CONTRIBUTING.md) · [English README](README_EN.md)
 
-**8 条学习路线 · 8 个策略案例 · 31 条精选资源**，包含中文内容、Karpathy 学习材料，以及仍处于早期的自进化与世界模型探索。
+**9 条学习路线 · 8 个代表策略案例 + 8 个 AI 决策数学练习 · 31 条精选资源**，包含中文内容、Karpathy 学习材料，以及仍处于早期的自进化与世界模型探索。
 
 多数教程解释模型如何运行；本项目让你先做产品策略决策，再回到算法机制，理解指标、代价和反馈闭环。
 
@@ -44,11 +44,12 @@
 6. **下一轮训练**：把失败切片转成数据或系统动作；
 7. **策略摘要**：形成可评审、可继续迭代的结论。
 
-## 八条学习路线
+## 九条学习路线
 
 | 路线 | 决策焦点 | 代表案例或实验 |
 | --- | --- | --- |
 | 算法基础 | 上线策略如何改变训练反馈 | 反馈闭环 / Softmax & CE |
+| AI 决策数学 | 数字是否足以支持策略行动 | [8 个 3–5 分钟数学练习](https://haimuhaimu.github.io/genai-learning-os/?page=decision-math) |
 | LLM 系统 | 召回质量、延迟与预算 | RAG 预算权衡 |
 | 图像生成 | 可用率、重试与单位成本 | 单张可用图成本 |
 | Agent 系统 | 工具副作用与确认门 | 退款工具确认门 |
@@ -68,7 +69,7 @@
 
 ## 学习资源
 
-- [参考视频库](https://haimuhaimu.github.io/genai-learning-os/?page=videos)：共 31 条精选资源，覆盖 8 条路线，可按语言、难度与内容来源筛选；包含中文内容、Karpathy 从零构建材料，以及自进化与世界模型的重点论文和博客。
+- [参考视频库](https://haimuhaimu.github.io/genai-learning-os/?page=videos)：保持 31 条精选资源，可按语言、难度与内容来源筛选；包含中文内容、Karpathy 从零构建材料，以及自进化与世界模型的重点论文和博客。
 - 只收录能对应“决策、证据、代价或反馈闭环”的资源；每条都说明为什么值得看，以及看完要回到哪个决策问题。
 - 视频不嵌入、不自动播放，点击或观看不计入学习进度。维护与推荐方式见 [参考视频贡献指南](docs/VIDEO_CONTRIBUTING.md)。
 

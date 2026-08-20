@@ -19,7 +19,7 @@ const originOptions: Array<FilterOption<ContentOrigin>> = [
 ]
 const routeOptions: Array<FilterOption<RouteId>> = [
   { id: 'all', label: '全部路线' },
-  ...strategyCaseCatalog.map(({ routeId, routeLabel }) => ({ id: routeId, label: routeLabel })),
+  ...Array.from(new Map(strategyCaseCatalog.map(({ routeId, routeLabel }) => [routeId, { id: routeId, label: routeLabel }])).values()),
 ]
 const karpathyFeaturedIds = [
   'karpathy-zero-to-hero-official',

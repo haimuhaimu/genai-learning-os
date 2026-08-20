@@ -16,6 +16,7 @@ import './agent-book.css'
 import './learning-os.css'
 import './components/strategy/strategyCases.css'
 import './decisionMath.css'
+import './mathPrimer.css'
 import './videoLibrary.css'
 
 const CourseTrack = lazy(() => import('./components/CourseTrack'))
@@ -37,6 +38,7 @@ const ProgressPage = lazy(() => import('./components/foundation/ProgressPage'))
 const DistillCourse = lazy(() => import('./components/distill/DistillCourse'))
 const DistillLabs = lazy(() => import('./components/distill/DistillLabs'))
 const DecisionMathHub = lazy(() => import('./components/hubs/DecisionMathHub'))
+const MathPrimer = lazy(() => import('./components/MathPrimer'))
 const LearningRoutesHub = lazy(() => import('./components/hubs/LearningRoutesHub'))
 const LabsHub = lazy(() => import('./components/hubs/LabsHub'))
 const ReviewsHub = lazy(() => import('./components/hubs/ReviewsHub'))
@@ -49,7 +51,7 @@ type GuestUser = { name?: string }
 
 type BusinessProps = { user: GuestUser | null }
 export type Page =
-  | 'unified-map' | 'routes' | 'decision-math' | 'labs' | 'reviews' | 'strategy-cases' | 'strategy-case' | 'videos'
+  | 'unified-map' | 'routes' | 'math-primer' | 'decision-math' | 'labs' | 'reviews' | 'strategy-cases' | 'strategy-case' | 'videos'
   | 'foundation' | 'foundation-lab' | 'distill-course' | 'distill-lab' | 'progress'
   | 'expert-map' | 'expert-llm' | 'expert-image' | 'expert-agent' | 'expert-lab'
   | 'agent-lab' | 'agent-book' | 'agent-book-lab' | 'agent-book-review'
@@ -59,7 +61,7 @@ type GoOptions = { module?: string; experiment?: string; node?: string; section?
 type RouteState = GoOptions & { page: Page }
 
 const pages = new Set<Page>([
-  'unified-map', 'routes', 'decision-math', 'labs', 'reviews', 'strategy-cases', 'strategy-case', 'videos', 'foundation', 'foundation-lab', 'distill-course', 'distill-lab',
+  'unified-map', 'routes', 'math-primer', 'decision-math', 'labs', 'reviews', 'strategy-cases', 'strategy-case', 'videos', 'foundation', 'foundation-lab', 'distill-course', 'distill-lab',
   'progress', 'expert-map', 'expert-llm', 'expert-image', 'expert-agent', 'expert-lab', 'agent-lab', 'agent-book',
   'agent-book-lab', 'agent-book-review', 'handbook', 'review', 'map', 'llm', 'image', 'lab', 'evaluation',
 ])
@@ -134,6 +136,7 @@ export default function Business({ user }: BusinessProps) {
   const content = (() => {
     if (route.page === 'unified-map') return <UnifiedMap go={go} />
     if (route.page === 'routes') return <LearningRoutesHub go={go} />
+    if (route.page === 'math-primer') return <MathPrimer />
     if (route.page === 'decision-math') return <DecisionMathHub go={go} />
     if (route.page === 'labs') return <LabsHub go={go} />
     if (route.page === 'reviews') return <ReviewsHub go={go} />

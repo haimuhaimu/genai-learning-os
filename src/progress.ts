@@ -59,9 +59,11 @@ export function readProgress(): ProgressMap {
 
 export function markProgress(nodeId: string, stage: LearningStage): ProgressMap {
   const current = readProgress()
+  if ((current[nodeId] ?? 0) >= stage) return current
+
   const next: ProgressMap = {
     ...current,
-    [nodeId]: Math.max(current[nodeId] ?? 0, stage) as LearningStage,
+    [nodeId]: stage,
   }
   try {
     localStorage.setItem(KEY, JSON.stringify(next))

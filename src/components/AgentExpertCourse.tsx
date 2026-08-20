@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowRight, BarChart3, BookOpenCheck, Bot, Boxes, CircleHelp, FlaskConical, Gauge, GitBranch, GitCompareArrows, ScrollText, Sigma } from 'lucide-react'
 import { agentExpertModules } from '../agentExpertData'
+import DecisionBriefPractice from './course/DecisionBriefPractice'
 
 export default function AgentExpertCourse({ initialModule, onOpenLab, onOpenStrategyCase, onGoToAgentBook }: { initialModule?: string; onOpenLab: (experiment: string) => void; onOpenStrategyCase: () => void; onGoToAgentBook?: () => void }) {
   const initialIndex = Math.max(0, agentExpertModules.findIndex((item) => item.id === initialModule))
@@ -59,6 +60,7 @@ export default function AgentExpertCourse({ initialModule, onOpenLab, onOpenStra
         <section className='expert-card failure-expert-card'><header><AlertTriangle /><span>典型失败</span></header><ol>{module.failures.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b>{item}</li>)}</ol></section>
         <section className='expert-card review-card'><header><CircleHelp /><span>评审 Checklist / 追问</span></header><ul>{module.review.map((item) => <li key={item}>{item}</li>)}</ul></section>
         <section className='expert-card case-card'><header><ScrollText /><span>案例推演</span></header><p>{module.caseStudy}</p><button onClick={() => onOpenLab(module.experiment)}>进入相关实验<ArrowRight /></button></section>
+        {module.practice ? <DecisionBriefPractice key={module.practice.id} practice={module.practice} /> : null}
       </div>
     </article>
   </section>

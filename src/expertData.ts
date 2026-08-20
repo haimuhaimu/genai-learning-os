@@ -1,3 +1,5 @@
+import type { DecisionBriefPracticeData } from './components/course/DecisionBriefPractice'
+
 export type ExpertTrack = 'llm' | 'image'
 
 export type ExpertModule = {
@@ -15,6 +17,74 @@ export type ExpertModule = {
   failures: string[]
   review: string[]
   caseStudy: string
+  practice?: DecisionBriefPracticeData
+}
+
+const sharedRubric = [
+  '决策明确写出 Go（上线）、Hold（暂缓）或 No-Go（不上线），并说明适用流量。',
+  '指标同时包含结果指标与延迟、成本或风险护栏。',
+  '闸门有数字阈值、观察窗口和触发后的回滚动作。',
+  '下一步可由明确负责人在一个迭代内执行并产出证据。',
+]
+
+const expertLLMPractices: Record<string, DecisionBriefPracticeData> = {
+  kv: {
+    id: 'llm-kv-capacity',
+    businessInput: '报告助手需支持 40 路并发、32K 输入；模型 32 层、8 个 KV（Key-Value，键值）头、头维 128，缓存使用 FP16（16 位浮点）共 2 字节。',
+    facts: ['显存预算：24 GiB（吉比字节）', '输出上限：1K token', '需预留 20% 运行时与碎片空间'],
+    calculation: { label: '峰值 KV 缓存', question: '按输入阶段的 40 路峰值，计算 KV 缓存占用。', formula: '2 × 32 × 32,000 × 8 × 128 × 2 × 40 ÷ 1,073,741,824', values: [2, 32, 32000, 8, 128, 2, 40, 1 / 1073741824], method: 'multiply', unit: ' GiB', precision: 2, tolerance: 0.02 },
+    template: { decision: 'Hold：24 GiB 单卡不能直接接纳 40 路 32K 请求，先限制并发并验证 KV 量化。', metrics: 'KV 池利用率、OOM（显存溢出）率、TTFT（首 token 延迟）p95、TPOT（每 token 延迟）p95。', gate: 'KV 占用≤可用显存 80%，OOM=0，TTFT/TPOT 均达标才 Go；否则自动降并发。', nextStep: '容量负责人用真实长度分布压测 GQA（分组查询注意力）与 8-bit KV，两天内给出并发曲线。' },
+    rubric: sharedRubric,
+    pitfalls: [{ mistake: '只计算模型权重，漏掉并发 KV。', fix: '按层数、长度、KV 头、头维、字节数与并发逐项列式。' }, { mistake: '按平均长度承诺容量。', fix: '用长度×并发联合分布压测，并预留碎片空间。' }],
+  },
+  serving: {
+    id: 'llm-serving-goodput',
+    businessInput: '聊天服务压测每分钟生成 240,000 token，其中 180,000 token 来自在 SLO（服务等级目标）内完成的请求。',
+    facts: ['TTFT（首 token 延迟）p95（第 95 百分位）目标：≤1.2 秒', 'TPOT（每 token 延迟）p95 目标：≤80 毫秒', 'GPU（图形处理器）利用率：92%'],
+    calculation: { label: 'Goodput（有效吞吐）占比', question: '计算满足 SLO 的有效 token 占总生成 token 的比例。', formula: '180,000 ÷ 240,000 × 100', values: [180000 / 240000, 100], method: 'multiply', unit: '%', precision: 1, tolerance: 0.1 },
+    template: { decision: 'Hold：GPU 利用率高但有效吞吐仅 75%，先优化调度而非继续扩 batch。', metrics: 'Goodput、TTFT p95、TPOT p95、prefill/decode 队列长度。', gate: 'Goodput≥90%，且 TTFT≤1.2 秒、TPOT≤80 毫秒持续 30 分钟才 Go。', nextStep: 'Serving 负责人对比 chunked prefill（分块预填充）与 prefill/decode 解耦配置。' },
+    rubric: sharedRubric,
+    pitfalls: [{ mistake: '把裸 TPS（每秒 token 数）当作用户价值。', fix: '分子只计入满足 SLO 的 token。' }, { mistake: '只报平均延迟。', fix: '同时监控 TTFT 与 TPOT 的 p95 及队列。' }],
+  },
+  evaluation: {
+    id: 'llm-evaluation-ci',
+    businessInput: '新模型在 1,000 个独立任务中成功 720 次，产品希望用 95% CI（置信区间）判断结果是否稳定超过 70%。',
+    facts: ['样本比例 p̂=0.72', '正态近似系数：1.96', '上线下界要求：≥70%'],
+    calculation: { label: '95% CI 半宽', question: '用大样本近似计算置信区间半宽。', formula: '1.96 × √(0.72 × 0.28 ÷ 1,000) × 100', values: [1.96, Math.sqrt(0.72 * 0.28 / 1000), 100], method: 'multiply', unit: ' pp（百分点）', precision: 2, tolerance: 0.02 },
+    template: { decision: 'Hold：点估计 72%，但 95% CI 下界约 69.2%，尚不能证明超过 70%。', metrics: '任务成功率、95% CI、高风险切片最差值、人评一致性。', gate: '总体 CI 下界≥70%，且任一高风险切片不低于基线 2pp（百分点）才 Go。', nextStep: '评测负责人补充独立样本并对代码与长上下文切片分层抽样。' },
+    rubric: sharedRubric,
+    pitfalls: [{ mistake: '只比较 72% 与 70% 两个点估计。', fix: '用区间下界做上线判断，并披露样本量。' }, { mistake: '总分掩盖关键切片回退。', fix: '为高风险切片单独设最低闸门。' }],
+  },
+  safety: {
+    id: 'llm-safety-residual-risk',
+    businessInput: '导出工具的固有风险评分为 80/100；权限校验、参数约束与人工确认合计控制覆盖率估算为 75%。',
+    facts: ['外部网页内容按不可信数据处理', '跨租户导出默认拒绝', '高影响动作需人工确认'],
+    calculation: { label: '残余风险', question: '按教学近似计算控制后的残余风险分。', formula: '80 × (1 − 75%)', values: [80, 0.25], method: 'multiply', unit: ' 分', precision: 1, tolerance: 0.1 },
+    template: { decision: 'No-Go：残余风险 20 分高于导出工具 10 分红线，继续缩小权限与暴露面。', metrics: '注入 ASR（攻击成功率）、越权尝试、误拒率、DLP（数据防泄漏）命中。', gate: '残余风险≤10、注入 ASR≤1%、跨租户成功数=0 才允许内部灰度。', nextStep: '安全负责人增加租户资源绑定与脱敏沙箱红队测试，复核控制覆盖率。' },
+    rubric: sharedRubric,
+    pitfalls: [{ mistake: '让模型自己判断是否有权限。', fix: '在模型外的策略执行点校验主体、资源与动作。' }, { mistake: '只测漏拦，不看误拒。', fix: '攻击集与正常业务集同时报告 ASR 和误拒率。' }],
+  },
+}
+
+const expertImagePractices: Record<string, DecisionBriefPracticeData> = {
+  'image-eval': {
+    id: 'image-effective-cost',
+    businessInput: '海报模型一轮生成与重试成本 100 元、审核 20 元、后处理 30 元，最终有 60 张通过业务验收。',
+    facts: ['初始生成：100 张', 'OCR（光学字符识别）硬约束', '设计师采用率目标：≥65%'],
+    calculation: { label: '单位有效图成本', question: '计算每张通过验收图片的全链路成本。', formula: '(100 + 20 + 30) ÷ 60', values: [150, 60], method: 'divide', unit: ' 元/张', precision: 2, tolerance: 0.02 },
+    template: { decision: 'Hold：先以 2.50 元/有效图为成本基线，不因 CLIPScore（图文匹配分）单项提升直接上线。', metrics: '有效图率、OCR 精确匹配、设计师采用率、单位有效图成本、安全泄漏率。', gate: '采用率≥65%、OCR≥98%、安全泄漏=0 且成本≤2.50 元/张才 Go。', nextStep: '图像评测负责人补齐文字、人像与多样性切片的盲评。' },
+    rubric: sharedRubric,
+    pitfalls: [{ mistake: '成本分母使用生成总数。', fix: '分母只使用最终通过业务验收的图片数。' }, { mistake: '用 FID（弗雷歇起始距离）评价单图。', fix: '集合指标与业务人评、硬约束检测分开报告。' }],
+  },
+  pipeline: {
+    id: 'image-pipeline-yield',
+    businessInput: '图像链路四个关键阶段通过率分别为 98%、95%、92%、97%，先用独立近似估算端到端有效图率。',
+    facts: ['阶段：规划、基础生成、精修、检查', '当前整链重试', '目标有效图率：≥85%'],
+    calculation: { label: 'E2E（端到端）有效图率', question: '计算四阶段通过率乘积。', formula: '98% × 95% × 92% × 97% × 100', values: [0.98, 0.95, 0.92, 0.97, 100], method: 'multiply', unit: '%', precision: 1, tolerance: 0.1 },
+    template: { decision: 'Hold：独立近似有效图率约 83.1%，先修复 92% 的精修阶段并改为定向重试。', metrics: '阶段通过率、E2E 有效图率、重试深度、队列 p95、身份回归率。', gate: 'E2E≥85%、身份回归≤1%、整链重试下降 30% 后再 Go。', nextStep: 'Pipeline（流水线）负责人保留 trace ID（追踪标识），对精修失败做 100 例回放。' },
+    rubric: sharedRubric,
+    pitfalls: [{ mistake: '看到每段都超过 90% 就判断整链健康。', fix: '计算乘积并定位最低通过率阶段。' }, { mistake: '失败后从头重试整条链路。', fix: '按失败分类定向重试并缓存已通过阶段。' }],
+  },
 }
 
 export const expertLLMModules: ExpertModule[] = [
@@ -69,6 +139,7 @@ export const expertLLMModules: ExpertModule[] = [
     failures: ['只按权重显存估机器', '平均长度正常但 p99 长会话 OOM', '把 TTFT 和 TPOT 混成总延迟'],
     review: ['峰值并发与长度联合分布？', 'KV 是否预留碎片和运行时空间？', 'prefill 会不会阻塞 decode？'],
     caseStudy: '32K 输入、1K 输出的报告服务：计算 GQA 与 MHA 的 KV 差异，并给出并发准入和降级策略。',
+    practice: expertLLMPractices.kv,
   },
   {
     id: 'serving', no: 'L05', title: '高性能推理栈', subtitle: 'FlashAttention、PagedAttention 与连续批处理',
@@ -82,6 +153,7 @@ export const expertLLMModules: ExpertModule[] = [
     failures: ['GPU utilization 高但 SLO 大面积超时', '只报平均 TPS', '长请求饿死短请求或反向插队'],
     review: ['调度目标函数是什么？', 'prefix cache 如何做租户隔离？', '过载时拒绝、排队还是降级？'],
     caseStudy: '同时到达 100 个短对话与 2 个 100K 报告：制定优先级、chunked prefill 和 SLO 保护方案。',
+    practice: expertLLMPractices.serving,
   },
   {
     id: 'compression', no: 'L06', title: '量化、蒸馏与推测解码', subtitle: '把成本优化拆成权重、行为与解码路径',
@@ -134,6 +206,7 @@ export const expertLLMModules: ExpertModule[] = [
     failures: ['同一 judge 既产数据又评分', '无盲评导致品牌偏差', '统计显著但业务收益微小'],
     review: ['污染如何检测？', 'judge 与人评的一致性？', '切片最差值是否过闸？', '多重检验如何处理？'],
     caseStudy: '新版本总分 +2%，但代码用户 -8%：决定是否上线、如何设分流与补充样本。',
+    practice: expertLLMPractices.evaluation,
   },
   {
     id: 'safety', no: 'L10', title: '安全、权限与故障治理', subtitle: '把“模型风险”拆成可检测、可阻断的系统事件',
@@ -147,6 +220,7 @@ export const expertLLMModules: ExpertModule[] = [
     failures: ['把外部文档当可信指令', '模型自行决定权限', '日志记录了敏感原文', '安全升级后正常请求大面积拒答'],
     review: ['信任边界画在哪里？', '谁能批准高风险工具？', '事故能否定位到 prompt/证据/工具版本？'],
     caseStudy: '网页内容注入“导出所有客户”：推演检索隔离、指令优先级、工具授权、DLP 和告警链路。',
+    practice: expertLLMPractices.safety,
   },
 ]
 
@@ -254,6 +328,7 @@ export const expertImageModules: ExpertModule[] = [
     failures: ['只看 FID', '不把重试算成本', '身份均值合格但某人群漂移严重'],
     review: ['通过率分母包含失败图吗？', '自动指标与人评相关性？', '安全与审美是否独立评审？'],
     caseStudy: '新模型 CLIPScore 更高但设计师采用率下降：检查构图、文字和多样性切片。',
+    practice: expertImagePractices['image-eval'],
   },
   {
     id: 'pipeline', no: 'I09', title: '多阶段图像生产系统', subtitle: '质量来自 planner 到 safety 的整条链路',
@@ -267,5 +342,6 @@ export const expertImageModules: ExpertModule[] = [
     failures: ['rewrite 改变用户意图', 'refiner 修坏身份', 'upscaler 虚构纹理', 'safety checker 误杀特定风格'],
     review: ['每阶段输入输出可否回放？', '谁拥有最终 prompt？', '失败应重试哪一段而非整链？'],
     caseStudy: 'AI 创作助手文字错误且延迟高：拆分文字排版、局部修复和按阶段缓存，形成上线架构。',
+    practice: expertImagePractices.pipeline,
   },
 ]

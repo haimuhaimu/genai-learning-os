@@ -90,3 +90,17 @@ test('清除失败返回 false 且不发送成功变化事件', () => {
     mocks.restore()
   }
 })
+
+
+test('相同或更低阶段不会重复写入或发送变化事件', () => {
+  const mocks = installBrowserMocks({ initial: { nodeA: 2 } })
+  try {
+    assert.deepEqual({ ...markProgress('nodeA', 2) }, { nodeA: 2 })
+    assert.deepEqual({ ...markProgress('nodeA', 1) }, { nodeA: 2 })
+    assert.deepEqual(JSON.parse(mocks.values.get(progressKey)), { nodeA: 2 })
+    assert.deepEqual(mocks.events, [])
+    assert.deepEqual(mocks.warnings, [])
+  } finally {
+    mocks.restore()
+  }
+})

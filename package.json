@@ -1,7 +1,7 @@
 {
   "name": "genai-learning-os",
   "version": "1.0.0",
-  "description": "Learn AI through product decisions, not formulas first. 8 tracks, 8 strategy cases, and 31 curated resources.",
+  "description": "Learn AI through product decisions, not formulas first. 9 tracks, 8 strategy cases, 8 decision-math exercises, and 31 curated resources.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "haimuhaimu",

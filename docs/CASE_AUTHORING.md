@@ -33,7 +33,7 @@ examples/strategy-case/         # 不进入产品 registry 的最小示例
 | 字段 | 约束与用途 |
 | --- | --- |
 | `id` | 小写 kebab-case；加入 catalog 后自动进入 `CaseId` 与证据白名单 |
-| `routeId` | `llm`、`image`、`agent`、`agent-book` 或 `distill` |
+| `routeId` | `ai-decision-math`、`llm`、`image`、`agent`、`agent-book`、`distill`、`self-evolving` 或 `world-model` |
 | `routeLabel` | 页面展示的路线名 |
 | `title` / `question` | 案例标题与单一决策问题 |
 | `duration` | 可读的预计耗时 |
@@ -44,6 +44,8 @@ examples/strategy-case/         # 不进入产品 registry 的最小示例
 | `fixedDataTitle` / `fixedDataRows` | 页面展示的固定教学数据说明 |
 | `compute` | 从 controls 到 `DecisionEvidence` 的纯函数 |
 | `summarize` | 从 controls 与 evidence 到 `DecisionSummary` 的纯函数 |
+
+`visibility` 属于 catalog 元数据，不是 `StrategyCaseSpec` 字段。省略或设为 `center` 时会进入案例中心；`hub-only` 仍进入全局 registry、搜索与证据白名单，但不会在案例中心主栅格平铺。
 
 `DecisionEvidence` 必须返回 `metrics`、`costs`、`feedbackSource`、`feedbackSignals` 与 `nextTrainingAction`；可选 `caution`。不要增加 runner 不认识的伪字段。
 
@@ -72,7 +74,7 @@ examples/strategy-case/         # 不进入产品 registry 的最小示例
 
 - [ ] 复制 [`examples/strategy-case/exampleCase.ts`](../examples/strategy-case/exampleCase.ts)，改名并移入 `src/components/strategy/`。
 - [ ] 使用 `defineStrategyCase(...)`；完成七段字段、固定数据、`compute()` 与 `summarize()`。
-- [ ] 在 `src/components/strategy/caseCatalog.ts` 导入 spec，并向 `strategyCaseCatalog` 增加一个 `fromSpec(...)`。
+- [ ] 在 `src/components/strategy/caseCatalog.ts` 导入 spec，并向 `strategyCaseCatalog` 增加一个 `fromSpec(...)`；默认 `visibility: 'center'`，只应在专用 Hub 出现的子 Case 使用 `visibility: 'hub-only'`。
 - [ ] **不要**手改 `CaseId`：它由 catalog 推导；route mapping 与 `strategyEvidence.ts` 的证据白名单也来自 catalog。
 - [ ] 搜索入口由 `src/searchIndex.ts` 从 catalog 生成；用案例 ID、标题和路线名实际搜索一次。
 - [ ] 新增 Node 单测：合法默认值、边界、确定性、有限非负输出和核心教学关系。

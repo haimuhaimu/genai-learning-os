@@ -200,7 +200,7 @@
 .lo-persona-result p { margin: 0; color: #45577a; font-size: 13px; }
 .lo-mainline-section > header button,
 .lo-progress-overview button { color: var(--lo-accent-deep); border: 0; background: transparent; font-weight: 800; cursor: pointer; }
-.lo-mainline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: 32px; overflow: hidden; border: 1px solid var(--lo-line); border-radius: var(--lo-card-radius); background: var(--lo-surface); }
+.lo-mainline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 32px; overflow: hidden; border: 1px solid var(--lo-line); border-radius: var(--lo-card-radius); background: var(--lo-surface); }
 .lo-mainline > button { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; min-height: 136px; padding: 20px; border: 0; border-right: 1px solid var(--lo-line); color: var(--lo-ink); background: transparent; text-align: left; cursor: pointer; }
 .lo-mainline > button:last-child { border-right: 0; }
 .lo-mainline > button:hover { background: var(--lo-accent-soft); }

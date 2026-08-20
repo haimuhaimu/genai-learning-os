@@ -15,6 +15,7 @@ import './distill.css'
 import './agent-book.css'
 import './learning-os.css'
 import './components/strategy/strategyCases.css'
+import './decisionMath.css'
 import './videoLibrary.css'
 
 const CourseTrack = lazy(() => import('./components/CourseTrack'))
@@ -35,6 +36,7 @@ const FoundationLabs = lazy(() => import('./components/foundation/FoundationLabs
 const ProgressPage = lazy(() => import('./components/foundation/ProgressPage'))
 const DistillCourse = lazy(() => import('./components/distill/DistillCourse'))
 const DistillLabs = lazy(() => import('./components/distill/DistillLabs'))
+const DecisionMathHub = lazy(() => import('./components/hubs/DecisionMathHub'))
 const LearningRoutesHub = lazy(() => import('./components/hubs/LearningRoutesHub'))
 const LabsHub = lazy(() => import('./components/hubs/LabsHub'))
 const ReviewsHub = lazy(() => import('./components/hubs/ReviewsHub'))
@@ -47,7 +49,7 @@ type GuestUser = { name?: string }
 
 type BusinessProps = { user: GuestUser | null }
 export type Page =
-  | 'unified-map' | 'routes' | 'labs' | 'reviews' | 'strategy-cases' | 'strategy-case' | 'videos'
+  | 'unified-map' | 'routes' | 'decision-math' | 'labs' | 'reviews' | 'strategy-cases' | 'strategy-case' | 'videos'
   | 'foundation' | 'foundation-lab' | 'distill-course' | 'distill-lab' | 'progress'
   | 'expert-map' | 'expert-llm' | 'expert-image' | 'expert-agent' | 'expert-lab'
   | 'agent-lab' | 'agent-book' | 'agent-book-lab' | 'agent-book-review'
@@ -57,7 +59,7 @@ type GoOptions = { module?: string; experiment?: string; node?: string; section?
 type RouteState = GoOptions & { page: Page }
 
 const pages = new Set<Page>([
-  'unified-map', 'routes', 'labs', 'reviews', 'strategy-cases', 'strategy-case', 'videos', 'foundation', 'foundation-lab', 'distill-course', 'distill-lab',
+  'unified-map', 'routes', 'decision-math', 'labs', 'reviews', 'strategy-cases', 'strategy-case', 'videos', 'foundation', 'foundation-lab', 'distill-course', 'distill-lab',
   'progress', 'expert-map', 'expert-llm', 'expert-image', 'expert-agent', 'expert-lab', 'agent-lab', 'agent-book',
   'agent-book-lab', 'agent-book-review', 'handbook', 'review', 'map', 'llm', 'image', 'lab', 'evaluation',
 ])
@@ -132,6 +134,7 @@ export default function Business({ user }: BusinessProps) {
   const content = (() => {
     if (route.page === 'unified-map') return <UnifiedMap go={go} />
     if (route.page === 'routes') return <LearningRoutesHub go={go} />
+    if (route.page === 'decision-math') return <DecisionMathHub go={go} />
     if (route.page === 'labs') return <LabsHub go={go} />
     if (route.page === 'reviews') return <ReviewsHub go={go} />
     if (route.page === 'strategy-cases') return <StrategyCaseCenter go={go} />
@@ -165,7 +168,7 @@ export default function Business({ user }: BusinessProps) {
       <a className='lo-skip-link' href='#main-content'>跳到主要内容</a>
       <ProductHeader page={route.page} go={go} searchButtonRef={searchButtonRef} onSearch={(trigger) => { setPaletteTrigger(trigger); setPaletteOpen(true) }} />
       <main className='lab-main' id='main-content' tabIndex={-1}><Suspense fallback={<PageLoading />}>{content}</Suspense></main>
-      <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 · LLM · 图像生成 · Agent · Agent Book · 蒸馏 · 自进化 · 世界模型</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button onClick={() => go('routes')}><Route />查看学习路线</button></footer>
+      <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 · AI 决策数学 · LLM · 图像生成 · Agent · Agent Book · 蒸馏 · 自进化 · 世界模型</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button onClick={() => go('routes')}><Route />查看学习路线</button></footer>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} go={go} returnFocus={paletteTrigger} />
     </div>
   )

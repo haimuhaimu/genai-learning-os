@@ -40,7 +40,7 @@ export default function StrategyCaseRunner({ caseId, go }: Props) {
   })
 
   return (
-    <StrategyCaseShell spec={spec} onExit={() => go('strategy-cases')}>
+    <StrategyCaseShell spec={spec} onExit={() => go(spec.routeId === 'ai-decision-math' ? 'decision-math' : 'strategy-cases')} exitLabel={spec.routeId === 'ai-decision-math' ? '返回数学路线' : undefined}>
       <StrategyControlsPanel schema={spec.controls} values={controls} onChange={update} />
       <EvidencePanel fixedDataTitle={spec.fixedDataTitle} fixedDataRows={spec.fixedDataRows} evidence={evidence} />
       <DecisionSummaryPanel summary={summary} onSave={saveSummary} />

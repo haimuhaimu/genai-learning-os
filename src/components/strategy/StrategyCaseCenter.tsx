@@ -1,12 +1,12 @@
-import { ArrowRight, CheckCircle2, Circle, Clock3, Compass, ExternalLink, Filter, Video } from 'lucide-react'
+import { ArrowRight, Calculator, CheckCircle2, Circle, Clock3, Compass, ExternalLink, Filter, Video } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { evidenceLevelLabels, readStrategyEvidence, STRATEGY_EVIDENCE_EVENT, type EvidenceLevel } from '../../strategyEvidence'
-import { flagshipCaseIds, frontierCaseIds, strategyCaseRegistry } from './caseRegistry'
+import { centerCaseCatalog, decisionMathCaseIds, flagshipCaseIds, frontierCaseIds } from './caseRegistry'
 import type { RouteId } from './types'
 
 type Go = (page: string, options?: Record<string, string>) => void
 const routeFilters: Array<{ id: 'all' | RouteId; label: string }> = [
-  { id: 'all', label: '全部路线' }, { id: 'foundation', label: '算法基础' }, { id: 'llm', label: 'LLM' },
+  { id: 'all', label: '全部路线' }, { id: 'foundation', label: '算法基础' }, { id: 'ai-decision-math', label: 'AI 决策数学' }, { id: 'llm', label: 'LLM' },
   { id: 'image', label: '图像生成' }, { id: 'agent', label: 'Agent' }, { id: 'agent-book', label: 'Agent Book' }, { id: 'distill', label: '模型蒸馏' },
   { id: 'self-evolving', label: 'Self-Evolving' }, { id: 'world-model', label: 'World Model' },
 ]
@@ -20,10 +20,12 @@ export default function StrategyCaseCenter({ go }: { go: Go }) {
     window.addEventListener('storage', sync)
     return () => { window.removeEventListener(STRATEGY_EVIDENCE_EVENT, sync); window.removeEventListener('storage', sync) }
   }, [])
-  const visible = useMemo(() => strategyCaseRegistry.filter((item) => filter === 'all' || item.routeId === filter), [filter])
+  const visible = useMemo(() => centerCaseCatalog.filter((item) => filter === 'all' || item.routeId === filter), [filter])
   const mainCases = useMemo(() => visible.filter((item) => !frontierCaseIds.has(item.id)), [visible])
   const frontierCases = useMemo(() => visible.filter((item) => frontierCaseIds.has(item.id)), [visible])
   const status = (caseId: string) => evidence.find((item) => item.caseId === caseId)?.level ?? 0
+  const showMathRoute = filter === 'all' || filter === 'ai-decision-math'
+  const mathFormed = evidence.filter((item) => decisionMathCaseIds.has(item.caseId) && item.level >= 2).length
 
   const renderCard = (item: (typeof visible)[number]) => {
     const level = status(item.id) as EvidenceLevel
@@ -53,6 +55,12 @@ export default function StrategyCaseCenter({ go }: { go: Go }) {
       <header className='strategy-center-hero'><span>Strategy-first · 策略案例地图</span><h1>先做决策，再理解算法</h1><p>每个案例都从业务目标开始。你要选择策略、承担代价，并说明下一轮模型该学什么。</p><a href='https://github.com/haimuhaimu/genai-learning-os/blob/main/docs/CASE_AUTHORING.md' target='_blank' rel='noopener noreferrer' aria-label='在 GitHub 打开策略 Case 作者指南（打开新窗口）'>你也可以贡献一个策略 Case<ExternalLink aria-hidden='true' /></a><aside><b>统一学习协议</b><small>目标 → 动作 → 证据 → 代价 → 反馈 → 训练 → 摘要</small></aside></header>
       <nav className='strategy-filters' aria-label='按路线筛选'><Filter aria-hidden='true' />{routeFilters.map((item) => <button type='button' key={item.id} aria-pressed={filter === item.id} className={filter === item.id ? 'is-active' : ''} onClick={() => setFilter(item.id)}>{item.label}</button>)}</nav>
       {mainCases.length ? <div className='strategy-case-grid'>{mainCases.map(renderCard)}</div> : null}
+      {showMathRoute ? (
+        <section className='strategy-math-section' aria-labelledby='strategy-math-title'>
+          <header><span><Calculator aria-hidden='true' />数学底座</span><h2 id='strategy-math-title'>AI 决策数学：8 个短 Case，一条判断路线</h2><p>从校准、贝叶斯和相似度出发，走到优化、因果、奖励与误差传播。这里不平铺练习，只保留路线入口。</p></header>
+          <article><div><span>AI 决策数学</span><strong>{mathFormed}<small>/ 8 已形成策略</small></strong></div><p>每个 Case 预计 3–5 分钟，复用固定证据、代价账本、反馈来源与策略摘要。</p><button type='button' onClick={() => go('decision-math')}>进入数学路线<ArrowRight aria-hidden='true' /></button></article>
+        </section>
+      ) : null}
       {frontierCases.length ? (
         <section className='strategy-frontier-section' aria-labelledby='strategy-frontier-title'>
           <header>
@@ -63,7 +71,7 @@ export default function StrategyCaseCenter({ go }: { go: Go }) {
           <div className='strategy-case-grid'>{frontierCases.map(renderCard)}</div>
         </section>
       ) : null}
-      {!mainCases.length && !frontierCases.length ? <p className='strategy-center-empty'>当前筛选下没有案例。</p> : null}
+      {!mainCases.length && !frontierCases.length && !showMathRoute ? <p className='strategy-center-empty'>当前筛选下没有案例。</p> : null}
       <button type='button' className='strategy-video-entry' onClick={() => go('videos')}><Video aria-hidden='true' />按卡点找参考视频</button>
       <p className='strategy-center-note'>状态只由可见行为推进：首次调整策略为"已实验"，形成摘要为"已形成策略"；本轮不伪造通用评审状态。</p>
     </section>

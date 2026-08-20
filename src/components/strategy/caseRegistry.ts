@@ -6,4 +6,4 @@ export const strategyCaseSpecs = new Map(strategyCaseCatalog.flatMap((item) => i
 export function getStrategyCase(caseId?: string) { return strategyCaseSpecs.get(caseId as CaseId) }
 export function getRegistryCase(caseId: CaseId) { return strategyCaseCatalog.find((item) => item.id === caseId) }
 
-export { caseIds, caseRouteMap, flagshipCaseIds, frontierCaseIds, frontierRouteIds, routeIds, type CaseId } from './caseCatalog'
+export { caseIds, caseRouteMap, centerCaseCatalog, decisionMathCaseCatalog, decisionMathCaseIds, flagshipCaseIds, frontierCaseIds, frontierRouteIds, routeIds, type CaseId } from './caseCatalog'

@@ -2,6 +2,14 @@ import { useMemo, useState } from 'react'
 import { AlertTriangle, ArrowRight, BarChart3, BookOpen, Calculator, Compass, Search, Sigma, Video } from 'lucide-react'
 
 const formulas = [
+  { group: 'AI 决策数学', name: 'ECE / Brier', formula: 'ECE=Σᵦ(nᵦ/n)|accᵦ−confᵦ|；Brier=mean(p−y)²', variables: 'b：置信度桶；p：预测概率；y：真实结果', use: '判断概率是否可信，而不只是分类是否命中', boundary: 'ECE 受分桶影响；Brier 同时混合校准与区分能力，需配可靠性图。' },
+  { group: 'AI 决策数学', name: 'Beta 后验', formula: 'Beta(α,β)+s/f → Beta(α+s,β+f)', variables: 'α/β：先验；s/f：成功与失败观测', use: '小流量放量、成功率更新与先验敏感性分析', boundary: '需说明先验来源；独立同分布假设不成立时不能机械套用。' },
+  { group: 'AI 决策数学', name: 'Cosine Similarity', formula: 'cos(a,b)=a·b/(‖a‖‖b‖)', variables: 'a/b：向量表征', use: '召回、聚类与相似样本检索', boundary: '相似不等于蕴含、事实正确或可引用；必须结合 rerank 与证据标注。' },
+  { group: 'AI 决策数学', name: 'Gradient Clipping', formula: 'g′=g·min(1,c/‖g‖)', variables: 'g：梯度；c：裁剪阈值', use: '限制异常 batch 的更新幅度，配合 warmup 提高训练稳定性', boundary: '裁剪缓解爆炸但不修复坏数据、错误 loss 或数值精度问题。' },
+  { group: 'AI 决策数学', name: 'Entropy 与 KL 方向', formula: 'H(P)=−Σp log p；KL(P‖Q)=Σp log(p/q)', variables: 'P：需要覆盖的参考分布；Q：候选分布', use: '区分确定性、覆盖与 mode collapse', boundary: 'KL 不对称；写反方向会改变惩罚重点，低熵也不等于更懂。' },
+  { group: 'AI 决策数学', name: 'ATE / 分层估计', formula: 'ATE=E[Y(1)−Y(0)]；ATE≈Σₛwₛ(ȳ₁ₛ−ȳ₀ₛ)', variables: 's：预先定义的层；w：层权重', use: '控制渠道、人群结构差异，避免整体均值误导', boundary: '分层只能控制已观测结构；随机单元、干扰与时间效应仍需设计。' },
+  { group: 'AI 决策数学', name: 'Discounted Return', formula: 'Gₜ=Σₖγᵏrₜ₊ₖ', variables: 'r：逐步奖励；γ：延迟折扣', use: '多步任务中权衡即时信号与最终结果', boundary: '奖励定义错误会被投机；最终成功仍应由外部状态或 verifier 验证。' },
+  { group: 'AI 决策数学', name: '复合成功率', formula: 'P(success)=∏ᵢpᵢ（独立近似）', variables: 'pᵢ：第 i 步成功率', use: '估算多步链路端到端可靠性与关键瓶颈', boundary: '步骤常非独立；应追踪状态转移、首错位置与不可逆副作用。' },
   { group: 'LLM 架构', name: '训练计算量', formula: 'FLOPs ≈ 6ND', variables: 'N：参数量；D：训练 token', use: '预训练预算一级估算、比较参数与数据分配', boundary: '不含数据处理、后训练、通信与失败重跑；常数依架构而变。' },
   { group: 'LLM 架构', name: '注意力 FLOPs', formula: '≈ 4T²d per layer', variables: 'T：序列长度；d：hidden size', use: '解释全注意力随上下文二次增长', boundary: '教学近似，未含投影/MLP；FlashAttention 降 IO，不消除该计算项。' },
   { group: 'LLM 服务', name: 'KV Cache', formula: '2LTHkvDhB·bytes', variables: 'L：层；T：序列；Hkv：KV heads；Dh：head dim；B：并发', use: '容量规划、比较 MHA/GQA/MQA 与 KV 量化', boundary: '不含权重、激活、allocator 碎片与 workspace。' },
@@ -75,6 +83,12 @@ export default function Handbook({ go }: { go: (page: string, options?: Record<s
   const filtered = useMemo(() => records.filter((item) => (category === '全部' || item.group === category) && JSON.stringify(item).toLowerCase().includes(query.toLowerCase())), [records, query, category])
   return <section className='handbook-page'>
     <div className='handbook-hero'><span>PRODUCTION REFERENCE</span><h1>公式手册 × 生产指标词典</h1><p>不是定义集：每一项都说明什么时候看、异常意味着什么，以及不能从它推出什么。</p><button type='button' className='handbook-video-entry' onClick={() => go('videos')}><Video aria-hidden='true' />打开视频参考库</button></div>
+    <aside className='handbook-frontier handbook-math-route'>
+      <header><Calculator aria-hidden='true' /><span>数学底座</span></header>
+      <h2>先在 8 个 Case 里判断数字，再回来查公式</h2>
+      <p>校准、贝叶斯、相似度、梯度、Entropy / KL、因果、序贯奖励与复合成功率都不是孤立公式；它们分别回答“证据是否可信、代价如何传播、结论能否支持行动”。</p>
+      <div><button type='button' onClick={() => go('decision-math')}>进入 AI 决策数学<ArrowRight aria-hidden='true' /></button></div>
+    </aside>
     <aside className='handbook-frontier'>
       <header><Compass aria-hidden='true' /><span>前沿探索</span></header>
       <h2>自进化与世界模型：先做决策，再理解算法</h2>

@@ -4,7 +4,7 @@
 
 [Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
 
-**8 learning tracks · 8 Strategy Cases · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
+**9 learning tracks · 8 representative Strategy Cases + 8 AI decision-math exercises · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
 
 Most tutorials explain how models run. This project asks you to make a product strategy decision first, then return to the mechanism to understand metrics, costs, and feedback loops.
 
@@ -44,11 +44,12 @@ Every Strategy Case follows the same seven-part chain:
 6. **Next training loop** — turn failure slices into data or system actions.
 7. **Strategy summary** — produce a conclusion that can be reviewed and iterated.
 
-## Eight learning tracks
+## Nine learning tracks
 
 | Track | Decision focus | Representative case or lab |
 | --- | --- | --- |
 | Algorithm Foundations | How launch strategy changes training feedback | Feedback loop / Softmax & CE |
+| AI Decision Math | Whether a number is strong enough to support an action | [Eight 3–5 minute exercises](https://haimuhaimu.github.io/genai-learning-os/?page=decision-math) |
 | LLM Systems | Retrieval quality, latency, and budget | RAG budget trade-off |
 | Image Generation | Usability, retries, and unit cost | Usable-image unit cost |
 | Agent Systems | Tool side effects and confirmation | Refund confirmation gate |
@@ -65,7 +66,7 @@ AI product managers, strategy and operations practitioners, engineers and resear
 
 ## Curated resources
 
-The [resource library](https://haimuhaimu.github.io/genai-learning-os/?page=videos) contains 31 curated items across all 8 tracks. It includes Chinese-language material, Karpathy learning resources, and selected papers and articles for self-evolving AI and world models. Each item points back to a decision, evidence gap, cost, or feedback-loop question; viewing a resource does not count as learning progress.
+The [resource library](https://haimuhaimu.github.io/genai-learning-os/?page=videos) remains at 31 curated items. It includes Chinese-language material, Karpathy learning resources, and selected papers and articles for self-evolving AI and world models. Each item points back to a decision, evidence gap, cost, or feedback-loop question; viewing a resource does not count as learning progress.
 
 ## Contribute a Strategy Case
 

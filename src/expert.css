@@ -80,3 +80,4 @@
   .handbook-frontier { margin: 16px 13px; padding: 16px; }
   .handbook-frontier button { flex: 1 1 auto; justify-content: center; }
 }
+.handbook-frontier.handbook-math-route{border-style:solid;border-color:#c9d2bd;background:#f5f6ef}.handbook-frontier.handbook-math-route header,.handbook-frontier.handbook-math-route button{color:#5d6a38}.handbook-frontier.handbook-math-route button{border-color:#66733d}.handbook-frontier.handbook-math-route button:hover{color:#fff;background:#66733d}

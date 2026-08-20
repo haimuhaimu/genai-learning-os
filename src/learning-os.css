@@ -311,6 +311,10 @@
 .lo-route-branch dt { color: var(--lo-muted); font-size: 11px; }
 .lo-route-copy dd,
 .lo-route-branch dd { margin: 0; font-size: 12px; line-height: 1.55; }
+.lo-route-copy .lo-route-terms,
+.lo-route-branch .lo-route-terms { min-width: 0; margin: 10px 0 0; padding: 9px 11px; overflow-wrap: anywhere; border-radius: 9px; color: var(--lo-muted); background: var(--lo-accent-soft); font-size: 11px; line-height: 1.6; word-break: break-word; }
+.lo-route-branch .lo-route-terms { background: rgba(255, 255, 255, .62); }
+.lo-route-terms b { display: inline-block; margin-right: 7px; color: var(--lo-accent-deep); font-size: 9px; letter-spacing: .04em; }
 .lo-route-chapter footer { display: grid; gap: 8px; justify-items: stretch; }
 .lo-route-chapter footer button.is-quiet,
 .lo-route-branch > button.is-quiet { color: var(--lo-accent-deep); border-color: var(--lo-line-strong); background: transparent; }

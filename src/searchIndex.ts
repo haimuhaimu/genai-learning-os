@@ -18,6 +18,7 @@ export type SearchDestination = {
 const topLevel: SearchDestination[] = [
   ['home', '首页', '统一学习地图', '学习入口 导航 首页', 'unified-map'],
   ['routes', '学习路线', '九条学习路线与前沿支线', '路径 课程', 'routes'],
+  ['math-primer', '数学零层：符号与基础概念扫盲', '不是数学课，把 AI 公式翻译成人话', '数学扫盲 数轴 实数 变量 函数 指数 对数 求和 Σ 平均值 期望 方差 概率 条件概率 向量 矩阵 点积 导数 梯度 参数 权重 Loss 分布 熵 KL', 'math-primer'],
   ['decision-math', 'AI 决策数学', '8 个 3–5 分钟 Case：从数字到策略判断', '数学 概率 校准 贝叶斯 相似度 梯度 熵 KL 因果 奖励 误差传播', 'decision-math'],
   ['strategy-cases', '策略案例中心', 'Strategy-first：先做产品决策，再看证据、业务代价与反馈闭环', '策略 决策 case 证据 strategy-first product decisions trade-offs feedback loops 策略案例 业务代价', 'strategy-cases'],
   ['videos', '参考视频库', '先做策略决策，再按卡点补机制', '视频 课程 参考资源 机制 决策', 'videos'],

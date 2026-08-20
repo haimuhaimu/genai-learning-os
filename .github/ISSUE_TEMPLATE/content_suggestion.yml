@@ -1,0 +1,54 @@
+name: 内容建议
+description: 建议课程、实验、评审或教学表达改进
+title: "[Content] "
+labels:
+  - content
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: 内容类型
+      options:
+        - 算法基础
+        - LLM 系统
+        - 图像生成
+        - Agent 系统
+        - Agent Book
+        - 模型蒸馏
+        - 实验或评审工具
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: 现有位置
+      description: 如针对现有内容，请提供页面深链、章节或实验 ID。
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议内容
+      description: 请说明要修正或新增什么，以及它如何帮助学习者形成判断。
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 依据与来源
+      description: 请提供公开、可核验的来源，并区分事实、教学近似和个人经验。
+    validations:
+      required: true
+  - type: textarea
+    id: loop
+    attributes:
+      label: 如何接入学习闭环
+      description: 可说明理解、手算、实验、评审中的一个或多个环节。
+  - type: checkboxes
+    id: license
+    attributes:
+      label: 许可确认
+      options:
+        - label: 我确认建议中没有不可公开的材料、个人信息或访问凭据。
+          required: true
+        - label: 如包含第三方改编内容，我已提供来源与许可信息。
+          required: true

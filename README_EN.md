@@ -1,0 +1,128 @@
+# GenAI Learning OS
+
+**Learn AI through product decisions, not formulas first.**
+
+[Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
+
+**8 learning tracks · 8 Strategy Cases · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
+
+Most tutorials explain how models run. This project asks you to make a product strategy decision first, then return to the mechanism to understand metrics, costs, and feedback loops.
+
+![Desktop view of the GenAI Learning OS Strategy Case Center showing the Strategy-first positioning, shared learning protocol, route filters, featured labels, and cards for Foundations, RAG, Image Generation, and refund tooling](docs/assets/strategy-case-center.png)
+
+## Three flagship cases
+
+### RAG budget trade-off · `rag-budget`
+
+**Decision:** Is broader retrieval worth more noise, context cost, and latency? The output is a reviewable RAG launch summary with `k`, rerank threshold, answer mode, metrics, and the next data action. [Open the case](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=rag-budget)
+
+### Refund tool confirmation gate · `refund-gate`
+
+**Decision:** Is faster automatic refunding worth the risk of tool side effects? The output is a governance strategy covering the gate, risk threshold, business cost, trace requirements, and next data action. [Open the case](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=refund-gate)
+
+### Multi-agent new-information criterion · `new-information`
+
+**Decision:** Does another role add a new observation or repeat the same judgment? The output is a collaboration strategy with topology, verifier, success and duplication metrics, unit cost, and Harness improvements. [Open the case](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=new-information)
+
+## How it differs from a typical algorithm course
+
+| Dimension | Typical algorithm course | GenAI Learning OS |
+| --- | --- | --- |
+| Learning order | Formula first, application later | Product decision first, mechanism second |
+| Progress | Chapter completion | Reviewable, saved strategy evidence |
+| Knowledge structure | Stacked topics | Fixed evidence, a cost ledger, and a feedback loop |
+
+## One learning protocol
+
+Every Strategy Case follows the same seven-part chain:
+
+1. **Business objective** — define what should improve.
+2. **Strategy action** — expose real controllable variables.
+3. **Fixed evidence** — use reproducible teaching data.
+4. **Cost ledger** — show quality, cost, latency, or risk together.
+5. **Feedback visibility** — state what the strategy reveals and hides.
+6. **Next training loop** — turn failure slices into data or system actions.
+7. **Strategy summary** — produce a conclusion that can be reviewed and iterated.
+
+## Eight learning tracks
+
+| Track | Decision focus | Representative case or lab |
+| --- | --- | --- |
+| Algorithm Foundations | How launch strategy changes training feedback | Feedback loop / Softmax & CE |
+| LLM Systems | Retrieval quality, latency, and budget | RAG budget trade-off |
+| Image Generation | Usability, retries, and unit cost | Usable-image unit cost |
+| Agent Systems | Tool side effects and confirmation | Refund confirmation gate |
+| Agent Book | Whether topology adds information | New-information criterion |
+| Model Distillation | Agreement versus capability retention | Distillation retention |
+| Self-Evolving AI (frontier) | Evaluator trust and stop conditions | [Evaluator Trust](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=evaluator-trust) |
+| World Models (frontier) | Simulation, LLM rollouts, and real feedback | [Simulator vs Reality](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=simulator-vs-reality) |
+
+> Self-evolving AI and world models are still early. They are presented as bounded exploration tracks, not mature production recipes.
+
+## Who it is for
+
+AI product managers, strategy and operations practitioners, engineers and researchers, and people moving into AI work who want a practical language for decisions rather than a formula-first syllabus.
+
+## Curated resources
+
+The [resource library](https://haimuhaimu.github.io/genai-learning-os/?page=videos) contains 31 curated items across all 8 tracks. It includes Chinese-language material, Karpathy learning resources, and selected papers and articles for self-evolving AI and world models. Each item points back to a decision, evidence gap, cost, or feedback-loop question; viewing a resource does not count as learning progress.
+
+## Contribute a Strategy Case
+
+1. Copy the typed, unregistered example in [`examples/strategy-case`](examples/strategy-case/).
+2. Implement the spec, pure `compute()` / `summarize()` functions, tests, and one catalog entry.
+3. Follow the [Strategy Case authoring guide](docs/CASE_AUTHORING.md) and [CONTRIBUTING.md](CONTRIBUTING.md) before opening a Pull Request.
+
+## Local development
+
+Requires Node.js 20+ and pnpm 10+.
+
+```bash
+git clone https://github.com/haimuhaimu/genai-learning-os.git
+cd genai-learning-os
+pnpm install
+pnpm dev
+```
+
+The app is frontend-only: no sign-in, backend, model API calls, or account collection. Progress stays in the current browser's `localStorage`. GitHub Pages deployment is defined in [the Pages workflow](.github/workflows/deploy-pages.yml), with the repository homepage and canonical URL pointing to the production Pages site.
+
+## Validation
+
+```bash
+pnpm run lint
+pnpm run build
+pnpm run check:videos
+pnpm run typecheck:case-example
+node --test
+git diff --check
+```
+
+All formulas, estimates, charts, and outputs are mechanism-level teaching simulations. They do not represent a commercial model implementation or measured production performance. Validate production decisions with the target model, real data, logs, load tests, and security review.
+
+## Project structure
+
+```text
+.
+├── docs/CASE_AUTHORING.md          # Strategy Case authoring protocol
+├── docs/VIDEO_CONTRIBUTING.md      # Curated resource contribution guide
+├── examples/strategy-case/         # Typed example, intentionally not registered
+├── src/resources/videoCatalog.ts   # Structured resource catalog
+├── src/components/strategy/        # Case SDK, catalog, runner, and cases
+├── src/components/foundation/      # Foundations and the unified map
+├── src/searchIndex.ts              # In-site search index
+└── .github/ISSUE_TEMPLATE/         # Bug, content, and Case proposal forms
+```
+
+## Roadmap
+
+[ROADMAP.md](ROADMAP.md) lists direction without date commitments.
+
+## License
+
+Licensed under [Apache License 2.0](LICENSE). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution and third-party terms.
+
+## Acknowledgements
+
+The Agent Book module references and adapts [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) by Bojie Li; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The visual revision methodology was informed by [taste-skill](https://github.com/haimuhaimu/taste-skill); no code or text from that project is copied here.
+
+[中文 README](README.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md)

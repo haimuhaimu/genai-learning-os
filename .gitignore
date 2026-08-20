@@ -1,0 +1,33 @@
+# Dependencies and builds
+node_modules/
+dist/
+
+# Environment files
+.env*
+!.env.example
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Caches and generated state
+.cache/
+.eslintcache
+*.tsbuildinfo
+coverage/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Local workspace metadata
+plan.md
+site.meta

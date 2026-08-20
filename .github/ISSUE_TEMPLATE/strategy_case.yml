@@ -1,0 +1,62 @@
+name: 提议一个 Strategy Case
+description: 提议一个从产品决策出发、可复现的策略案例
+title: "[Strategy Case] "
+labels:
+  - content
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你提议 Strategy Case。提交前可先阅读 `docs/CASE_AUTHORING.md`，无需提供任何私有数据。
+  - type: textarea
+    id: business-goal
+    attributes:
+      label: 业务目标
+      description: 这个案例要改善什么用户或业务结果？
+    validations:
+      required: true
+  - type: textarea
+    id: strategy-variables
+    attributes:
+      label: 策略变量
+      description: 学习者可以改变哪些真实、可解释的变量？
+    validations:
+      required: true
+  - type: textarea
+    id: fixed-data
+    attributes:
+      label: 固定数据
+      description: 使用什么可公开、可复现的教学数据？请说明规模、字段与来源边界。
+    validations:
+      required: true
+  - type: textarea
+    id: business-cost
+    attributes:
+      label: 业务代价
+      description: 质量、成本、延迟、人工或风险如何进入同一账本？
+    validations:
+      required: true
+  - type: textarea
+    id: feedback-loop
+    attributes:
+      label: 反馈闭环
+      description: 策略会留下什么反馈、遮蔽什么失败，下一轮训练或系统动作是什么？
+    validations:
+      required: true
+  - type: textarea
+    id: teaching-boundary
+    attributes:
+      label: 教学边界
+      description: 哪些结论只是教学估算？这个案例不能证明什么？
+    validations:
+      required: true
+  - type: dropdown
+    id: willing-pr
+    attributes:
+      label: 是否愿意提交 Pull Request
+      options:
+        - 愿意，我会按作者指南实现
+        - 愿意，但需要维护者协助
+        - 暂时只提交想法
+    validations:
+      required: true

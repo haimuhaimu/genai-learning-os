@@ -1,0 +1,101 @@
+name: 推荐参考视频
+description: 推荐一个能补足策略决策卡点的视频或课程
+title: "[参考视频] "
+labels:
+  - content
+  - video
+body:
+  - type: markdown
+    attributes:
+      value: |
+        视频是策略摘要之后的可选补充。请说明它解决什么卡点，以及看完要回到哪个决策问题。译制或转载内容不能标成原创。
+  - type: input
+    id: title
+    attributes:
+      label: 标题
+      placeholder: 资源页面上的完整标题
+    validations:
+      required: true
+  - type: input
+    id: speaker
+    attributes:
+      label: 讲者 / 原作者
+      description: 中文译制必须填写原始讲者或作者。
+      placeholder: 例如：Andrej Karpathy
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      placeholder: https://...
+    validations:
+      required: true
+  - type: input
+    id: original_source_url
+    attributes:
+      label: 原始来源 URL
+      description: 译制、字幕或转载内容能确认原始页面时请填写。
+      placeholder: https://...
+  - type: input
+    id: org
+    attributes:
+      label: 发布机构或译制来源
+      placeholder: 官方机构、课程或当前页面发布者
+    validations:
+      required: true
+  - type: dropdown
+    id: source_type
+    attributes:
+      label: 载体类型
+      options:
+        - YouTube
+        - B站
+        - 课程页
+        - 论文 paper
+        - 博客 blog
+        - 深度报道 report
+    validations:
+      required: true
+  - type: dropdown
+    id: content_origin
+    attributes:
+      label: 内容来源类型
+      description: 请区分原创、译制和海外原版，禁止把译制标成原创。
+      options:
+        - 中文原创
+        - 中文译制
+        - 海外原版
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: 语言
+      options:
+        - 中文
+        - 英文
+    validations:
+      required: true
+  - type: input
+    id: route_case
+    attributes:
+      label: 关联路线 / Case
+      description: 请填写最直接的路线和 Case ID。
+      placeholder: 例如：LLM / rag-budget
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 为什么值得看
+      description: 说明它补足哪个机制或决策卡点，不要只写“讲得很好”。
+    validations:
+      required: true
+  - type: textarea
+    id: return_question
+    attributes:
+      label: 看完回到什么决策
+      placeholder: 回到案例再看：……？
+    validations:
+      required: true

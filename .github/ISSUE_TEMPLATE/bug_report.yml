@@ -1,0 +1,55 @@
+name: Bug 报告
+description: 报告页面、实验、进度或构建问题
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: 感谢报告问题。请勿在公开 Issue 中提交密钥、私有日志或未修复漏洞细节。
+  - type: input
+    id: page
+    attributes:
+      label: 页面或深链
+      description: 请提供发生问题的完整查询参数链接。
+      placeholder: https://haimuhaimu.github.io/genai-learning-os/?page=...
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 实际发生了什么？你原本期望什么？
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开……
+        2. 调整……
+        3. 看到……
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 环境
+      placeholder: Chrome 版本 / macOS、Windows 或 Linux
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 补充信息
+      description: 可附截图、公开的控制台报错或最小复现。请先移除个人与敏感信息。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索现有 Issue，未发现相同报告。
+          required: true
+        - label: 这不是需要私下报告的安全漏洞。
+          required: true

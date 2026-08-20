@@ -1,0 +1,369 @@
+/* Agent Book 路线样式：所有选择器必须在 .agent-book-scope 下，避免污染其他页面 */
+
+.agent-book-scope {
+  padding: 56px max(4vw, 28px) 90px;
+  background: linear-gradient(180deg, rgba(247, 250, 247, 1) 0%, rgba(241, 244, 240, 1) 70%, rgba(238, 242, 239, 1) 100%);
+  color: #1f2732;
+}
+
+.agent-book-scope .agent-book-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.agent-book-scope .agent-book-hero h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.agent-book-scope .agent-book-hero p {
+  margin: 10px 0 0;
+  max-width: 78ch;
+  color: rgba(35, 45, 56, 0.82);
+  line-height: 1.6;
+}
+
+.agent-book-scope .agent-book-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.agent-book-scope .agent-book-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.06);
+  font-size: 13px;
+  color: rgba(31, 39, 50, 0.84);
+}
+
+.agent-book-scope .agent-book-pill b {
+  color: rgba(31, 39, 50, 0.96);
+}
+
+.agent-book-scope .agent-book-shell {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.agent-book-scope .agent-book-rail {
+  position: sticky;
+  top: 18px;
+  height: fit-content;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+}
+
+.agent-book-scope .agent-book-rail h2 {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(31, 39, 50, 0.84);
+}
+
+.agent-book-scope .agent-book-rail .agent-book-rail-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(31, 39, 50, 0.64);
+  line-height: 1.5;
+}
+
+.agent-book-scope .agent-book-rail nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.agent-book-scope .agent-book-nav-btn {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(250, 252, 249, 0.9);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.agent-book-scope .agent-book-nav-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.agent-book-scope .agent-book-nav-btn.active {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+.agent-book-scope .agent-book-nav-btn .left {
+  min-width: 0;
+}
+
+.agent-book-scope .agent-book-nav-btn .left b {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: rgba(31, 39, 50, 0.7);
+}
+
+.agent-book-scope .agent-book-nav-btn .left span {
+  display: block;
+  font-size: 13px;
+  margin-top: 2px;
+  line-height: 1.35;
+  color: rgba(31, 39, 50, 0.92);
+}
+
+.agent-book-scope .agent-book-nav-btn .right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: rgba(31, 39, 50, 0.78);
+}
+
+.agent-book-scope .agent-book-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #aeb8c5;
+  background: #fff;
+  color: #354152;
+  font-weight: 600;
+}
+
+.agent-book-scope .agent-book-main {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+}
+
+.agent-book-scope .agent-book-main-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.agent-book-scope .agent-book-main-header h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.agent-book-scope .agent-book-subtitle {
+  margin-top: 6px;
+  color: rgba(31, 39, 50, 0.72);
+  line-height: 1.6;
+  max-width: 78ch;
+}
+
+.agent-book-scope .agent-book-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.agent-book-scope .agent-book-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(250, 252, 249, 0.96);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
+}
+
+.agent-book-scope .agent-book-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.agent-book-scope .agent-book-action-btn.primary {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(34, 197, 94, 0.08));
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+.agent-book-scope .agent-book-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+}
+
+.agent-book-scope .agent-book-card {
+  grid-column: span 6;
+  border-radius: 14px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(249, 252, 249, 0.9);
+  padding: 12px 12px;
+}
+
+.agent-book-scope .agent-book-card h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.agent-book-scope .agent-book-card ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: rgba(31, 39, 50, 0.78);
+  line-height: 1.7;
+}
+
+.agent-book-scope .agent-book-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.agent-book-scope .agent-book-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.agent-book-scope .agent-book-tag:hover {
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+.agent-book-scope .agent-book-divider {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid rgba(33, 48, 63, 0.12);
+}
+
+.agent-book-scope .agent-book-formula {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(15, 23, 42, 0.06);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 12px;
+  color: rgba(31, 39, 50, 0.92);
+}
+
+.agent-book-scope .agent-book-callout {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.26);
+  background: rgba(245, 158, 11, 0.08);
+  color: rgba(31, 39, 50, 0.88);
+  line-height: 1.65;
+}
+
+.agent-book-scope .agent-book-microcalc {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(33, 48, 63, 0.12);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.agent-book-scope .agent-book-microcalc label {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(31, 39, 50, 0.72);
+}
+
+.agent-book-scope .agent-book-fields {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.agent-book-scope .agent-book-field {
+  display: grid;
+  gap: 6px;
+  color: #3b4553;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.agent-book-scope .agent-book-input {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 48, 63, 0.16);
+  background: rgba(255, 255, 255, 0.9);
+  outline: none;
+}
+
+.agent-book-scope .agent-book-input:focus {
+  border-color: rgba(16, 185, 129, 0.42);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.agent-book-scope .agent-book-footnote {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(31, 39, 50, 0.62);
+  line-height: 1.6;
+}
+
+@media (max-width: 1050px) {
+  .agent-book-scope .agent-book-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-book-scope .agent-book-rail {
+    position: relative;
+    top: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .agent-book-scope .agent-book-card {
+    grid-column: span 12;
+  }
+}

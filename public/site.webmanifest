@@ -1,0 +1,9 @@
+{
+  "name": "GenAI Learning OS · Strategy-first AI Learning",
+  "short_name": "GenAI Learning OS",
+  "description": "通过产品决策学习 AI，而不是从公式开始。8 条学习路线、8 个策略案例与 31 条精选资源。",
+  "start_url": "/genai-learning-os/",
+  "display": "standalone",
+  "background_color": "#f4f0e8",
+  "theme_color": "#2759d7"
+}

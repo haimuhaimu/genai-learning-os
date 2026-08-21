@@ -6,6 +6,7 @@ import { optimizerStabilitySpec, similarityGatingSpec } from './decisionMathRetr
 import { errorPropagationSpec, rewardPolicySpec } from './decisionMathSequentialCases.ts'
 import { distillSpec } from './distillCase.ts'
 import { evaluatorTrustSpec } from './evaluatorTrustCase.ts'
+import { harnessLaunchWorkbenchSpec } from './harnessLaunchWorkbenchCase.ts'
 import { imageSpec } from './imageCase.ts'
 import { ragSpec } from './ragCase.ts'
 import { worldModelSpec } from './worldModelCase.ts'
@@ -41,7 +42,7 @@ function fromSpec<const TSpec extends StrategyCaseSpec>(spec: TSpec, extra: { fr
 
 export const strategyCaseCatalog = [
   foundationCase,
-  fromSpec(ragSpec), fromSpec(imageSpec), fromSpec(agentSpec), fromSpec(agentBookSpec), fromSpec(distillSpec),
+  fromSpec(ragSpec), fromSpec(imageSpec), fromSpec(agentSpec), fromSpec(agentBookSpec), fromSpec(harnessLaunchWorkbenchSpec), fromSpec(distillSpec),
   fromSpec(evaluatorTrustSpec, { frontier: true }), fromSpec(worldModelSpec, { frontier: true }),
   fromSpec(calibrationSpec, { visibility: 'hub-only' }), fromSpec(bayesRolloutSpec, { visibility: 'hub-only' }),
   fromSpec(similarityGatingSpec, { visibility: 'hub-only' }), fromSpec(optimizerStabilitySpec, { visibility: 'hub-only' }),

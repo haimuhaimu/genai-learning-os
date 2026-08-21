@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowRight, BarChart3, BookOpenCheck, Bot, Boxes, CircleHelp, FlaskConical, Gauge, GitBranch, GitCompareArrows, ScrollText, Sigma } from 'lucide-react'
 import { agentExpertModules } from '../agentExpertData'
+import DecisionBriefPractice from './course/DecisionBriefPractice'
 
 export default function AgentExpertCourse({ initialModule, onOpenLab, onOpenStrategyCase, onGoToAgentBook }: { initialModule?: string; onOpenLab: (experiment: string) => void; onOpenStrategyCase: () => void; onGoToAgentBook?: () => void }) {
   const initialIndex = Math.max(0, agentExpertModules.findIndex((item) => item.id === initialModule))
@@ -27,8 +28,8 @@ export default function AgentExpertCourse({ initialModule, onOpenLab, onOpenStra
         <span>EXPERT TRACK · AGENT SYSTEMS</span>
         <h2>Agent 控制与治理</h2>
         <p>12 个决策模块 · 先修 LLM 推理 / RAG</p>
-        <button type='button' className='strategy-route-entry' onClick={onOpenStrategyCase}>该路线策略 Case<ArrowRight /></button>
-        {onGoToAgentBook && <button className='text-button' onClick={onGoToAgentBook}>更硬核 → 前往 Agent Book 路线</button>}
+        <button type='button' className='strategy-route-entry' onClick={onOpenStrategyCase}>该路线策略案例<ArrowRight /></button>
+        {onGoToAgentBook ? <button className='text-button' onClick={onGoToAgentBook}>更硬核 → 前往 Agent Book 路线</button> : null}
       </div>
       <div className='expert-module-list'>
         {agentExpertModules.map((item, index) => <button key={item.id} className={index === active ? 'active' : ''} onClick={() => changeModule(index)}>
@@ -47,7 +48,7 @@ export default function AgentExpertCourse({ initialModule, onOpenLab, onOpenStra
         <div><small>控制面</small><b>状态 · 权限 · 预算 · 终止 · 上线闸门</b></div><ArrowRight />
         <div><small>数据面</small><b>模型 · 检索 · 记忆 · 工具 · 可验证结果</b></div>
       </div>
-      <div className='agent-scope-note'>机制级教学估算 · 不调用真实模型或外部工具 · 不执行用户输入 · 仅展示结构化决策摘要，不展示私有 chain-of-thought{onGoToAgentBook && <span style={{ marginLeft: 10 }}>· <button className='text-button' onClick={onGoToAgentBook}>更硬核 → 前往 Agent Book 路线</button></span>}</div>
+      <div className='agent-scope-note'>机制级教学估算 · 不调用真实模型或外部工具 · 不执行用户输入 · 仅展示结构化决策摘要，不展示私有 chain-of-thought{onGoToAgentBook ? <span style={{ marginLeft: 10 }}>· <button className='text-button' onClick={onGoToAgentBook}>更硬核 → 前往 Agent Book 路线</button></span> : null}</div>
 
       <div className='expert-card-grid'>
         <section className='expert-card architecture-card'><header><Boxes /><span>核心机制与系统边界</span></header><p>{module.architecture}</p></section>
@@ -59,6 +60,7 @@ export default function AgentExpertCourse({ initialModule, onOpenLab, onOpenStra
         <section className='expert-card failure-expert-card'><header><AlertTriangle /><span>典型失败</span></header><ol>{module.failures.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b>{item}</li>)}</ol></section>
         <section className='expert-card review-card'><header><CircleHelp /><span>评审 Checklist / 追问</span></header><ul>{module.review.map((item) => <li key={item}>{item}</li>)}</ul></section>
         <section className='expert-card case-card'><header><ScrollText /><span>案例推演</span></header><p>{module.caseStudy}</p><button onClick={() => onOpenLab(module.experiment)}>进入相关实验<ArrowRight /></button></section>
+        {module.practice ? <DecisionBriefPractice key={module.practice.id} practice={module.practice} /> : null}
       </div>
     </article>
   </section>

@@ -10,7 +10,7 @@ const MAX_KEY_LENGTH = 160
 const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const PERSONAS = new Set(['strategy', 'product', 'engineering', 'beginner'])
 
-export const stageLabels = ['未开始', '已理解', '已手算', '已实验', '已评审'] as const
+export const stageLabels = ['未开始', '已浏览', '已手算', '已进入实验', '已评审'] as const
 
 export type LearningDataExport = {
   schemaVersion: 1
@@ -59,15 +59,31 @@ export function readProgress(): ProgressMap {
 
 export function markProgress(nodeId: string, stage: LearningStage): ProgressMap {
   const current = readProgress()
-  current[nodeId] = Math.max(current[nodeId] ?? 0, stage) as LearningStage
-  localStorage.setItem(KEY, JSON.stringify(current))
+  if ((current[nodeId] ?? 0) >= stage) return current
+
+  const next: ProgressMap = {
+    ...current,
+    [nodeId]: stage,
+  }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(next))
+  } catch {
+    console.warn('学习进度暂时无法保存到本机存储。')
+    return current
+  }
   window.dispatchEvent(new CustomEvent('genai-progress-change'))
-  return current
+  return next
 }
 
-export function clearProgress() {
-  localStorage.removeItem(KEY)
+export function clearProgress(): boolean {
+  try {
+    localStorage.removeItem(KEY)
+  } catch {
+    console.warn('学习进度暂时无法从本机存储清除。')
+    return false
+  }
   window.dispatchEvent(new CustomEvent('genai-progress-change'))
+  return true
 }
 
 export function exportLearningData(): string {

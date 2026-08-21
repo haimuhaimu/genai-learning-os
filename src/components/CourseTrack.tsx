@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, Check, ChevronLeft, ChevronRight, CircleHelp, FlaskConical, Gauge, MessageSquareText, Sigma, SlidersHorizontal, X } from 'lucide-react'
 import type { Chapter } from '../courseData'
+import { markProgress } from '../progress'
+import DeepPracticePanel from './course/DeepPracticePanel'
+import './CourseTrack.css'
 
 type Props = {
   chapters: Chapter[]
@@ -15,16 +18,17 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
 
   useEffect(() => {
     setAnswer(null)
+    markProgress(chapter.id, 1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [active])
+  }, [chapter.id])
 
   return (
-    <section className={`course-shell ${tone}`} aria-label={`${tone === 'llm' ? 'LLM' : '图像生成'}课程`}>
+    <section className={`course-shell ${tone}`} aria-label={`${tone === 'llm' ? '大语言模型（LLM）' : '图像生成'}课程`}>
       <aside className='chapter-rail'>
         <div className='rail-head'>
           <span className='eyebrow'>{tone === 'llm' ? 'TRACK A' : 'TRACK B'}</span>
-          <h2>{tone === 'llm' ? 'LLM 系统课' : '图像生成系统课'}</h2>
-          <p>7 章 · 概念、公式、参数、评审与失败模式</p>
+          <h2>{tone === 'llm' ? '大语言模型（LLM）系统课' : '图像生成系统课'}</h2>
+          <p>{chapters.length} 章 · 概念、手算、迁移与评审</p>
         </div>
         <div className='rail-list'>
           {chapters.map((item, index) => (
@@ -40,7 +44,7 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
       <article className='chapter-content'>
         <div className='chapter-hero'>
           <div>
-            <span className='chapter-index'>CHAPTER {chapter.no} / 07</span>
+            <span className='chapter-index'>CHAPTER {chapter.no} / {String(chapters.length).padStart(2, '0')}</span>
             <h1>{chapter.title}</h1>
             <p>{chapter.subtitle}</p>
           </div>
@@ -58,7 +62,7 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
           <section className='lesson-card formula-card'>
             <div className='lesson-title'><Sigma size={18} /><span>最小必要公式</span></div>
             <code>{chapter.formula}</code>
-            <small>公式用于建立参数直觉，不要求手工推导。</small>
+            <small>先建立参数直觉，再在下方深度练习中亲手计算。</small>
           </section>
           <section className='lesson-card'>
             <div className='lesson-title'><SlidersHorizontal size={18} /><span>产品可控参数</span></div>
@@ -88,10 +92,12 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
           </section>
         </div>
 
+        <DeepPracticePanel key={chapter.id} chapter={chapter} />
+
         <div className='chapter-footer'>
-          <button disabled={active === 0} onClick={() => setActive((v) => v - 1)}><ChevronLeft size={17} />上一章</button>
+          <button disabled={active === 0} onClick={() => setActive((value) => value - 1)}><ChevronLeft size={17} />上一章</button>
           <button className='lab-jump' onClick={onOpenLab}>去互动实验室 <FlaskConical size={17} /></button>
-          <button disabled={active === chapters.length - 1} onClick={() => setActive((v) => v + 1)}>下一章<ChevronRight size={17} /></button>
+          <button disabled={active === chapters.length - 1} onClick={() => setActive((value) => value + 1)}>下一章<ChevronRight size={17} /></button>
         </div>
       </article>
     </section>

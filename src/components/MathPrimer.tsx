@@ -21,7 +21,7 @@ type ConceptGroup = {
 
 const quickTerms = [
   { term: '人工智能（Artificial Intelligence，AI）', plain: '让机器完成识别、生成、判断等原本需要人来做的任务。' },
-  { term: '数学入门（Math Primer）', plain: '只补继续学习所需的最少数学直觉，不是完整数学课。' },
+  { term: '数学零层（Math Primer）', plain: '只补继续学习所需的最少数学直觉，不是完整数学课。' },
   { term: '文本单位（token）', plain: '模型读写文字时切分出的基本小块，可能是字、词或词的一部分。' },
   { term: '概率归一化函数（Softmax）', plain: '把一组分数变成总和为 1 的候选概率。' },
   { term: "自然常数（Euler's number，e）", plain: '约等于 2.718，是指数增长和概率公式里的常用底数。' },
@@ -124,7 +124,7 @@ export default function MathPrimer() {
     <section className='math-primer-page'>
       <header className='math-primer-hero'>
         <div className='math-primer-hero-copy'>
-          <span><Sparkles aria-hidden='true' />人工智能（Artificial Intelligence，AI）· 数学入门（Math Primer）</span>
+          <span><Sparkles aria-hidden='true' />人工智能（Artificial Intelligence，AI）· 数学零层（Math Primer）</span>
           <h1>不是数学课，<br />是把 <em>AI 公式</em>翻译成人话。</h1>
           <p>不证明、不考试、不默认你记得中学数学。先认识公式里的常客，再带着直觉继续学 AI。</p>
           <div><a href='#primer-start'>从数轴开始<ArrowDown aria-hidden='true' /></a><a className='is-secondary' href='#primer-quiz'>直接试试翻译<ArrowRight aria-hidden='true' /></a></div>

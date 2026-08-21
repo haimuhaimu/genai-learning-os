@@ -6,7 +6,7 @@ const protocol = ['业务目标', '策略动作', '固定证据', '代价账本'
 
 type Props = { spec: StrategyCaseSpec; onExit: () => void; exitLabel?: string; children: ReactNode }
 
-export default function StrategyCaseShell({ spec, onExit, exitLabel = '返回案例地图', children }: Props) {
+export default function StrategyCaseShell({ spec, onExit, exitLabel = '返回案例中心', children }: Props) {
   return (
     <section className='strategy-runner-page'>
       <header className='strategy-shell-head'>

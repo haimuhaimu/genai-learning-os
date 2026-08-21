@@ -6,6 +6,7 @@ import PageLoading from './components/shell/PageLoading'
 import ProductHeader from './components/shell/ProductHeader'
 import { imageChapters, llmChapters } from './courseData'
 import { expertImageModules, expertLLMModules } from './expertData'
+import { normalizePage, pages, routeKeys, type GoOptions, type Page, type RouteState } from './routeConfig'
 import './lab.css'
 import './expert.css'
 import './agent.css'
@@ -50,29 +51,12 @@ const VideoLibrary = lazy(() => import('./components/resources/VideoLibrary'))
 type GuestUser = { name?: string }
 
 type BusinessProps = { user: GuestUser | null }
-export type Page =
-  | 'unified-map' | 'routes' | 'math-primer' | 'decision-math' | 'labs' | 'reviews' | 'strategy-cases' | 'strategy-case' | 'videos'
-  | 'foundation' | 'foundation-lab' | 'distill-course' | 'distill-lab' | 'progress'
-  | 'expert-map' | 'expert-llm' | 'expert-image' | 'expert-agent' | 'expert-lab'
-  | 'agent-lab' | 'agent-book' | 'agent-book-lab' | 'agent-book-review'
-  | 'handbook' | 'review' | 'map' | 'llm' | 'image' | 'lab' | 'evaluation'
-
-type GoOptions = { module?: string; experiment?: string; node?: string; section?: string; chapter?: string; card?: string; case?: string }
-type RouteState = GoOptions & { page: Page }
-
-const pages = new Set<Page>([
-  'unified-map', 'routes', 'math-primer', 'decision-math', 'labs', 'reviews', 'strategy-cases', 'strategy-case', 'videos', 'foundation', 'foundation-lab', 'distill-course', 'distill-lab',
-  'progress', 'expert-map', 'expert-llm', 'expert-image', 'expert-agent', 'expert-lab', 'agent-lab', 'agent-book',
-  'agent-book-lab', 'agent-book-review', 'handbook', 'review', 'map', 'llm', 'image', 'lab', 'evaluation',
-])
-const routeKeys = ['module', 'experiment', 'node', 'section', 'chapter', 'card', 'case'] as const
+export type { Page } from './routeConfig'
 
 function readRoute(): RouteState {
   const params = new URLSearchParams(window.location.search)
-  const raw = params.get('page') as Page | null
-  const page = raw === 'map' ? 'unified-map' : raw && pages.has(raw) ? raw : 'unified-map'
   return {
-    page,
+    page: normalizePage(params.get('page')),
     module: params.get('module') || undefined,
     experiment: params.get('experiment') || undefined,
     node: params.get('node') || undefined,
@@ -88,23 +72,47 @@ export default function Business({ user }: BusinessProps) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [paletteTrigger, setPaletteTrigger] = useState<HTMLElement | null>(null)
   const searchButtonRef = useRef<HTMLButtonElement>(null)
+  const mainContentRef = useRef<HTMLElement>(null)
+  const routeRef = useRef(route)
+  const pendingPageNavigation = useRef<Page | null>(null)
 
   const writeRoute = useCallback((next: RouteState, replace = false) => {
     const url = new URL(window.location.href)
-    url.searchParams.set('page', next.page === 'map' ? 'unified-map' : next.page)
-    routeKeys.forEach((key) => next[key] ? url.searchParams.set(key, next[key]!) : url.searchParams.delete(key))
+    url.searchParams.set('page', next.page)
+    routeKeys.forEach((key) => {
+      const value = next[key]
+      if (value) url.searchParams.set(key, value)
+      else url.searchParams.delete(key)
+    })
     const search = url.searchParams.toString()
     window.history[replace ? 'replaceState' : 'pushState']({}, '', `${url.pathname}${search ? `?${search}` : ''}${url.hash}`)
   }, [])
 
   useEffect(() => {
     const initial = readRoute()
+    routeRef.current = initial
     setRoute(initial)
     writeRoute(initial, true)
-    const onPop = () => setRoute(readRoute())
+    const onPop = () => {
+      const next = readRoute()
+      pendingPageNavigation.current = null
+      routeRef.current = next
+      setRoute(next)
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [writeRoute])
+
+  useEffect(() => {
+    if (pendingPageNavigation.current !== route.page) return
+    pendingPageNavigation.current = null
+    const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    const frame = window.requestAnimationFrame(() => {
+      mainContentRef.current?.focus({ preventScroll: true })
+      window.scrollTo({ top: 0, behavior })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [route.page])
 
   useEffect(() => {
     const onShortcut = (event: KeyboardEvent) => {
@@ -125,12 +133,13 @@ export default function Business({ user }: BusinessProps) {
   }, [paletteOpen, paletteTrigger])
 
   const go = useCallback((rawPage: string, options: GoOptions = {}) => {
-    if (!pages.has(rawPage as Page)) return
-    const page = rawPage === 'map' ? 'unified-map' : rawPage as Page
+    if (!pages.has(rawPage)) return
+    const page = normalizePage(rawPage)
     const next: RouteState = { page, ...options }
+    if (page !== routeRef.current.page) pendingPageNavigation.current = page
+    routeRef.current = next
     setRoute(next)
     writeRoute(next)
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
   }, [writeRoute])
 
   const content = (() => {
@@ -170,7 +179,7 @@ export default function Business({ user }: BusinessProps) {
     <div className='model-lab expert-edition unified-edition learning-os-shell'>
       <a className='lo-skip-link' href='#main-content'>跳到主要内容</a>
       <ProductHeader page={route.page} go={go} searchButtonRef={searchButtonRef} onSearch={(trigger) => { setPaletteTrigger(trigger); setPaletteOpen(true) }} />
-      <main className='lab-main' id='main-content' tabIndex={-1}><Suspense fallback={<PageLoading />}>{content}</Suspense></main>
+      <main ref={mainContentRef} className='lab-main' id='main-content' tabIndex={-1}><Suspense fallback={<PageLoading />}>{content}</Suspense></main>
       <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 · AI 决策数学 · LLM · 图像生成 · Agent · Agent Book · 蒸馏 · 自进化 · 世界模型</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button onClick={() => go('routes')}><Route />查看学习路线</button></footer>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} go={go} returnFocus={paletteTrigger} />
     </div>

@@ -35,10 +35,16 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Check video catalog
-        run: pnpm run check:videos
+      - name: Lint
+        run: pnpm lint
+      - name: Run all tests
+        run: pnpm test
+      - name: Check static accessibility
+        run: pnpm check:a11y
       - name: Build site
         run: pnpm build
+      - name: Check bundle budgets
+        run: pnpm check:bundle
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

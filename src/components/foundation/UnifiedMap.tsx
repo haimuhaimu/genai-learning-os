@@ -68,7 +68,7 @@ export default function UnifiedMap({ go }: { go: Go }) {
           <h1>通过产品决策，<br /><em>学会理解 AI</em></h1>
           <p>Strategy-first AI Learning：先选择策略、权衡业务代价，再回到算法机制与反馈闭环。</p>
           <div className='lo-hero-actions'>
-            <button type='button' onClick={() => go('strategy-cases')}>进入策略案例地图<ArrowRight /></button>
+            <button type='button' onClick={() => go('strategy-cases')}>进入策略案例（Case）中心<ArrowRight /></button>
             <button type='button' className='is-secondary' onClick={() => go('routes')}>选择学习路线</button>
             <button type='button' className='is-secondary' onClick={() => go(next.page, next.options)}>继续上次学习</button>
           </div>
@@ -106,9 +106,9 @@ export default function UnifiedMap({ go }: { go: Go }) {
       <section className='lo-loop-section'>
         <header><span>四步学习闭环</span><h2>我们不只讲概念</h2><p>每个核心节点都要经过四次转换，才从“知道”变成“会判断”。</p></header>
         <div>{[
-          ['1', '理解', '建立机制直觉与边界'],
+          ['1', '浏览', '建立机制直觉与边界'],
           ['2', '手算', '算清关键变量与量级'],
-          ['3', '实验', '改变参数并观察结果'],
+          ['3', '进入实验', '改变参数并观察结果'],
           ['4', '评审', '用证据做上线判断'],
         ].map(([index, title, text]) => <article key={index}><span>{index}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
       </section>

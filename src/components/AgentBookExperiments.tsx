@@ -641,7 +641,7 @@ function PassAtKLab({ onDone }: { onDone: () => void }) {
               </button>
             </div>
           </div>
-          {feedback && (
+          {feedback ? (
             <div className='agent-book-callout' style={{ marginTop: 12 }}>
               <b>反馈：</b>
               {feedback.text}
@@ -649,7 +649,7 @@ function PassAtKLab({ onDone }: { onDone: () => void }) {
                 书中强调：veto（一票否决）要独立出来，不能被“高分”掩盖。
               </div>
             </div>
-          )}
+          ) : null}
         </section>
 
         <section className='agent-book-card'>
@@ -969,7 +969,7 @@ export default function AgentBookExperiments({ initialExperiment, go }: Props) {
             <div>
               <h2>{meta.title}</h2>
               <div className='agent-book-subtitle'>{meta.subtitle}</div>
-              <div className='agent-book-footnote'>关联章节：{meta.relatedChapters.join('、')}（完成实验会把这些章节标记为“已实验”）</div>
+              <div className='agent-book-footnote'>关联章节：{meta.relatedChapters.join('、')}（完成实验会把这些章节标记为“已进入实验”）</div>
             </div>
             <div className='agent-book-actions'>
               <button className='agent-book-action-btn primary' onClick={onDone}>

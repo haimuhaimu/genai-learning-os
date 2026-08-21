@@ -69,7 +69,7 @@ export default function AgentBookCourse({ initialChapter, go }: Props) {
   }, [initialChapter])
 
   useEffect(() => {
-    // 打开章节即视作“已理解”
+    // 打开章节即视作“已浏览”
     markProgress(chapterProgressKey(active), 1)
     updateQueryChapter(active)
     setMicroAnswer('')
@@ -151,7 +151,7 @@ export default function AgentBookCourse({ initialChapter, go }: Props) {
             <TrendingUp size={16} />
             <b>{Math.max(0, Math.min(4, chapterStage))}</b>/4 {stageLabel(chapterStage)}
           </span>
-          <button type='button' className='strategy-route-entry' onClick={() => go('strategy-case', { case: 'new-information' })}>该路线策略 Case<ArrowRight size={15} /></button>
+          <button type='button' className='strategy-route-entry' onClick={() => go('strategy-case', { case: 'new-information' })}>该路线策略案例<ArrowRight size={15} /></button>
         </div>
       </header>
 
@@ -290,7 +290,7 @@ export default function AgentBookCourse({ initialChapter, go }: Props) {
                 <div key={f.title} style={{ marginTop: 10 }}>
                   <b style={{ fontSize: 12, color: 'rgba(31,39,50,.86)' }}>{f.title}</b>
                   <div className='agent-book-formula'>{f.content}</div>
-                  {f.note && <div className='agent-book-footnote'>{f.note}</div>}
+                  {f.note ? <div className='agent-book-footnote'>{f.note}</div> : null}
                 </div>
               ))}
             </section>
@@ -310,7 +310,7 @@ export default function AgentBookCourse({ initialChapter, go }: Props) {
                 ))}
               </ul>
 
-              {chapter.microCalc && (
+              {chapter.microCalc ? (
                 <div className='agent-book-microcalc'>
                   <b>微型练习（用于进度“已手算”）：</b>
                   <div style={{ marginTop: 8, color: 'rgba(31,39,50,.82)', lineHeight: 1.6 }}>{chapter.microCalc.question}</div>
@@ -322,7 +322,7 @@ export default function AgentBookCourse({ initialChapter, go }: Props) {
                     <button className='agent-book-action-btn' onClick={checkMicroCalc}>校验并标记已手算</button>
                     <button className='agent-book-action-btn' onClick={() => setMicroAnswer('')}>清空</button>
                   </div>
-                  {microChecked && (
+                  {microChecked ? (
                     <div className='agent-book-footnote'>
                       <b>提示：</b>
                       {chapter.microCalc.hint}
@@ -330,9 +330,9 @@ export default function AgentBookCourse({ initialChapter, go }: Props) {
                       <b>步骤：</b>
                       {chapter.microCalc.steps.join(' → ')}
                     </div>
-                  )}
+                  ) : null}
                 </div>
-              )}
+              ) : null}
 
               <hr className='agent-book-divider' />
 

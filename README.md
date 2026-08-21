@@ -64,6 +64,8 @@
 | 自进化（前沿探索） | evaluator 是否可信、何时停手 | [Evaluator Trust](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=evaluator-trust) |
 | 世界模型（前沿探索） | 仿真、LLM 推演与真实反馈如何取舍 | [Simulator vs Reality](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=simulator-vs-reality) |
 
+课程深度练习已完成三轮扩展：14 个 LLM / 图像章节加入先修检查、算一遍与迁移模板；Self-Evolving / World Model 案例加入可计算证据、停手条件与采样动作；13 个 Expert / Agent / Distill 模块加入 Decision Brief（决策简报）练习。
+
 > 自进化与世界模型仍在早期。本项目把它们作为有边界的探索路线，不把研究方向描述为成熟生产方案。
 
 ## 为谁而做
@@ -108,6 +110,17 @@ pnpm run typecheck:case-example
 node --test
 git diff --check
 ```
+
+### 自动化回归
+
+```bash
+pnpm ci:check
+pnpm test
+pnpm check:a11y
+pnpm check:bundle
+```
+
+CI 会在 Pages 部署前执行自动化回归；当前全量测试共 79 项，并拦截无障碍与产物体积回退。
 
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 

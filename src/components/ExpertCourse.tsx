@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowRight, BarChart3, BookOpenCheck, Boxes, CircleHelp, FlaskConical, Gauge, GitCompareArrows, ScrollText, Sigma } from 'lucide-react'
 import type { ExpertModule, ExpertTrack } from '../expertData'
+import DecisionBriefPractice from './course/DecisionBriefPractice'
 
 const icons = [Boxes, GitCompareArrows, Sigma, BarChart3]
 
@@ -38,7 +39,7 @@ export default function ExpertCourse({ modules, track, initialModule, onOpenLab,
         <span>{track === 'llm' ? 'EXPERT TRACK · LLM' : 'EXPERT TRACK · IMAGE'}</span>
         <h2>{track === 'llm' ? '模型系统架构' : '生成系统架构'}</h2>
         <p>{modules.length} 个决策模块 · 生产级评审框架</p>
-        <button type='button' className='strategy-route-entry' onClick={onOpenStrategyCase}>该路线策略 Case<ArrowRight /></button>
+        <button type='button' className='strategy-route-entry' onClick={onOpenStrategyCase}>该路线策略案例<ArrowRight /></button>
       </div>
       <div className='expert-module-list'>
         {modules.map((item, index) => <button key={item.id} className={index === active ? 'active' : ''} onClick={() => changeModule(index)}>
@@ -91,6 +92,7 @@ export default function ExpertCourse({ modules, track, initialModule, onOpenLab,
           <header><ScrollText /><span>案例推演</span></header><p>{module.caseStudy}</p>
           <button onClick={() => onOpenLab(track === 'llm' ? (module.id === 'rag-agent' ? 'rag-doctor' : module.id === 'alignment' ? 'alignment' : 'kv-cost') : (module.id === 'control' ? 'control-selector' : 'diffusion-flow'))}>进入可操作实验<ArrowRight /></button>
         </section>
+        {module.practice ? <DecisionBriefPractice key={module.practice.id} practice={module.practice} /> : null}
       </div>
     </article>
   </section>

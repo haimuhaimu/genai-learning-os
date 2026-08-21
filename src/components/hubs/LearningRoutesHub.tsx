@@ -1,9 +1,9 @@
-import { ArrowRight, BookOpen, BookOpenText, BrainCircuit, Calculator, Compass, FlaskConical, GitBranch, Image, Network, Sigma, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpen, BookOpenText, BrainCircuit, Calculator, Compass, FlaskConical, GitBranch, Home, Image, Network, RefreshCw, Sigma, Sparkles } from 'lucide-react'
 
 type Go = (page: string, options?: Record<string, string>) => void
 
 const primerRoute = {
-  title: '数学符号扫盲', tag: '数学零层', icon: BookOpenText, page: 'math-primer',
+  title: '数学零层（Math Primer）', tag: '符号扫盲', icon: BookOpenText, page: 'math-primer',
   who: '第一次看人工智能（Artificial Intelligence，AI）公式，或想先补齐符号直觉的人', gain: '用人话看懂求和符号 Σ、概率、向量、梯度、损失函数（Loss）、熵与 KL 散度',
   terms: '先把英文和缩写换成中文，再学习它们如何影响业务判断。',
 }
@@ -38,7 +38,19 @@ const frontierRoutes = [
 export default function LearningRoutesHub({ go }: { go: Go }) {
   const mainline = routes.filter((route) => !route.branch)
   const branch = routes.find((route) => route.branch)
-  if (!branch) return null
+  if (!branch) {
+    return (
+      <section className='lo-hub-page lo-routes-page'>
+        <div className='lo-routes-fallback' role='alert'>
+          <Compass aria-hidden='true' />
+          <span>学习路线暂不可用</span>
+          <h1>路线数据没有完整加载</h1>
+          <p>你可以先回到首页选择其他入口，或刷新页面重新载入路线数据。</p>
+          <div><button type='button' onClick={() => go('unified-map')}><Home aria-hidden='true' />回到首页</button><button type='button' className='is-quiet' onClick={() => window.location.reload()}><RefreshCw aria-hidden='true' />刷新页面</button></div>
+        </div>
+      </section>
+    )
+  }
 
   const BranchIcon = branch.icon
   const PrimerIcon = primerRoute.icon
@@ -48,7 +60,7 @@ export default function LearningRoutesHub({ go }: { go: Go }) {
       <header className='lo-routes-intro'>
         <div><span>学习路线</span><h1>先选方向，<br /><em>再进入内容</em></h1></div>
         <p>七条基础与应用路线覆盖算法机制、AI 决策数学、生成模型与智能体（AI Agent）工程；另有两条前沿探索路线。每条路线都连接课程、实验和评审，不需要在二十多个页面里猜入口。</p>
-        <button type='button' className='strategy-route-entry' onClick={() => go('strategy-cases')}>进入策略案例地图<ArrowRight /></button>
+        <button type='button' className='strategy-route-entry' onClick={() => go('strategy-cases')}>进入策略案例（Case）中心<ArrowRight /></button>
       </header>
       <div className='lo-routes-layout'>
         <section className='lo-route-mainline' aria-label='建议学习主线'>
@@ -57,7 +69,7 @@ export default function LearningRoutesHub({ go }: { go: Go }) {
             <article className='lo-route-chapter'>
               <div className='lo-route-index'><span>{primerRoute.tag}</span><PrimerIcon aria-hidden='true' /></div>
               <div className='lo-route-copy'><header><h3>{primerRoute.title}</h3><i>建议起点</i></header><dl><div><dt>适合谁</dt><dd>{primerRoute.who}</dd></div><div><dt>你将获得</dt><dd>{primerRoute.gain}</dd></div></dl><p className='lo-route-terms'><b>黑话翻译</b>{primerRoute.terms}</p></div>
-              <footer><button type='button' aria-label='进入数学零层：数学符号扫盲' onClick={() => go(primerRoute.page)}>先扫盲<ArrowRight aria-hidden='true' /></button></footer>
+              <footer><button type='button' aria-label='进入数学零层（Math Primer）' onClick={() => go(primerRoute.page)}>先扫盲<ArrowRight aria-hidden='true' /></button></footer>
             </article>
             {mainline.map(({ icon: Icon, ...route }, index) => (
               <article key={route.title} className='lo-route-chapter'>

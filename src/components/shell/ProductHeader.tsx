@@ -8,8 +8,8 @@ type Go = (page: string, options?: Record<string, string>) => void
 const navItems = [
   { id: 'unified-map', label: '首页', icon: Home },
   { id: 'routes', label: '学习路线', icon: Route },
-  { id: 'strategy-cases', label: '策略案例', icon: Target },
-  { id: 'videos', label: '参考视频', icon: Video },
+  { id: 'strategy-cases', label: '策略案例（Case）', icon: Target },
+  { id: 'videos', label: '参考视频库（可选）', icon: Video },
   { id: 'labs', label: '实验室', icon: FlaskConical },
   { id: 'reviews', label: '评审', icon: ShieldCheck },
   { id: 'progress', label: '进度', icon: TrendingUp },

@@ -285,3 +285,14 @@ export const paperResources = validatePaperCatalog([
     readQuestion: '我会用什么真实对照实验测量模拟器偏差与可接受的使用边界？',
   },
 ] satisfies PaperResource[])
+
+
+export function getPapersForCase(caseId: CaseId) {
+  return paperResources
+    .filter((paper) => paper.relatedCaseIds.includes(caseId))
+    .sort((left, right) => left.year - right.year || left.id.localeCompare(right.id))
+}
+
+export function getPaperById(paperId: string) {
+  return paperResources.find((paper) => paper.id === paperId)
+}

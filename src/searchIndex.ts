@@ -5,6 +5,7 @@ import { foundationNodes } from './foundationData'
 import { flagshipCaseIds, strategyCaseCatalog } from './components/strategy/caseCatalog'
 import { videoResources } from './resources/videoCatalog'
 import { paperResources } from './resources/paperCatalog'
+import { paperLabs } from './components/paperLabs/paperLabsRegistry'
 
 export type SearchDestination = {
   id: string
@@ -24,6 +25,7 @@ const topLevel: SearchDestination[] = [
   ['strategy-cases', '策略案例（Case）中心', 'Strategy-first：先做产品决策，再看证据、业务代价与反馈闭环', '策略 决策 case 证据 strategy-first product decisions trade-offs feedback loops 策略案例 业务代价', 'strategy-cases'],
   ['videos', '参考视频库（可选）', '先做策略决策，再按卡点补机制', '视频 课程 参考资源 机制 决策', 'videos'],
   ['papers', '核心论文讲解库', '30 秒看懂、关键机制、产品视角与带回课程的问题', '论文 paper arxiv 讲解 精读 阅读路线 推荐系统 Transformer LLM 扩散 多模态 Agent Harness 世界模型', 'papers'],
+  ['paper-labs', '论文机制复现实验室', '五个确定性浏览器实验：Transformer、Wide & Deep、DDPM、ReAct、DreamerV3', '论文实验 paper lab 机制复现 注意力 推荐 去噪 Agent 世界模型', 'paper-lab'],
   ['labs', '实验室', '全部互动实验目录', '实验 lab', 'labs'],
   ['reviews', '评审中心', '方案、上线与可靠性评审', 'rubric veto', 'reviews'],
   ['co-build', '学习者共建中心', '从 1 分钟反馈到深度 Strategy Case，共建可验证的学习体验', '共建 贡献 good first issue Strategy Case 内容建议 工程维护', 'co-build'],
@@ -148,7 +150,17 @@ const paperEntries: SearchDestination[] = paperResources.map((paper) => ({
   page: 'papers',
 }))
 
+const paperLabEntries: SearchDestination[] = paperLabs.map((lab) => ({
+  id: `paper-lab-${lab.paperId}`,
+  group: '论文机制实验',
+  title: lab.shortTitle,
+  subtitle: lab.objective,
+  keywords: [lab.paperId, lab.eyebrow, lab.conclusion, '机制复现', '确定性实验'],
+  page: 'paper-lab',
+  options: { paper: lab.paperId },
+}))
+
 export const searchIndex = [
-  ...topLevel, ...strategyCases, ...videoEntries, ...paperEntries, ...routes, ...foundation, ...foundationLabs, ...bookChapters, ...bookLabs,
+  ...topLevel, ...strategyCases, ...videoEntries, ...paperEntries, ...paperLabEntries, ...routes, ...foundation, ...foundationLabs, ...bookChapters, ...bookLabs,
   ...distillCourses, ...distillLabs, ...agentCourses, ...agentLabs, ...reviewAndManual,
 ]

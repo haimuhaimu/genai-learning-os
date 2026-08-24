@@ -10,6 +10,7 @@ export const canonicalPages = [
   'strategy-case',
   'videos',
   'papers',
+  'paper-lab',
   'foundation',
   'foundation-lab',
   'distill-course',
@@ -48,7 +49,7 @@ export const pages: ReadonlySet<string> = new Set([
 
 const canonicalPageSet: ReadonlySet<string> = new Set(canonicalPages)
 
-export const routeKeys = ['module', 'experiment', 'node', 'section', 'chapter', 'card', 'case'] as const
+export const routeKeys = ['module', 'experiment', 'node', 'section', 'chapter', 'card', 'case', 'paper'] as const
 export const feedbackRouteKeys = ['page', ...routeKeys] as const
 export type RouteKey = typeof routeKeys[number]
 export type GoOptions = Partial<Record<RouteKey, string>>

@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { saveStrategyEvidence } from '../../strategyEvidence'
 import { getCaseVideoSelection } from '../../resources/videoCatalog'
+import { getPapersForCase, type PaperResource } from '../../resources/paperCatalog'
+import { touchResource } from '../../resourceLoop'
 import { getStrategyCase, strategyCaseRegistry } from './caseRegistry'
 import DecisionSummaryPanel from './DecisionSummaryPanel'
 import EvidencePanel from './EvidencePanel'
 import StrategyCaseShell from './StrategyCaseShell'
 import StrategyControlsPanel from './StrategyControlsPanel'
 import StrategyVideoPanel from './StrategyVideoPanel'
+import StrategyPaperPanel from './StrategyPaperPanel'
+import ResourceLearningLoop from './ResourceLearningLoop'
 import type { CaseId } from './caseCatalog'
 import type { ControlValue, ControlValues, RouteId } from './types'
 
@@ -34,7 +38,10 @@ export default function StrategyCaseRunner({ caseId, go }: Props) {
   const evidence = spec.compute(controls)
   const summary = spec.summarize(controls, evidence)
   const metrics = evidence.metrics.map(({ id, label, display, value }) => ({ id, label, display, value }))
-  const videoSelection = getCaseVideoSelection(spec.id as CaseId)
+  const caseKey = spec.id as CaseId
+  const videoSelection = getCaseVideoSelection(caseKey)
+  const papers = getPapersForCase(caseKey).slice(0, 3)
+  const recordPaperTouch = (paper: PaperResource) => touchResource(caseKey, { type: 'paper', id: paper.id })
   const routeCases = strategyCaseRegistry.filter((item) => item.routeId === spec.routeId && item.spec)
   const currentCaseIndex = routeCases.findIndex((item) => item.id === spec.id)
   const nextCase = currentCaseIndex >= 0 ? routeCases[currentCaseIndex + 1] : undefined
@@ -66,7 +73,10 @@ export default function StrategyCaseRunner({ caseId, go }: Props) {
       <StrategyControlsPanel schema={spec.controls} values={controls} onChange={update} />
       <EvidencePanel fixedDataTitle={spec.fixedDataTitle} fixedDataRows={spec.fixedDataRows} evidence={evidence} />
       <DecisionSummaryPanel summary={summary} onSave={saveSummary} onBackToCenter={() => go('strategy-cases')} nextAction={nextAction} />
-      <StrategyVideoPanel videos={videoSelection.videos} remaining={videoSelection.remaining} onViewAll={() => go('videos')} />
+      <ResourceLearningLoop caseId={caseKey} question={spec.question}>
+        <StrategyVideoPanel videos={videoSelection.videos} remaining={videoSelection.remaining} onViewAll={() => go('videos')} onOpen={(video) => touchResource(caseKey, { type: 'video', id: video.id })} />
+        <StrategyPaperPanel papers={papers} onOpen={recordPaperTouch} onOpenLab={(paper) => { recordPaperTouch(paper); go('paper-lab', { paper: paper.id }) }} onViewAll={() => go('papers')} />
+      </ResourceLearningLoop>
     </StrategyCaseShell>
   )
 }

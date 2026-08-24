@@ -37,7 +37,7 @@ function FilterGroup<T extends string>({ label, value, options, onChange }: {
   )
 }
 
-export default function PaperLibrary() {
+export default function PaperLibrary({ go }: { go: (page: string, options?: Record<string, string>) => void }) {
   const [area, setArea] = useState<FilterValue<PaperArea>>('all')
   const [level, setLevel] = useState<FilterValue<PaperLevel>>('all')
   const [kind, setKind] = useState<FilterValue<PaperKind>>('all')
@@ -80,7 +80,7 @@ export default function PaperLibrary() {
       </section>
 
       <p className='paper-library-count' aria-live='polite'>找到 {visible.length} 篇论文 · 预计精读 {visible.reduce((sum, paper) => sum + paper.readingMinutes, 0)} 分钟</p>
-      {visible.length ? <div className='paper-card-grid'>{visible.map((paper) => <PaperResourceCard key={paper.id} paper={paper} />)}</div> : (
+      {visible.length ? <div className='paper-card-grid'>{visible.map((paper) => <PaperResourceCard key={paper.id} paper={paper} onOpenLab={() => go('paper-lab', { paper: paper.id })} />)}</div> : (
         <div className='paper-library-empty'><BookMarked aria-hidden='true' /><h2>没有符合当前组合的论文</h2><p>放宽一个筛选条件，或从精选阅读路线重新开始。</p></div>
       )}
     </section>

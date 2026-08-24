@@ -19,7 +19,7 @@ const actionLabels: Record<VideoResource['sourceType'], string> = {
   report: '打开报道 ↗',
 }
 
-export default function VideoResourceCard({ resource }: { resource: VideoResource }) {
+export default function VideoResourceCard({ resource, onOpen }: { resource: VideoResource; onOpen?: () => void }) {
   const actionLabel = actionLabels[resource.sourceType]
 
   return (
@@ -41,7 +41,7 @@ export default function VideoResourceCard({ resource }: { resource: VideoResourc
         <div className='video-return-question'><dt>看完回来想一想</dt><dd>{resource.returnQuestion}</dd></div>
       </dl>
       <div className='video-resource-actions'>
-        <ExternalLink href={resource.url} accessibleName={`${actionLabel.replace(' ↗', '')}：${resource.title}`}>
+        <ExternalLink href={resource.url} onClick={onOpen} accessibleName={`${actionLabel.replace(' ↗', '')}：${resource.title}`}>
           {actionLabel}
         </ExternalLink>
         {resource.contentOrigin === '中文译制' && resource.originalSourceUrl ? (

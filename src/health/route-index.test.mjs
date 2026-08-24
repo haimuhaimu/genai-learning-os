@@ -11,6 +11,7 @@ import {
 } from '../routeConfig.ts'
 import { strategyCaseCatalog } from '../components/strategy/caseCatalog.ts'
 import { paperResources } from '../resources/paperCatalog.ts'
+import { getPaperLab, paperLabs } from '../components/paperLabs/paperLabsRegistry.ts'
 import { searchIndex } from '../searchIndex.ts'
 
 const businessSource = await readFile(new URL('../business.tsx', import.meta.url), 'utf8')
@@ -23,7 +24,7 @@ const canonicalPageSet = new Set(canonicalPages)
 test('页面白名单、路由参数与渲染分发保持一致', () => {
   assert.deepEqual(pages, new Set([...canonicalPages, ...aliases]))
   assert.deepEqual(dispatchedPages, canonicalPageSet)
-  assert.deepEqual(routeKeys, ['module', 'experiment', 'node', 'section', 'chapter', 'card', 'case'])
+  assert.deepEqual(routeKeys, ['module', 'experiment', 'node', 'section', 'chapter', 'card', 'case', 'paper'])
   assert.match(
     businessSource,
     /return\s*<UnifiedMap\b[^>]*\bgo\s*=\s*\{\s*go\s*\}[^>]*\/\s*>/,
@@ -67,6 +68,18 @@ test('论文讲解库已接入路由，且每篇论文的标题、作者、方�
       assert.ok(searchable.includes(expected), `${paper.id} 搜索索引缺少：${expected}`)
     }
   }
+})
+
+test('论文实验深链、注册表和未知 ID 回退保持健康', () => {
+  assert.ok(canonicalPageSet.has('paper-lab'))
+  assert.ok(dispatchedPages.has('paper-lab'))
+  assert.equal(paperLabs.length, 5)
+  for (const lab of paperLabs) {
+    assert.ok(paperResources.some((paper) => paper.id === lab.paperId), `${lab.paperId} 必须对应 Catalog 论文`)
+    const entry = searchIndex.find((candidate) => candidate.id === `paper-lab-${lab.paperId}`)
+    assert.deepEqual(entry?.options, { paper: lab.paperId })
+  }
+  assert.equal(getPaperLab('unknown-paper').paperId, paperLabs[0].paperId)
 })
 
 test('历史别名和未知 page 通过共享配置统一归一化', () => {

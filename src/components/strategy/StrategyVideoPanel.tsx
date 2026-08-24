@@ -6,9 +6,10 @@ type Props = {
   videos: readonly VideoResource[]
   remaining?: number
   onViewAll?: () => void
+  onOpen?: (video: VideoResource) => void
 }
 
-export default function StrategyVideoPanel({ videos, remaining = 0, onViewAll }: Props) {
+export default function StrategyVideoPanel({ videos, remaining = 0, onViewAll, onOpen }: Props) {
   if (!videos.length) return null
 
   return (
@@ -21,7 +22,7 @@ export default function StrategyVideoPanel({ videos, remaining = 0, onViewAll }:
           <p>观看不是完成进度。请带着当前案例的决策问题选择资源。</p>
         </header>
         <div className='video-card-grid'>
-          {videos.map((video) => <VideoResourceCard key={video.id} resource={video} />)}
+          {videos.map((video) => <VideoResourceCard key={video.id} resource={video} onOpen={() => onOpen?.(video)} />)}
         </div>
         {remaining > 0 && onViewAll ? (
           <div className='strategy-video-more'>

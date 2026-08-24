@@ -20,6 +20,7 @@ const navItems = [
 
 function navSection(page: string): HeaderPage {
   if (page === 'strategy-case') return 'strategy-cases'
+  if (page === 'paper-lab') return 'papers'
   if (['foundation-lab', 'expert-lab', 'agent-lab', 'agent-book-lab', 'distill-lab', 'lab'].includes(page)) return 'labs'
   if (['review', 'evaluation', 'agent-book-review'].includes(page)) return 'reviews'
   if (['foundation', 'math-primer', 'decision-math', 'distill-course', 'expert-map', 'expert-llm', 'expert-image', 'expert-agent', 'agent-book', 'llm', 'image'].includes(page)) return 'routes'

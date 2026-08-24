@@ -10,7 +10,7 @@ Most tutorials explain how models run. This project asks you to make a product s
 
 ## Learning feedback center
 
-A Feedback entry is available in both the desktop header and mobile menu. The center collects learning gain, difficulty/depth, workplace transfer, the biggest blocker, and suggestions, then creates a prefilled GitHub Issue or copies Markdown. Route context is off by default; when explicitly enabled, it is limited to the `page/module/experiment/node/section/chapter/card/case` allowlist defined by `routeConfig`. It never reads or sends local progress, strategy summaries, browser UA, or other `localStorage` data. Reaching the reviewed stage or saving a strategy summary shows one low-distraction nudge instead of opening the modal automatically.
+A Feedback entry is available in both the desktop header and mobile menu. The center collects learning gain, difficulty/depth, workplace transfer, the biggest blocker, and suggestions, then creates a prefilled GitHub Issue or copies Markdown. Route context is off by default; when explicitly enabled, it is limited to the `page/module/experiment/node/section/chapter/card/case/paper` allowlist defined by `routeConfig`. It never reads or sends local progress, strategy summaries, resource-loop responses, browser UA, or other `localStorage` data. Reaching the reviewed stage or saving a strategy summary shows one low-distraction nudge instead of opening the modal automatically.
 
 ## Learner co-build hub
 
@@ -51,6 +51,12 @@ Every Strategy Case follows the same seven-part chain:
 5. **Feedback visibility** — state what the strategy reveals and hides.
 6. **Next training loop** — turn failure slices into data or system actions.
 7. **Strategy summary** — produce a conclusion that can be reviewed and iterated.
+
+## Resource learning loop and paper mechanism labs
+
+Every unified Strategy Case now supports an **initial judgment → user-opened resource → review judgment → side-by-side comparison** loop. A resource is marked as “touched” only after the learner actively opens it; this never means watched, read, or mastered. Responses and touch timestamps are isolated by case in the current browser under `genai-resource-loop-v1`. Learners can clear only the current case, and unavailable `localStorage` safely falls back to session state without advancing existing progress.
+
+The [paper mechanism labs](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) provide five deterministic, backend-free experiments for Transformer, Wide & Deep, DDPM, ReAct, and DreamerV3. Each shows adjustable variables, live results, a mechanism explanation, a product/strategy takeaway, and simplification boundaries. They demonstrate core mechanisms rather than reproducing full paper training results or production-model performance.
 
 ## Nine learning tracks
 

@@ -1,7 +1,15 @@
 import ExternalLink from '../shell/ExternalLink'
+import { hasPaperLab } from '../paperLabs/paperLabsRegistry'
 import type { PaperResource } from '../../resources/paperCatalog'
 
-export default function PaperResourceCard({ paper }: { paper: PaperResource }) {
+type Props = {
+  paper: PaperResource
+  onOpen?: () => void
+  onOpenLab?: () => void
+}
+
+export default function PaperResourceCard({ paper, onOpen, onOpenLab }: Props) {
+  const labAvailable = hasPaperLab(paper.id)
   return (
     <article className='paper-resource-card'>
       <header>
@@ -16,7 +24,10 @@ export default function PaperResourceCard({ paper }: { paper: PaperResource }) {
         <div><dt>产品视角</dt><dd>{paper.productLens}</dd></div>
         <div className='paper-read-question'><dt>带回课程的问题</dt><dd>{paper.readQuestion}</dd></div>
       </dl>
-      <ExternalLink href={paper.url} accessibleName={`阅读原论文：${paper.title}`}>阅读原论文 ↗</ExternalLink>
+      <div className='paper-resource-actions'>
+        <ExternalLink href={paper.url} onClick={onOpen} accessibleName={`阅读原论文：${paper.title}`}>阅读原论文 ↗</ExternalLink>
+        {labAvailable && onOpenLab ? <button type='button' onClick={onOpenLab}>交互复现 →</button> : null}
+      </div>
     </article>
   )
 }

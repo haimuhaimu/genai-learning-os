@@ -2,6 +2,16 @@
 
 感谢你帮助改进 GenAI Learning OS。提交代码或内容即表示你同意按本仓库的 Apache License 2.0 提供贡献，并遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
 
+## 从学习者共建中心开始
+
+不确定从哪里开始时，先打开[学习者共建中心](https://haimuhaimu.github.io/genai-learning-os/?page=co-build)，按可投入时间选择路径：
+
+- **1 分钟反馈**：使用站内反馈，或提交 [内容建议](.github/ISSUE_TEMPLATE/content_suggestion.yml) / [Bug 报告](.github/ISSUE_TEMPLATE/bug_report.yml)。
+- **30 分钟内容贡献**：推荐[参考视频](.github/ISSUE_TEMPLATE/video_resource.yml)、修正文案或提议[工程维护](.github/ISSUE_TEMPLATE/maintenance.yml)。
+- **深度共建**：通过 [Strategy Case 表单](.github/ISSUE_TEMPLATE/strategy_case.yml)先提案，再按作者指南实现。
+
+首次贡献建议先从带有 [`good first issue`](https://github.com/haimuhaimu/genai-learning-os/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22) 标签、验收标准明确的任务开始。认领前可在 Issue 留言说明计划；若任务边界不清楚，先提问，不需要直接提交完整实现。
+
 ## 优先贡献：Strategy Case
 
 Strategy Case 从业务目标和产品决策出发，让学习者权衡固定证据、业务代价与反馈闭环，再形成下一轮训练动作。
@@ -40,6 +50,10 @@ pnpm dev
 3. 不提交 `node_modules`、`dist`、日志、缓存、编辑器配置或任何 `.env*` 文件。
 4. Pull Request 说明动机、用户可见变化和验证方式；视觉变化附真实页面截图。
 
+## 贡献者署名
+
+Pull Request 请填写希望公开展示的**贡献者显示名**；若留空，默认使用 GitHub 用户名。可以选择提供 GitHub Profile 或其他公开**个人主页**，主页留空不影响评审。合并后，维护者可在相关内容或发布记录中保留这组署名；如需更正，请在对应 PR 中说明。
+
 ## 视觉与可访问性
 
 - 保持清晰的信息层级，避免无意义装饰和大面积空白。
@@ -50,12 +64,8 @@ pnpm dev
 ## 提交前检查
 
 ```bash
-pnpm run lint
-pnpm run build
-pnpm run check:videos
-pnpm run typecheck:case-example
-node --test
+pnpm ci:check
 git diff --check
 ```
 
-Lint 不应出现 error。手动打开受影响的查询参数深链，检查控制台、关键交互与布局。Strategy Case 还必须验证默认值、边界、确定性、有限非负输出和核心教学关系。
+`ci:check` 会统一执行 lint、测试、静态无障碍检查、构建与产物体积检查。手动打开受影响的查询参数深链，检查控制台、关键交互与 320px 布局。Strategy Case 还必须验证默认值、边界、确定性、有限非负输出和核心教学关系。

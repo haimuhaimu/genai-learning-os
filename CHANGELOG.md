@@ -6,6 +6,10 @@
 
 ### Added
 
+- 新增学习者共建中心：提供 1 分钟反馈、30 分钟内容贡献、深度 Strategy Case 三层路径，以及首次贡献四步、署名机制、Roadmap 与公开边界。
+- 新增工程维护 Issue Form，并将内容建议、参考视频、Bug、Strategy Case、维护任务、`good first issue` 与贡献文档接入可直接行动的入口。
+- Header 桌面端与移动端新增“共建”，Footer 增加弱入口，站内搜索支持“共建 / 贡献 / good first issue / Strategy Case”。
+
 - 新增全站学习反馈中心：桌面与移动入口、可访问弹窗、结构化学习反馈、预填 GitHub Issue 与三级复制降级。
 - 反馈默认不附带上下文；可选路由严格使用 `routeConfig` 白名单，不读取本地进度、策略摘要或浏览器 UA。
 - 达到“已评审”或成功保存策略摘要后新增单次、低干扰反馈提醒，不自动弹出反馈表单。
@@ -21,7 +25,7 @@
 - 为 14 个 LLM / 图像章节新增先修检查、算一遍与迁移模板，形成从准备、手算到场景迁移的深度练习链路。
 - 为 Self-Evolving / World Model 案例新增可计算证据、明确的停手条件与下一轮采样动作。
 - 为 13 个 Expert / Agent / Distill 模块新增 Decision Brief（决策简报）练习，要求输出决策、指标、闸门与下一步。
-- 扩展自动化回归门禁，统一测试入口现覆盖 91 项测试，并保留路由、Strategy Case catalog、a11y 与 bundle 检查。
+- 扩展自动化回归门禁，统一测试入口现覆盖 92 项测试，并保留路由、Strategy Case catalog、a11y 与 bundle 检查。
 
 ### Fixed
 

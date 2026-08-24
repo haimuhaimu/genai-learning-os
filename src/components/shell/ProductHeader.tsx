@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { ArrowUpRight, BookOpen, FlaskConical, Home, Menu, MessageCircle, Route, Search, ShieldCheck, Target, TrendingUp, Video, X } from 'lucide-react'
+import { ArrowUpRight, BookOpen, FlaskConical, HandHeart, Home, Menu, MessageCircle, Route, Search, ShieldCheck, Target, TrendingUp, Video, X } from 'lucide-react'
 import ShareButton from './ShareButton'
 
-export type HeaderPage = 'unified-map' | 'routes' | 'labs' | 'reviews' | 'strategy-cases' | 'videos' | 'progress' | 'handbook'
+export type HeaderPage = 'unified-map' | 'routes' | 'labs' | 'reviews' | 'co-build' | 'strategy-cases' | 'videos' | 'progress' | 'handbook'
 type Go = (page: string, options?: Record<string, string>) => void
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { id: 'videos', label: '参考视频库（可选）', icon: Video },
   { id: 'labs', label: '实验室', icon: FlaskConical },
   { id: 'reviews', label: '评审', icon: ShieldCheck },
+  { id: 'co-build', label: '共建', icon: HandHeart },
   { id: 'progress', label: '进度', icon: TrendingUp },
   { id: 'handbook', label: '手册', icon: BookOpen },
 ] as const
@@ -60,7 +61,7 @@ export default function ProductHeader({ page, go, onSearch, onFeedback, searchBu
       </button>
       <nav className={`lo-primary-nav ${open ? 'is-open' : ''}`} aria-label='主导航'>
         {navItems.map(({ id, label, icon: Icon }) => (
-          <button key={id} type='button' className={current === id ? 'is-active' : ''} aria-current={current === id ? 'page' : undefined} onClick={() => navigate(id)}>
+          <button key={id} type='button' data-nav-id={id} aria-label={label} className={current === id ? 'is-active' : ''} aria-current={current === id ? 'page' : undefined} onClick={() => navigate(id)}>
             <Icon aria-hidden='true' /><span>{label}</span>
           </button>
         ))}

@@ -42,6 +42,17 @@ test('searchIndex 的 page 目标全部可渲染且不使用历史别名', () =>
   }
 })
 
+test('共建中心已接入顶级路由、渲染分发与搜索关键词', () => {
+  assert.ok(canonicalPageSet.has('co-build'))
+  assert.ok(dispatchedPages.has('co-build'))
+  const entry = searchIndex.find((candidate) => candidate.page === 'co-build')
+  assert.ok(entry, '共建中心必须进入搜索索引')
+  const searchable = [entry.title, entry.subtitle, ...entry.keywords].join(' ')
+  for (const keyword of ['共建', '贡献', 'good first issue', 'Strategy Case']) {
+    assert.ok(searchable.includes(keyword), `共建中心必须可通过“${keyword}”搜索`)
+  }
+})
+
 test('历史别名和未知 page 通过共享配置统一归一化', () => {
   for (const [alias, target] of Object.entries(pageAliases)) {
     assert.equal(normalizePage(alias), target)

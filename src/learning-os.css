@@ -468,6 +468,14 @@
 .lo-footer p { margin: 0 auto; color: #d4def2; font-size: 12px; }
 .lo-footer button { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid #8ba6e9; border-radius: 999px; color: #f7f9fd; background: transparent; font-size: 12px; cursor: pointer; white-space: nowrap; }
 .lo-footer button svg { width: 15px; }
+.lo-footer .lo-footer-co-build { min-height: 32px; padding: 4px 7px; border-color: transparent; color: #cbd7ef; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.lo-footer .lo-footer-co-build:hover { color: #fff; }
+
+@media (max-width: 1450px) and (min-width: 901px) {
+  .lo-primary-nav button { padding: 8px; }
+  .lo-primary-nav button[data-nav-id='strategy-cases'] span,
+  .lo-primary-nav button[data-nav-id='videos'] span { display: none; }
+}
 
 @media (max-width: 1180px) {
   .lo-product-header { grid-template-columns: auto minmax(390px, 1fr) auto clamp(32px, 5vw, 64px); }

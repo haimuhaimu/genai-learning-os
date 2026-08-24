@@ -2,7 +2,7 @@
 
 **Learn AI through product decisions, not formulas first.**
 
-[Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
+[Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Join the learner co-build hub](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
 
 **9 learning tracks · 9 representative Strategy Cases + 8 AI decision-math exercises · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
 
@@ -11,6 +11,10 @@ Most tutorials explain how models run. This project asks you to make a product s
 ## Learning feedback center
 
 A Feedback entry is available in both the desktop header and mobile menu. The center collects learning gain, difficulty/depth, workplace transfer, the biggest blocker, and suggestions, then creates a prefilled GitHub Issue or copies Markdown. Route context is off by default; when explicitly enabled, it is limited to the `page/module/experiment/node/section/chapter/card/case` allowlist defined by `routeConfig`. It never reads or sends local progress, strategy summaries, browser UA, or other `localStorage` data. Reaching the reviewed stage or saving a strategy summary shows one low-distraction nudge instead of opening the modal automatically.
+
+## Learner co-build hub
+
+[`?page=co-build`](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) offers three contribution paths: one-minute feedback, a 30-minute content contribution, or a deeper Strategy Case. Each path links directly to in-site feedback, Issue Forms, the `good first issue` search, or authoring guidance. First-time contributors can follow four steps: choose a scoped problem, align with the guide, make and validate the smallest change, then open a reviewable PR. Contributors may provide a public display name and optional homepage in the PR template. The Roadmap does not promise dates, and public Issues or PRs must not include real account data, private logs, credentials, internal domains, or undisclosed vulnerabilities.
 
 ![Desktop view of the GenAI Learning OS Strategy Case Center showing the Strategy-first positioning, shared learning protocol, route filters, featured labels, and cards for Foundations, RAG, Image Generation, and refund tooling](docs/assets/strategy-case-center.png)
 
@@ -111,11 +115,12 @@ All formulas, estimates, charts, and outputs are mechanism-level teaching simula
 ├── docs/CASE_AUTHORING.md          # Strategy Case authoring protocol
 ├── docs/VIDEO_CONTRIBUTING.md      # Curated resource contribution guide
 ├── examples/strategy-case/         # Typed example, intentionally not registered
+├── src/components/hubs/CoBuildHub.tsx # Learner co-build hub
 ├── src/resources/videoCatalog.ts   # Structured resource catalog
 ├── src/components/strategy/        # Case SDK, catalog, runner, and cases
 ├── src/components/foundation/      # Foundations and the unified map
 ├── src/searchIndex.ts              # In-site search index
-└── .github/ISSUE_TEMPLATE/         # Bug, content, and Case proposal forms
+└── .github/ISSUE_TEMPLATE/         # Bug, content, Case, and maintenance forms
 ```
 
 ## Roadmap

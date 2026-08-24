@@ -23,6 +23,7 @@ import './components/feedback/feedback.css'
 import './decisionMath.css'
 import './mathPrimer.css'
 import './videoLibrary.css'
+import './components/hubs/coBuildHub.css'
 
 const CourseTrack = lazy(() => import('./components/CourseTrack'))
 const Experiments = lazy(() => import('./components/Experiments'))
@@ -47,6 +48,7 @@ const MathPrimer = lazy(() => import('./components/MathPrimer'))
 const LearningRoutesHub = lazy(() => import('./components/hubs/LearningRoutesHub'))
 const LabsHub = lazy(() => import('./components/hubs/LabsHub'))
 const ReviewsHub = lazy(() => import('./components/hubs/ReviewsHub'))
+const CoBuildHub = lazy(() => import('./components/hubs/CoBuildHub'))
 const StrategyCaseCenter = lazy(() => import('./components/strategy/StrategyCaseCenter'))
 const StrategyCaseRunner = lazy(() => import('./components/strategy/StrategyCaseRunner'))
 const LegacyStrategyNotice = lazy(() => import('./components/strategy/LegacyStrategyNotice'))
@@ -157,6 +159,7 @@ export default function Business({ user }: BusinessProps) {
     if (route.page === 'decision-math') return <DecisionMathHub go={go} />
     if (route.page === 'labs') return <LabsHub go={go} />
     if (route.page === 'reviews') return <ReviewsHub go={go} />
+    if (route.page === 'co-build') return <CoBuildHub onFeedback={(trigger) => { setPaletteOpen(false); setFeedbackTrigger(trigger); setFeedbackOpen(true) }} />
     if (route.page === 'strategy-cases') return <StrategyCaseCenter go={go} />
     if (route.page === 'strategy-case') return <StrategyCaseRunner key={route.case} caseId={route.case} go={go} />
     if (route.page === 'videos') return <VideoLibrary />
@@ -194,7 +197,7 @@ export default function Business({ user }: BusinessProps) {
         onFeedback={(trigger) => { setPaletteOpen(false); setFeedbackTrigger(trigger); setFeedbackOpen(true) }}
       />
       <main ref={mainContentRef} className='lab-main' id='main-content' tabIndex={-1}><Suspense fallback={<PageLoading />}>{content}</Suspense></main>
-      <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 · AI 决策数学 · LLM · 图像生成 · Agent · Agent Book · 蒸馏 · 自进化 · 世界模型</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button onClick={() => go('routes')}><Route />查看学习路线</button></footer>
+      <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 · AI 决策数学 · LLM · 图像生成 · Agent · Agent Book · 蒸馏 · 自进化 · 世界模型</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button type='button' className='lo-footer-co-build' onClick={() => go('co-build')}>参与共建</button><button type='button' onClick={() => go('routes')}><Route />查看学习路线</button></footer>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} go={go} returnFocus={paletteTrigger} />
       <FeedbackCenterModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} returnFocus={feedbackTrigger} />
       <FeedbackNudgeToast

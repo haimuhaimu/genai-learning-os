@@ -1,0 +1,50 @@
+# resource-learning-loop Specification
+
+## Purpose
+TBD - created by archiving change p0-learning-loop-paper-labs. Update Purpose after archive.
+## Requirements
+### Requirement: 首次判断
+系统 SHALL 在每个 Strategy Case 中允许学习者针对案例核心问题保存一份首次判断，并 SHALL 将记录按 caseId 隔离保存在本机。
+
+#### Scenario: 保存首次判断
+- **WHEN** 学习者输入非空内容并选择保存
+- **THEN** 系统保存首次判断及更新时间
+- **AND** 刷新页面后仍展示该判断
+
+#### Scenario: 本地存储不可用
+- **WHEN** 浏览器拒绝或无法写入 localStorage
+- **THEN** 系统继续提供当前会话内的输入与比较能力
+- **AND** 页面不得崩溃或错误推进其他学习进度
+
+### Requirement: 资源触达记录
+系统 SHALL 在学习者主动打开案例关联的视频或论文时记录资源类型、资源 ID 和触达时间，但 MUST NOT 将触达等同于完成学习。
+
+#### Scenario: 打开关联资源
+- **WHEN** 学习者从案例页打开一个视频或论文
+- **THEN** 系统记录该资源已被触达
+- **AND** 外链仍以安全的新窗口方式打开
+
+#### Scenario: 重复打开资源
+- **WHEN** 学习者重复打开同一资源
+- **THEN** 系统仅保留一条资源记录并更新最近触达时间
+
+### Requirement: 复盘判断与前后对比
+系统 SHALL 在首次判断存在后允许学习者保存复盘判断，并 SHALL 并排展示两次回答与变化提示。
+
+#### Scenario: 完成一轮闭环
+- **WHEN** 学习者已保存首次判断、触达至少一个资源并保存复盘判断
+- **THEN** 系统展示首次判断和复盘判断的并排对比
+- **AND** 标记本案例已完成一次资源学习闭环
+
+#### Scenario: 尚未触达资源
+- **WHEN** 学习者尝试在未触达任何资源时保存复盘判断
+- **THEN** 系统允许保存但明确提示尚未形成完整资源闭环
+
+### Requirement: 隐私与清除
+系统 SHALL 明确说明闭环回答仅保存在当前浏览器，并 SHALL 允许学习者清除当前案例记录。
+
+#### Scenario: 清除当前案例记录
+- **WHEN** 学习者确认清除当前案例记录
+- **THEN** 系统仅删除当前 caseId 的首次判断、复盘判断和资源触达记录
+- **AND** 不影响其他案例或现有学习进度
+

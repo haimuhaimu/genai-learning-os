@@ -2,7 +2,7 @@
 
 **通过产品决策学习 AI，而不是从公式开始。**
 
-[在线体验](https://haimuhaimu.github.io/genai-learning-os/) · [从策略案例开始](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [查看贡献指南](CONTRIBUTING.md) · [English README](README_EN.md)
+[在线体验](https://haimuhaimu.github.io/genai-learning-os/) · [从策略案例开始](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [参与学习者共建](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) · [查看贡献指南](CONTRIBUTING.md) · [English README](README_EN.md)
 
 **9 条学习路线 · 9 个代表策略案例 + 8 个 AI 决策数学练习 · 31 条精选资源**，包含中文内容、Karpathy 学习材料，以及仍处于早期的自进化与世界模型探索。
 
@@ -11,6 +11,10 @@
 ## 学习反馈中心
 
 桌面端 Header 与移动端菜单均提供“反馈”入口。反馈中心收集收获程度、难度 / 深度、工作迁移价值、最大卡点与建议，可生成预填 GitHub Issue 或复制 Markdown。页面上下文默认不附带；主动勾选后也只包含 `routeConfig` 定义的 `page/module/experiment/node/section/chapter/card/case` 白名单路由，不读取或发送本地进度、策略摘要、浏览器 UA 或其他 `localStorage` 数据。达到“已评审”或保存策略摘要后只会出现一次低干扰提醒，不会自动打开弹窗。
+
+## 学习者共建中心
+
+[`?page=co-build`](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) 将贡献拆成 1 分钟反馈、30 分钟内容贡献和深度 Strategy Case 三条路径。每条路径都提供可直接使用的站内反馈、Issue Form、`good first issue` 搜索或作者指南；首次贡献者可按“选问题 → 对齐约定 → 最小改动与验证 → 可评审 PR”四步开始。贡献者可在 PR 中设置公开显示名和可选个人主页；Roadmap 不承诺日期，公开 Issue / PR 不应包含真实账号数据、私有日志、凭据、内部域名或未公开漏洞。
 
 ![GenAI Learning OS 策略案例中心桌面截图，展示 Strategy-first 定位、统一学习协议、路线筛选、精选案例标签，以及算法基础、RAG、图像生成和退款工具案例卡片](docs/assets/strategy-case-center.png)
 
@@ -124,7 +128,7 @@ pnpm check:a11y
 pnpm check:bundle
 ```
 
-CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 91 项，并拦截无障碍与产物体积回退。
+CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 92 项，并拦截无障碍与产物体积回退。
 
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 
@@ -135,11 +139,12 @@ CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量�
 ├── docs/CASE_AUTHORING.md          # Strategy Case 作者协议
 ├── docs/VIDEO_CONTRIBUTING.md      # 参考视频筛选与维护指南
 ├── examples/strategy-case/         # 可类型检查、未注册的最小示例
+├── src/components/hubs/CoBuildHub.tsx # 学习者共建中心
 ├── src/resources/videoCatalog.ts   # 结构化参考视频 Catalog
 ├── src/components/strategy/        # Case SDK、catalog、runner 与案例
 ├── src/components/foundation/      # 算法基础与统一学习地图
 ├── src/searchIndex.ts              # 站内搜索索引
-└── .github/ISSUE_TEMPLATE/         # Bug、内容与 Case 提案模板
+└── .github/ISSUE_TEMPLATE/         # Bug、内容、Case 与工程维护表单
 ```
 
 ## 路线图

@@ -24,6 +24,7 @@ const topLevel: SearchDestination[] = [
   ['videos', '参考视频库（可选）', '先做策略决策，再按卡点补机制', '视频 课程 参考资源 机制 决策', 'videos'],
   ['labs', '实验室', '全部互动实验目录', '实验 lab', 'labs'],
   ['reviews', '评审中心', '方案、上线与可靠性评审', 'rubric veto', 'reviews'],
+  ['co-build', '学习者共建中心', '从 1 分钟反馈到深度 Strategy Case，共建可验证的学习体验', '共建 贡献 good first issue Strategy Case 内容建议 工程维护', 'co-build'],
   ['progress', '我的进度', '本机学习记录与迁移', '备份 导入 导出', 'progress'],
   ['handbook', '公式与指标手册', '统一查询关键公式与指标', '手册 公式 指标', 'handbook'],
 ].map(([id, title, subtitle, keywords, page]) => ({ id: `top-${id}`, group: '顶级入口', title, subtitle, keywords: keywords.split(' '), page }))

@@ -1,0 +1,66 @@
+name: 工程维护提议
+description: 提议依赖、测试、可访问性、构建或仓库维护工作
+title: "[Maintenance] "
+labels:
+  - maintenance
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢帮助维护项目。请先搜索已有 Issue，并把工作拆成边界清楚、结果可验证的最小任务。安全漏洞请通过 Security Policy 私密报告。
+  - type: dropdown
+    id: area
+    attributes:
+      label: 维护领域
+      options:
+        - 依赖与工具链
+        - 测试与质量门禁
+        - 可访问性
+        - 性能与产物体积
+        - CI / GitHub 配置
+        - 重构与开发体验
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 当前问题
+      description: 请说明现状、影响范围，以及为什么现在值得处理。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议的最小改动
+      description: 请写清包含与不包含的范围；如果涉及依赖，请说明无依赖方案为何不可行。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      placeholder: |
+        - [ ] 可观察结果一
+        - [ ] 对应测试或检查通过
+        - [ ] 相关文档已同步
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: 验证方式
+      description: 列出建议运行的自动化检查与手动检查。
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索现有 Issue，未发现相同提议。
+          required: true
+        - label: 提议中不包含凭据、私有日志、内部域名或未公开漏洞细节。
+          required: true
+        - label: 我理解 Roadmap 仅说明方向，不承诺排期。
+          required: true

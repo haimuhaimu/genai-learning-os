@@ -5,6 +5,7 @@ export const canonicalPages = [
   'decision-math',
   'labs',
   'reviews',
+  'co-build',
   'strategy-cases',
   'strategy-case',
   'videos',

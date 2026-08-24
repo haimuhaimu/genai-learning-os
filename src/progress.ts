@@ -4,6 +4,12 @@ export type ProgressMap = Record<string, LearningStage>
 const KEY = 'genai-learning-progress-v1'
 const PERSONA_KEY = 'genai-learning-persona-v1'
 const PERSONA_CHANGE_EVENT = 'genai-persona-change'
+export const PROGRESS_CHANGE_EVENT = 'genai-progress-change'
+export type ProgressChangeDetail = {
+  reason: 'mark' | 'clear' | 'import'
+  nodeId?: string
+  stage?: LearningStage
+}
 const MAX_IMPORT_LENGTH = 1_000_000
 const MAX_PROGRESS_ENTRIES = 2_000
 const MAX_KEY_LENGTH = 160
@@ -71,7 +77,7 @@ export function markProgress(nodeId: string, stage: LearningStage): ProgressMap 
     console.warn('学习进度暂时无法保存到本机存储。')
     return current
   }
-  window.dispatchEvent(new CustomEvent('genai-progress-change'))
+  window.dispatchEvent(new CustomEvent<ProgressChangeDetail>(PROGRESS_CHANGE_EVENT, { detail: { reason: 'mark', nodeId, stage } }))
   return next
 }
 
@@ -82,7 +88,7 @@ export function clearProgress(): boolean {
     console.warn('学习进度暂时无法从本机存储清除。')
     return false
   }
-  window.dispatchEvent(new CustomEvent('genai-progress-change'))
+  window.dispatchEvent(new CustomEvent<ProgressChangeDetail>(PROGRESS_CHANGE_EVENT, { detail: { reason: 'clear' } }))
   return true
 }
 
@@ -154,7 +160,7 @@ export function importLearningData(text: string): ImportLearningResult {
   } catch {
     return { ok: false, error: '浏览器无法写入本机存储，请检查隐私模式或存储空间。' }
   }
-  window.dispatchEvent(new CustomEvent('genai-progress-change'))
+  window.dispatchEvent(new CustomEvent<ProgressChangeDetail>(PROGRESS_CHANGE_EVENT, { detail: { reason: 'import' } }))
   return { ok: true, imported: Object.keys(validated.value).length, advanced, unchanged, personaImported, progress: merged }
 }
 

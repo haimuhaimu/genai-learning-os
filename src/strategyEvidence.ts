@@ -3,6 +3,11 @@ import type { ControlValue, RouteId } from './components/strategy/types'
 
 export const STRATEGY_EVIDENCE_KEY = 'genai-strategy-evidence-v2'
 export const STRATEGY_EVIDENCE_EVENT = 'genai-strategy-evidence-change'
+export type StrategyEvidenceChangeDetail = {
+  caseId: CaseId
+  level: EvidenceLevel
+  summarySaved: boolean
+}
 const MAX_RECORDS = 50
 const DANGEROUS_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 
@@ -103,7 +108,17 @@ export function saveStrategyEvidence(record: StrategyEvidenceRecord, storage: Ev
   try {
     const next = mergeStrategyEvidence(readStrategyEvidence(storage), record)
     storage.setItem(STRATEGY_EVIDENCE_KEY, JSON.stringify(next))
-    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(STRATEGY_EVIDENCE_EVENT))
+    if (typeof window !== 'undefined') {
+      const saved = next.find((item) => item.caseId === record.caseId)
+      if (saved) {
+        const detail: StrategyEvidenceChangeDetail = {
+          caseId: saved.caseId,
+          level: saved.level,
+          summarySaved: record.level >= 2 && Boolean(record.summaryText),
+        }
+        window.dispatchEvent(new CustomEvent<StrategyEvidenceChangeDetail>(STRATEGY_EVIDENCE_EVENT, { detail }))
+      }
+    }
     return next
   } catch {
     return []

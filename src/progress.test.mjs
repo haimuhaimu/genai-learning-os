@@ -7,6 +7,7 @@ const progressKey = 'genai-learning-progress-v1'
 function installBrowserMocks({ initial = {}, failSet = false, failRemove = false } = {}) {
   const values = new Map([[progressKey, JSON.stringify(initial)]])
   const events = []
+  const eventDetails = []
   const warnings = []
   const originalWindow = globalThis.window
   const originalLocalStorage = globalThis.localStorage
@@ -29,18 +30,19 @@ function installBrowserMocks({ initial = {}, failSet = false, failRemove = false
   })
   Object.defineProperty(globalThis, 'window', {
     configurable: true,
-    value: { dispatchEvent: (event) => events.push(event.type) },
+    value: { dispatchEvent: (event) => { events.push(event.type); eventDetails.push(event.detail) } },
   })
   Object.defineProperty(globalThis, 'CustomEvent', {
     configurable: true,
     value: class CustomEvent {
-      constructor(type) { this.type = type }
+      constructor(type, init) { this.type = type; this.detail = init?.detail }
     },
   })
   console.warn = (message) => warnings.push(message)
 
   return {
     events,
+    eventDetails,
     values,
     warnings,
     restore() {
@@ -62,6 +64,7 @@ test('进度写入成功后才发送变化事件', () => {
     assert.deepEqual(progress, { nodeA: 2 })
     assert.deepEqual(JSON.parse(mocks.values.get(progressKey)), { nodeA: 2 })
     assert.deepEqual(mocks.events, ['genai-progress-change'])
+    assert.deepEqual(mocks.eventDetails, [{ reason: 'mark', nodeId: 'nodeA', stage: 2 }])
     assert.deepEqual(mocks.warnings, [])
   } finally {
     mocks.restore()

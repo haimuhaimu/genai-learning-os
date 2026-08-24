@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { ArrowUpRight, BookOpen, FlaskConical, Home, Menu, Route, Search, ShieldCheck, Target, TrendingUp, Video, X } from 'lucide-react'
+import { ArrowUpRight, BookOpen, FlaskConical, Home, Menu, MessageCircle, Route, Search, ShieldCheck, Target, TrendingUp, Video, X } from 'lucide-react'
 import ShareButton from './ShareButton'
 
 export type HeaderPage = 'unified-map' | 'routes' | 'labs' | 'reviews' | 'strategy-cases' | 'videos' | 'progress' | 'handbook'
@@ -24,10 +24,11 @@ function navSection(page: string): HeaderPage {
   return navItems.some((item) => item.id === page) ? page as HeaderPage : 'unified-map'
 }
 
-export default function ProductHeader({ page, go, onSearch, searchButtonRef }: {
+export default function ProductHeader({ page, go, onSearch, onFeedback, searchButtonRef }: {
   page: string
   go: Go
   onSearch: (trigger: HTMLButtonElement) => void
+  onFeedback: (trigger: HTMLButtonElement) => void
   searchButtonRef: RefObject<HTMLButtonElement>
 }) {
   const [open, setOpen] = useState(false)
@@ -64,6 +65,7 @@ export default function ProductHeader({ page, go, onSearch, searchButtonRef }: {
           </button>
         ))}
         <button type='button' className='lo-mobile-search' onClick={(event) => { setOpen(false); onSearch(event.currentTarget) }} aria-label='搜索课程、实验与评审'><Search aria-hidden='true' /><span>搜索</span></button>
+        <button type='button' className='lo-mobile-feedback' onClick={(event) => { setOpen(false); onFeedback(event.currentTarget) }}><MessageCircle aria-hidden='true' /><span>反馈</span></button>
         <ShareButton className='lo-mobile-share' ariaLabel='复制当前页面链接' />
       </nav>
       <div className='lo-header-tools'>
@@ -71,6 +73,7 @@ export default function ProductHeader({ page, go, onSearch, searchButtonRef }: {
           <Search aria-hidden='true' /><span>搜索</span><kbd>⌘K / Ctrl K</kbd>
         </button>
         <ShareButton className='lo-header-share' label='复制链接' ariaLabel='复制当前页面链接' />
+        <button className='lo-feedback-trigger' type='button' onClick={(event) => onFeedback(event.currentTarget)}><MessageCircle aria-hidden='true' /><span>反馈</span></button>
         <button className='lo-progress-shortcut' type='button' onClick={() => navigate('progress')} aria-label='打开学习进度'>
           <TrendingUp aria-hidden='true' /><span>我的进度</span><ArrowUpRight aria-hidden='true' />
         </button>

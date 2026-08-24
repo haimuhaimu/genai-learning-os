@@ -65,3 +65,34 @@ test('保存只写 v2 key，并保留其他案例', () => {
   assert.ok(storage.values.has(STRATEGY_EVIDENCE_KEY))
   assert.equal(readStrategyEvidence(storage).length, 2)
 })
+
+
+test('策略证据仅在成功持久化后派发兼容事件与最小 detail', () => {
+  const originalWindow = globalThis.window
+  const originalCustomEvent = globalThis.CustomEvent
+  const events = []
+  Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: { dispatchEvent: (event) => events.push({ type: event.type, detail: event.detail }) },
+  })
+  Object.defineProperty(globalThis, 'CustomEvent', {
+    configurable: true,
+    value: class CustomEvent {
+      constructor(type, init) { this.type = type; this.detail = init?.detail }
+    },
+  })
+  try {
+    saveStrategyEvidence({ ...base, level: 2, summaryText: '策略摘要' }, memoryStorage())
+    assert.deepEqual(events, [{
+      type: 'genai-strategy-evidence-change',
+      detail: { caseId: 'rag-budget', level: 2, summarySaved: true },
+    }])
+    saveStrategyEvidence(base, { getItem: () => null, setItem: () => { throw new Error('storage unavailable') } })
+    assert.equal(events.length, 1)
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window
+    else Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow })
+    if (originalCustomEvent === undefined) delete globalThis.CustomEvent
+    else Object.defineProperty(globalThis, 'CustomEvent', { configurable: true, value: originalCustomEvent })
+  }
+})

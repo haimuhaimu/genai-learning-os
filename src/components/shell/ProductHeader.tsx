@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { ArrowUpRight, BookOpen, FlaskConical, HandHeart, Home, Menu, MessageCircle, Route, Search, ShieldCheck, Target, TrendingUp, Video, X } from 'lucide-react'
+import { ArrowUpRight, BookMarked, BookOpen, FlaskConical, HandHeart, Home, Menu, MessageCircle, Route, Search, ShieldCheck, Target, TrendingUp, Video, X } from 'lucide-react'
 import ShareButton from './ShareButton'
 
-export type HeaderPage = 'unified-map' | 'routes' | 'labs' | 'reviews' | 'co-build' | 'strategy-cases' | 'videos' | 'progress' | 'handbook'
+export type HeaderPage = 'unified-map' | 'routes' | 'labs' | 'reviews' | 'co-build' | 'strategy-cases' | 'videos' | 'papers' | 'progress' | 'handbook'
 type Go = (page: string, options?: Record<string, string>) => void
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { id: 'routes', label: '学习路线', icon: Route },
   { id: 'strategy-cases', label: '策略案例（Case）', icon: Target },
   { id: 'videos', label: '参考视频库（可选）', icon: Video },
+  { id: 'papers', label: '论文讲解库', icon: BookMarked },
   { id: 'labs', label: '实验室', icon: FlaskConical },
   { id: 'reviews', label: '评审', icon: ShieldCheck },
   { id: 'co-build', label: '共建', icon: HandHeart },

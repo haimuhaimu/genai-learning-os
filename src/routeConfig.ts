@@ -9,6 +9,7 @@ export const canonicalPages = [
   'strategy-cases',
   'strategy-case',
   'videos',
+  'papers',
   'foundation',
   'foundation-lab',
   'distill-course',

@@ -474,7 +474,8 @@
 @media (max-width: 1450px) and (min-width: 901px) {
   .lo-primary-nav button { padding: 8px; }
   .lo-primary-nav button[data-nav-id='strategy-cases'] span,
-  .lo-primary-nav button[data-nav-id='videos'] span { display: none; }
+  .lo-primary-nav button[data-nav-id='videos'] span,
+  .lo-primary-nav button[data-nav-id='papers'] span { display: none; }
 }
 
 @media (max-width: 1180px) {

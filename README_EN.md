@@ -4,7 +4,7 @@
 
 [Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Join the learner co-build hub](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
 
-**9 learning tracks · 9 representative Strategy Cases + 8 AI decision-math exercises · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
+**9 learning tracks · 9 representative Strategy Cases + 8 AI decision-math exercises · 43 curated videos/courses + 21 explained core papers**, with Chinese courses, Karpathy resources, and reading paths spanning recommender systems, LLMs, agents, and world models.
 
 Most tutorials explain how models run. This project asks you to make a product strategy decision first, then return to the mechanism to understand metrics, costs, and feedback loops.
 
@@ -74,7 +74,9 @@ AI product managers, strategy and operations practitioners, engineers and resear
 
 ## Curated resources
 
-The [resource library](https://haimuhaimu.github.io/genai-learning-os/?page=videos) remains at 31 curated items. It includes Chinese-language material, Karpathy learning resources, and selected papers and articles for self-evolving AI and world models. Each item points back to a decision, evidence gap, cost, or feedback-loop question; viewing a resource does not count as learning progress.
+The [video and course library](https://haimuhaimu.github.io/genai-learning-os/?page=videos) now contains 43 curated entries, including 3Blue1Brown, StatQuest, D2L, Hung-yi Lee, OpenBMB, Hugging Face, MIT, Stanford, CMU, DeepLearning.AI, and Google resources. Filter them by route, language, level, and origin.
+
+The new [paper explainer library](https://haimuhaimu.github.io/genai-learning-os/?page=papers) contains 21 core papers across recommender systems, Transformer / LLM, diffusion / multimodal, Agent / Harness, and self-improvement / world models. Every card presents a 30-second explanation, core mechanism, product lens, and a question to take back to the course. See the [video contribution guide](docs/VIDEO_CONTRIBUTING.md) and [paper explainer contribution guide](docs/PAPER_CONTRIBUTING.md).
 
 ## Contribute a Strategy Case
 
@@ -113,10 +115,12 @@ All formulas, estimates, charts, and outputs are mechanism-level teaching simula
 ```text
 .
 ├── docs/CASE_AUTHORING.md          # Strategy Case authoring protocol
-├── docs/VIDEO_CONTRIBUTING.md      # Curated resource contribution guide
+├── docs/VIDEO_CONTRIBUTING.md      # Curated video contribution guide
+├── docs/PAPER_CONTRIBUTING.md      # Paper explainer contribution guide
 ├── examples/strategy-case/         # Typed example, intentionally not registered
 ├── src/components/hubs/CoBuildHub.tsx # Learner co-build hub
-├── src/resources/videoCatalog.ts   # Structured resource catalog
+├── src/resources/videoCatalog.ts   # Structured video/course catalog
+├── src/resources/paperCatalog.ts   # Explained core-paper catalog
 ├── src/components/strategy/        # Case SDK, catalog, runner, and cases
 ├── src/components/foundation/      # Foundations and the unified map
 ├── src/searchIndex.ts              # In-site search index

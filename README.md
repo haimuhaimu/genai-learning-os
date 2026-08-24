@@ -4,7 +4,7 @@
 
 [在线体验](https://haimuhaimu.github.io/genai-learning-os/) · [从策略案例开始](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [查看贡献指南](CONTRIBUTING.md) · [English README](README_EN.md)
 
-**9 条学习路线 · 8 个代表策略案例 + 8 个 AI 决策数学练习 · 31 条精选资源**，包含中文内容、Karpathy 学习材料，以及仍处于早期的自进化与世界模型探索。
+**9 条学习路线 · 9 个代表策略案例 + 8 个 AI 决策数学练习 · 31 条精选资源**，包含中文内容、Karpathy 学习材料，以及仍处于早期的自进化与世界模型探索。
 
 多数教程解释模型如何运行；本项目让你先做产品策略决策，再回到算法机制，理解指标、代价和反馈闭环。
 
@@ -120,7 +120,7 @@ pnpm check:a11y
 pnpm check:bundle
 ```
 
-CI 会在 Pages 部署前执行自动化回归；当前全量测试共 79 项，并拦截无障碍与产物体积回退。
+CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 84 项，并拦截无障碍与产物体积回退。
 
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 

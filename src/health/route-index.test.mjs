@@ -9,6 +9,7 @@ import {
   pages,
   routeKeys,
 } from '../routeConfig.ts'
+import { strategyCaseCatalog } from '../components/strategy/caseCatalog.ts'
 import { searchIndex } from '../searchIndex.ts'
 
 const businessSource = await readFile(new URL('../business.tsx', import.meta.url), 'utf8')
@@ -35,6 +36,10 @@ test('searchIndex 的 page 目标全部可渲染且不使用历史别名', () =>
   assert.deepEqual(unknown, [])
   for (const alias of aliases) assert.ok(!destinations.has(alias), `搜索索引不得继续生成历史 ${alias} 入口`)
   assert.equal(new Set(searchIndex.map((entry) => entry.id)).size, searchIndex.length, '搜索索引 id 必须唯一')
+  for (const item of strategyCaseCatalog) {
+    const entry = searchIndex.find((candidate) => candidate.id === `strategy-${item.id}`)
+    assert.deepEqual(entry?.options, item.options, `${item.id} 必须自动进入搜索并保留入口参数`)
+  }
 })
 
 test('历史别名和未知 page 通过共享配置统一归一化', () => {

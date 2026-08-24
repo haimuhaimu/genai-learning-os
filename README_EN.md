@@ -4,7 +4,7 @@
 
 [Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
 
-**9 learning tracks · 8 representative Strategy Cases + 8 AI decision-math exercises · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
+**9 learning tracks · 9 representative Strategy Cases + 8 AI decision-math exercises · 31 curated resources**, including Chinese-language material, Karpathy resources, and early explorations of self-evolving AI and world models.
 
 Most tutorials explain how models run. This project asks you to make a product strategy decision first, then return to the mechanism to understand metrics, costs, and feedback loops.
 

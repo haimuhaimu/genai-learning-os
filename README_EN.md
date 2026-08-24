@@ -8,6 +8,10 @@
 
 Most tutorials explain how models run. This project asks you to make a product strategy decision first, then return to the mechanism to understand metrics, costs, and feedback loops.
 
+## Learning feedback center
+
+A Feedback entry is available in both the desktop header and mobile menu. The center collects learning gain, difficulty/depth, workplace transfer, the biggest blocker, and suggestions, then creates a prefilled GitHub Issue or copies Markdown. Route context is off by default; when explicitly enabled, it is limited to the `page/module/experiment/node/section/chapter/card/case` allowlist defined by `routeConfig`. It never reads or sends local progress, strategy summaries, browser UA, or other `localStorage` data. Reaching the reviewed stage or saving a strategy summary shows one low-distraction nudge instead of opening the modal automatically.
+
 ![Desktop view of the GenAI Learning OS Strategy Case Center showing the Strategy-first positioning, shared learning protocol, route filters, featured labels, and cards for Foundations, RAG, Image Generation, and refund tooling](docs/assets/strategy-case-center.png)
 
 ## Three flagship cases
@@ -85,7 +89,7 @@ pnpm install
 pnpm dev
 ```
 
-The app is frontend-only: no sign-in, backend, model API calls, or account collection. Progress stays in the current browser's `localStorage`. GitHub Pages deployment is defined in [the Pages workflow](.github/workflows/deploy-pages.yml), with the repository homepage and canonical URL pointing to the production Pages site.
+The app is frontend-only: no sign-in, backend, model API calls, or account collection. Progress stays in the current browser's `localStorage`. Feedback leaves the page only when the user opens a GitHub Issue or copies Markdown, and route context is excluded by default. GitHub Pages deployment is defined in [the Pages workflow](.github/workflows/deploy-pages.yml), with the repository homepage and canonical URL pointing to the production Pages site.
 
 ## Validation
 

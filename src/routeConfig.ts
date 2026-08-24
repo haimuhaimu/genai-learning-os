@@ -47,6 +47,7 @@ export const pages: ReadonlySet<string> = new Set([
 const canonicalPageSet: ReadonlySet<string> = new Set(canonicalPages)
 
 export const routeKeys = ['module', 'experiment', 'node', 'section', 'chapter', 'card', 'case'] as const
+export const feedbackRouteKeys = ['page', ...routeKeys] as const
 export type RouteKey = typeof routeKeys[number]
 export type GoOptions = Partial<Record<RouteKey, string>>
 export type RouteState = GoOptions & { page: Page }

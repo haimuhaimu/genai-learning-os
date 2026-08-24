@@ -8,6 +8,10 @@
 
 多数教程解释模型如何运行；本项目让你先做产品策略决策，再回到算法机制，理解指标、代价和反馈闭环。
 
+## 学习反馈中心
+
+桌面端 Header 与移动端菜单均提供“反馈”入口。反馈中心收集收获程度、难度 / 深度、工作迁移价值、最大卡点与建议，可生成预填 GitHub Issue 或复制 Markdown。页面上下文默认不附带；主动勾选后也只包含 `routeConfig` 定义的 `page/module/experiment/node/section/chapter/card/case` 白名单路由，不读取或发送本地进度、策略摘要、浏览器 UA 或其他 `localStorage` 数据。达到“已评审”或保存策略摘要后只会出现一次低干扰提醒，不会自动打开弹窗。
+
 ![GenAI Learning OS 策略案例中心桌面截图，展示 Strategy-first 定位、统一学习协议、路线筛选、精选案例标签，以及算法基础、RAG、图像生成和退款工具案例卡片](docs/assets/strategy-case-center.png)
 
 ## 三个旗舰案例
@@ -98,7 +102,7 @@ pnpm install
 pnpm dev
 ```
 
-项目是纯前端应用：无需登录或后端，不调用模型 API；学习进度只保存在当前浏览器的 `localStorage`。GitHub Pages 部署由 [deploy-pages 工作流](.github/workflows/deploy-pages.yml) 完成，`homepage` 与 canonical URL 均指向正式 Pages 地址。
+项目是纯前端应用：无需登录或后端，不调用模型 API；学习进度只保存在当前浏览器的 `localStorage`。学习反馈仅在用户主动打开 GitHub Issue 或复制 Markdown 时离开页面，且默认不附带页面上下文。GitHub Pages 部署由 [deploy-pages 工作流](.github/workflows/deploy-pages.yml) 完成，`homepage` 与 canonical URL 均指向正式 Pages 地址。
 
 ## 验证
 
@@ -120,7 +124,7 @@ pnpm check:a11y
 pnpm check:bundle
 ```
 
-CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 84 项，并拦截无障碍与产物体积回退。
+CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 91 项，并拦截无障碍与产物体积回退。
 
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 

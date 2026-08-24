@@ -1,5 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { BookOpen, Route } from 'lucide-react'
+import FeedbackCenterModal from './components/feedback/FeedbackCenterModal'
+import FeedbackNudgeToast from './components/feedback/FeedbackNudgeToast'
+import useFeedbackNudge from './components/feedback/useFeedbackNudge'
 import UnifiedMap from './components/foundation/UnifiedMap'
 import CommandPalette from './components/shell/CommandPalette'
 import PageLoading from './components/shell/PageLoading'
@@ -16,6 +19,7 @@ import './distill.css'
 import './agent-book.css'
 import './learning-os.css'
 import './components/strategy/strategyCases.css'
+import './components/feedback/feedback.css'
 import './decisionMath.css'
 import './mathPrimer.css'
 import './videoLibrary.css'
@@ -71,6 +75,9 @@ export default function Business({ user }: BusinessProps) {
   const [route, setRoute] = useState<RouteState>(() => readRoute())
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [paletteTrigger, setPaletteTrigger] = useState<HTMLElement | null>(null)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackTrigger, setFeedbackTrigger] = useState<HTMLElement | null>(null)
+  const { nudgeVisible, dismissNudge } = useFeedbackNudge()
   const searchButtonRef = useRef<HTMLButtonElement>(null)
   const mainContentRef = useRef<HTMLElement>(null)
   const routeRef = useRef(route)
@@ -122,6 +129,7 @@ export default function Business({ user }: BusinessProps) {
         requestAnimationFrame(() => paletteTrigger?.focus())
         return
       }
+      if (feedbackOpen) return
       if (event.key.toLocaleLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
         setPaletteTrigger(searchButtonRef.current)
@@ -130,7 +138,7 @@ export default function Business({ user }: BusinessProps) {
     }
     window.addEventListener('keydown', onShortcut)
     return () => window.removeEventListener('keydown', onShortcut)
-  }, [paletteOpen, paletteTrigger])
+  }, [feedbackOpen, paletteOpen, paletteTrigger])
 
   const go = useCallback((rawPage: string, options: GoOptions = {}) => {
     if (!pages.has(rawPage)) return
@@ -178,10 +186,22 @@ export default function Business({ user }: BusinessProps) {
   return (
     <div className='model-lab expert-edition unified-edition learning-os-shell'>
       <a className='lo-skip-link' href='#main-content'>跳到主要内容</a>
-      <ProductHeader page={route.page} go={go} searchButtonRef={searchButtonRef} onSearch={(trigger) => { setPaletteTrigger(trigger); setPaletteOpen(true) }} />
+      <ProductHeader
+        page={route.page}
+        go={go}
+        searchButtonRef={searchButtonRef}
+        onSearch={(trigger) => { setFeedbackOpen(false); setPaletteTrigger(trigger); setPaletteOpen(true) }}
+        onFeedback={(trigger) => { setPaletteOpen(false); setFeedbackTrigger(trigger); setFeedbackOpen(true) }}
+      />
       <main ref={mainContentRef} className='lab-main' id='main-content' tabIndex={-1}><Suspense fallback={<PageLoading />}>{content}</Suspense></main>
       <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 · AI 决策数学 · LLM · 图像生成 · Agent · Agent Book · 蒸馏 · 自进化 · 世界模型</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button onClick={() => go('routes')}><Route />查看学习路线</button></footer>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} go={go} returnFocus={paletteTrigger} />
+      <FeedbackCenterModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} returnFocus={feedbackTrigger} />
+      <FeedbackNudgeToast
+        visible={nudgeVisible && !feedbackOpen}
+        onDismiss={dismissNudge}
+        onOpen={(trigger) => { dismissNudge(); setFeedbackTrigger(trigger); setFeedbackOpen(true) }}
+      />
     </div>
   )
 }

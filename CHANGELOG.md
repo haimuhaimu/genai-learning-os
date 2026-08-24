@@ -6,6 +6,9 @@
 
 ### Added
 
+- 新增全站学习反馈中心：桌面与移动入口、可访问弹窗、结构化学习反馈、预填 GitHub Issue 与三级复制降级。
+- 反馈默认不附带上下文；可选路由严格使用 `routeConfig` 白名单，不读取本地进度、策略摘要或浏览器 UA。
+- 达到“已评审”或成功保存策略摘要后新增单次、低干扰反馈提醒，不自动弹出反馈表单。
 - 新增 Harness 上线闭环 Strategy Case，以 Goal + Context / Tools / Constrain / Verify / Correct 形成确定性的 GO / HOLD / NO-GO、硬否决和可复制策略摘要。
 - 新增 Pull Request 模板与独立 PR CI 工作流，统一执行现有 `pnpm ci:check` 质量门禁。
 - 为数学零层、AI 决策数学与学习路线入口新增直接可见的中文术语翻译和缩写人话解释，移动端无需悬停即可阅读。
@@ -18,7 +21,7 @@
 - 为 14 个 LLM / 图像章节新增先修检查、算一遍与迁移模板，形成从准备、手算到场景迁移的深度练习链路。
 - 为 Self-Evolving / World Model 案例新增可计算证据、明确的停手条件与下一轮采样动作。
 - 为 13 个 Expert / Agent / Distill 模块新增 Decision Brief（决策简报）练习，要求输出决策、指标、闸门与下一步。
-- 扩展自动化回归门禁，统一测试入口现覆盖 84 项测试，并保留路由、Strategy Case catalog、a11y 与 bundle 检查。
+- 扩展自动化回归门禁，统一测试入口现覆盖 91 项测试，并保留路由、Strategy Case catalog、a11y 与 bundle 检查。
 
 ### Fixed
 

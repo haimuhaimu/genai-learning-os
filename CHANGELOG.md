@@ -6,6 +6,11 @@
 
 ### Added
 
+- 扩展参考视频库：在原 31 条基础上新增 12 条已核验官方课程入口，覆盖反向传播、统计基础、中文深度学习/生成式 AI、扩散模型、Agent 可靠性与推荐系统。
+- 新增独立论文讲解库：21 篇核心论文覆盖推荐系统、Transformer / LLM、扩散 / 多模态、Agent / Harness、自我改进 / 世界模型，并提供精选阅读路线、三类筛选与结构化讲解卡。
+- 论文 Catalog 增加强校验与自动化测试；论文页接入 QueryString 路由、顶部导航和全局搜索，支持检索标题、作者、方向与中文讲解。
+- 新增论文讲解库贡献指南，明确 arXiv 来源、内容模板、关联与验证规则。
+
 - 新增学习者共建中心：提供 1 分钟反馈、30 分钟内容贡献、深度 Strategy Case 三层路径，以及首次贡献四步、署名机制、Roadmap 与公开边界。
 - 新增工程维护 Issue Form，并将内容建议、参考视频、Bug、Strategy Case、维护任务、`good first issue` 与贡献文档接入可直接行动的入口。
 - Header 桌面端与移动端新增“共建”，Footer 增加弱入口，站内搜索支持“共建 / 贡献 / good first issue / Strategy Case”。
@@ -25,7 +30,7 @@
 - 为 14 个 LLM / 图像章节新增先修检查、算一遍与迁移模板，形成从准备、手算到场景迁移的深度练习链路。
 - 为 Self-Evolving / World Model 案例新增可计算证据、明确的停手条件与下一轮采样动作。
 - 为 13 个 Expert / Agent / Distill 模块新增 Decision Brief（决策简报）练习，要求输出决策、指标、闸门与下一步。
-- 扩展自动化回归门禁，统一测试入口现覆盖 92 项测试，并保留路由、Strategy Case catalog、a11y 与 bundle 检查。
+- 扩展自动化回归门禁，统一测试入口现覆盖 100 项测试，并保留路由、Strategy Case catalog、a11y 与 bundle 检查。
 
 ### Fixed
 

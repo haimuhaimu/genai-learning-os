@@ -19,9 +19,13 @@ const validResource = (overrides = {}) => ({
   ...overrides,
 })
 
-test('正式视频 Catalog 合法且覆盖 31 条资源', () => {
+test('正式视频 Catalog 合法且在原 31 条基础上新增至少 10 条资源', () => {
   assert.equal(validateVideoCatalog(videoResources), videoResources)
-  assert.equal(videoResources.length, 31)
+  assert.ok(videoResources.length >= 41)
+  const ids = new Set(videoResources.map(({ id }) => id))
+  for (const id of ['3blue1brown-backprop-calculus', 'statquest-video-index', 'd2l-chinese-textbook', 'hungyi-lee-genai-2024', 'openbmb-llm-open-course', 'hugging-face-diffusion-course', 'mit-practical-diffusion-2026', 'deeplearning-ai-nemo-agent-reliability', 'google-recommendation-systems']) {
+    assert.ok(ids.has(id), `缺少新增重点资源：${id}`)
+  }
   assert.deepEqual(new Set(videoResources.map(({ sourceType }) => sourceType)), new Set(['youtube', 'bilibili', 'course', 'paper', 'blog', 'report']))
   assert.deepEqual(new Set(videoResources.map(({ contentOrigin }) => contentOrigin)), new Set(['中文原创', '中文译制', '海外原版']))
 })

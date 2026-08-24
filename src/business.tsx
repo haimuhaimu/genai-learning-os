@@ -23,6 +23,7 @@ import './components/feedback/feedback.css'
 import './decisionMath.css'
 import './mathPrimer.css'
 import './videoLibrary.css'
+import './paperLibrary.css'
 import './components/hubs/coBuildHub.css'
 
 const CourseTrack = lazy(() => import('./components/CourseTrack'))
@@ -53,6 +54,7 @@ const StrategyCaseCenter = lazy(() => import('./components/strategy/StrategyCase
 const StrategyCaseRunner = lazy(() => import('./components/strategy/StrategyCaseRunner'))
 const LegacyStrategyNotice = lazy(() => import('./components/strategy/LegacyStrategyNotice'))
 const VideoLibrary = lazy(() => import('./components/resources/VideoLibrary'))
+const PaperLibrary = lazy(() => import('./components/resources/PaperLibrary'))
 
 type GuestUser = { name?: string }
 
@@ -163,6 +165,7 @@ export default function Business({ user }: BusinessProps) {
     if (route.page === 'strategy-cases') return <StrategyCaseCenter go={go} />
     if (route.page === 'strategy-case') return <StrategyCaseRunner key={route.case} caseId={route.case} go={go} />
     if (route.page === 'videos') return <VideoLibrary />
+    if (route.page === 'papers') return <PaperLibrary />
     if (route.page === 'foundation') return <FoundationCourse initialNode={route.node} initialSection={route.section} go={go} />
     if (route.page === 'foundation-lab') return <FoundationLabs initialExperiment={route.experiment} initialCard={route.card} nodeId={route.node} go={go} />
     if (route.page === 'distill-course') return <DistillCourse initialModule={route.module} go={go} />

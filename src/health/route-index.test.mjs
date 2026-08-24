@@ -10,6 +10,7 @@ import {
   routeKeys,
 } from '../routeConfig.ts'
 import { strategyCaseCatalog } from '../components/strategy/caseCatalog.ts'
+import { paperResources } from '../resources/paperCatalog.ts'
 import { searchIndex } from '../searchIndex.ts'
 
 const businessSource = await readFile(new URL('../business.tsx', import.meta.url), 'utf8')
@@ -50,6 +51,21 @@ test('共建中心已接入顶级路由、渲染分发与搜索关键词', () =>
   const searchable = [entry.title, entry.subtitle, ...entry.keywords].join(' ')
   for (const keyword of ['共建', '贡献', 'good first issue', 'Strategy Case']) {
     assert.ok(searchable.includes(keyword), `共建中心必须可通过“${keyword}”搜索`)
+  }
+})
+
+test('论文讲解库已接入路由，且每篇论文的标题、作者、方向和中文讲解均可搜索', () => {
+  assert.ok(canonicalPageSet.has('papers'))
+  assert.ok(dispatchedPages.has('papers'))
+  const topEntry = searchIndex.find((candidate) => candidate.id === 'top-papers')
+  assert.equal(topEntry?.page, 'papers')
+  for (const paper of paperResources) {
+    const entry = searchIndex.find((candidate) => candidate.id === `paper-${paper.id}`)
+    assert.equal(entry?.page, 'papers', `${paper.id} 必须跳转论文页`)
+    const searchable = [entry?.title, entry?.subtitle, ...(entry?.keywords ?? [])].join(' ')
+    for (const expected of [paper.title, paper.authors, paper.area, paper.oneLine, paper.problem, paper.mechanism, paper.productLens, paper.readQuestion]) {
+      assert.ok(searchable.includes(expected), `${paper.id} 搜索索引缺少：${expected}`)
+    }
   }
 })
 

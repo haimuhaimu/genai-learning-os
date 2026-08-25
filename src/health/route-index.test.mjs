@@ -76,6 +76,7 @@ test('论文实验深链、注册表和未知 ID 回退保持健康', () => {
   assert.equal(paperLabs.length, 5)
   for (const lab of paperLabs) {
     assert.ok(paperResources.some((paper) => paper.id === lab.paperId), `${lab.paperId} 必须对应 Catalog 论文`)
+    assert.equal(lab.layout, 'golden', `${lab.paperId} 必须使用黄金课布局`)
     const entry = searchIndex.find((candidate) => candidate.id === `paper-lab-${lab.paperId}`)
     assert.deepEqual(entry?.options, { paper: lab.paperId })
   }

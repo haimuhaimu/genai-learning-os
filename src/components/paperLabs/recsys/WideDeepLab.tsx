@@ -1,66 +1,106 @@
-import { useMemo, useState } from 'react'
-import { wideDeepCompute, type WideDeepMode } from './compute'
-import { ComparisonGrid, ComparisonMetric, TeachingScaffold } from '../shared/TeachingScaffold'
-import { becauseTherefore } from '../shared/teaching'
-
-const baselineInput = { mode: 'joint' as const, deepWeight: 1 }
-
-function percent(value: number) {
-  return `${(value * 100).toFixed(1)}%`
-}
+import { useMemo, useRef, useState } from 'react'
+import { GoldenLessonShell, ContinueButton } from '../shared/GoldenLessonShell'
+import { GuessStep, MistakeStep, PaperRevealStep, RuleStep } from '../shared/GoldenLessonSteps'
+import type { LessonStep } from '../shared/goldenLessonModel'
+import {
+  FINAL_PRINCIPLE,
+  LAUNCH_CHOICES,
+  evaluateExploration,
+  getGuessFeedback,
+  getRuleFeedback,
+  nextLessonStep,
+  type RuleChoice,
+} from './lessonModel'
 
 export default function WideDeepLab() {
-  const [mode, setMode] = useState<WideDeepMode>(baselineInput.mode)
-  const [deepWeight, setDeepWeight] = useState(baselineInput.deepWeight)
-  const baseline = useMemo(() => wideDeepCompute(baselineInput), [])
-  const result = useMemo(() => wideDeepCompute({ mode, deepWeight }), [mode, deepWeight])
-  const changed = mode !== baselineInput.mode || deepWeight !== baselineInput.deepWeight
-  const passing = result.rows.filter((row) => row.probability >= 0.5)
-  const leader = [...result.rows].sort((left, right) => right.probability - left.probability)[0]
-  const cold = result.rows.find((row) => row.id === 'cold')!
-  const baselineCold = baseline.rows.find((row) => row.id === 'cold')!
-  const explanation = becauseTherefore(
-    `${mode === 'wide' ? '只启用记忆规则，系统偏爱见过的组合' : mode === 'deep' ? '只启用相似性泛化，系统不再依赖历史组合规则' : `记忆规则与相似性泛化共同打分，且泛化权重为 ${deepWeight.toFixed(1)}`}`,
-    `${leader.slice}样本以 ${percent(leader.probability)} 最先跨过 50% 门槛；当前共 ${passing.length} 个切片过门槛，代价是${mode === 'wide' || deepWeight < 0.7 ? '新商家与长尾曝光不足' : mode === 'deep' ? '热门历史规则被弱化，且相似但不相关的内容可能误入' : '泛化越强，误推荐与探索流量成本也越需要守护'}`,
-  )
+  const [step, setStep] = useState<LessonStep>(1)
+  const [guess, setGuess] = useState<number | null>(null)
+  const [revealed, setRevealed] = useState(false)
+  const [exploration, setExploration] = useState(0)
+  const [sliderTouched, setSliderTouched] = useState(false)
+  const [rule, setRule] = useState<RuleChoice | null>(null)
+  const lessonTop = useRef<HTMLDivElement>(null)
+  const result = useMemo(() => evaluateExploration(exploration), [exploration])
+
+  function goNext() {
+    setStep((current) => nextLessonStep(current))
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
+
+  function restart() {
+    setStep(1); setGuess(null); setRevealed(false); setExploration(0); setSliderTouched(false); setRule(null)
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
 
   return (
-    <TeachingScaffold
-      story={{
-        actor: '推荐产品经理要给新内容和新商家分配首批曝光',
-        challenge: '历史热门组合很容易继续赢，但没有历史行为的新商家可能永远进不了候选；只靠相似性又可能把“不相关但看起来像”的内容推给用户。',
-        question: '记忆规则和相似性泛化，谁帮助哪个切片先跨过推荐门槛，代价是什么？',
-      }}
-      tasks={['先看联合基线：记忆规则与相似性泛化各占当前默认权重。', '只切换推荐方式，或只改“泛化影响力”一个旋钮。', '对比热门、冷启动、长尾谁跨过 50% 门槛，以及谁被牺牲。']}
-      taskState={{ baselineReady: true, changedKnob: changed }}
-      terms={[
-        { term: 'Wide（记忆规则）', meaning: '记住历史上出现过的特征组合。', direction: '更强 = 热门旧组合更容易胜出，但新组合吃亏。' },
-        { term: 'Deep（相似性泛化）', meaning: '根据连续表示，把经验迁移给相似的新内容。', direction: '更强 = 冷启动与长尾更易被发现，也可能增加误推荐。' },
-        { term: 'Logit（门槛前分数）', meaning: '两路贡献相加后的原始分，经转换后得到推荐概率。' },
-      ]}
-      controls={
-        <fieldset className='paper-lab-controls'><legend>本轮旋钮</legend>
-          <label>推荐方式<select value={mode} onChange={(event) => setMode(event.target.value as WideDeepMode)}><option value='wide'>只用记忆规则</option><option value='deep'>只用相似性泛化</option><option value='joint'>记忆 + 泛化联合</option></select><small>切换后先看哪个切片失去门槛资格。</small></label>
-          <label>Deep（泛化影响力）<output>{deepWeight.toFixed(1)}</output><input type='range' min='0' max='2' step='0.1' value={deepWeight} onChange={(event) => setDeepWeight(Number(event.target.value))} /><small>调大更照顾相似的新内容；调小更依赖历史记忆。</small></label>
-        </fieldset>
-      }
-      results={
-        <>
-          <ComparisonGrid>{result.rows.map((row) => {
-            const base = baseline.rows.find((item) => item.id === row.id)!
-            const delta = (row.probability - base.probability) * 100
-            return <ComparisonMetric key={row.id} label={`${row.slice} · ${row.label}`} baseline={percent(base.probability)} current={percent(row.probability)} delta={`${delta >= 0 ? '+' : ''}${delta.toFixed(1)} 个百分点`} hint={`记忆规则 ${row.wideContribution.toFixed(2)} · 相似性泛化 ${row.deepContribution.toFixed(2)} · ${row.probability >= 0.5 ? '已跨过 50% 门槛' : '仍在 50% 门槛下'}`} />
-          })}</ComparisonGrid>
-          <div className='paper-threshold-board'>{result.rows.map((row) => <article className={row.probability >= 0.5 ? 'is-passing' : ''} key={row.id}><div><b>{row.slice}</b><span>{row.probability >= 0.5 ? '已过门槛' : '未过门槛'}</span></div><div className='threshold-track'><i style={{ width: `${row.probability * 100}%` }} /><em>50%</em></div><small>规则 {row.wideContribution.toFixed(2)} + 泛化 {row.deepContribution.toFixed(2)}</small></article>)}</div>
-        </>
-      }
-      explanation={<p className='paper-dynamic-explanation'>{explanation} 冷启动相对基线变化为 {((cold.probability - baselineCold.probability) * 100).toFixed(1)} 个百分点。</p>}
-      transfer={{
-        metric: '新内容 7 日有效互动率，同时报告热门、冷启动、长尾的过门槛率。',
-        guardrail: '冷启动曝光设下限；热门 CTR 与“不感兴趣”率设守护线，禁止只看总 CTR。',
-        action: '先给新商家 5% 探索流量；误推荐率超线就降低泛化权重并回到联合基线。',
-      }}
-      boundary='仅有 3 个固定样本和固定参数，不含训练、Embedding 学习、负样本、校准或线上竞价。'
-    />
+    <GoldenLessonShell step={step} eyebrow='新作者首发挑战' title='该给新作者第一批流量吗？' lessonRef={lessonTop}>
+      {step === 1 ? <GuessStep
+        title='一个从未发过内容的新作者来了，你会怎么分流量？'
+        prompt='旧作者点击率稳定，新作者没有任何历史成绩。请先凭直觉选一个首发策略。'
+        choices={LAUNCH_CHOICES.map((label, value) => ({ label, value }))}
+        selected={guess}
+        onSelect={(value) => setGuess(Number(value))}
+        feedback={guess === null ? null : getGuessFeedback(guess)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 2 ? <MistakeStep
+        title='AI 选择了“最稳”的旧作者，新人却永远没有数据'
+        decision='不给新作者流量'
+        reason='新作者历史点击为 0，预计收益低于老作者。'
+        consequence='后果：新作者持续零曝光，系统也永远收不到判断其质量的新证据。'
+        revealTitle='它把“没有历史”误当成“内容不好”'
+        revealDetail='历史规则擅长重复已经成功的组合，却无法凭空认识新作者；零曝光又会制造新的零数据。'
+        takeaway='只相信过去，可能让值得推荐的新内容永远没有第一次。'
+        revealed={revealed}
+        onReveal={() => setRevealed(true)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 3 ? (
+        <section aria-labelledby='golden-step-3'>
+          <span className='golden-kicker'>第 3 关 · 只改一个人话变量</span>
+          <h2 id='golden-step-3'>只调“探索力度”，看看新人能否获得首发机会</h2>
+          <p className='golden-prompt'>候选内容、用户和门槛都不变。向右移动会更多参考“相似内容曾受欢迎”这一线索。</p>
+          <label className='golden-slider'>
+            <span><b>完全沿用旧成绩</b><b>更多尝试相似新人</b></span>
+            <input aria-describedby='wide-slider-hint' min='0' max='100' value={exploration} type='range' onChange={(event) => { setExploration(Number(event.target.value)); setSliderTouched(true) }} />
+            <small id='wide-slider-hint'>唯一旋钮：探索力度。不是直接全量，而是决定新人能否跨过首发门槛。</small>
+          </label>
+          <div className={result.launchesNewAuthor ? 'golden-live-result is-correct' : 'golden-live-result is-wrong'}>
+            <div><span>新作者获得机会</span><strong>{(result.coldProbability * 100).toFixed(1)}%</strong><small>达到 50% 才进入小流量首发</small></div>
+            <div><span>当前决定</span><strong>{result.decision}</strong><small>{result.consequence}</small></div>
+          </div>
+          <p className='golden-live-feedback' role='status'>{result.feedback}</p>
+          <ContinueButton disabled={!sliderTouched || !result.launchesNewAuthor} onClick={goNext} />
+        </section>
+      ) : null}
+
+      {step === 4 ? <RuleStep
+        title='刚才为什么能让新人跨过门槛？'
+        prompt='候选人和历史记录都没变。请选择更准确的规律。'
+        choices={[{ value: 'history', label: '永远押注历史冠军最安全' }, { value: 'balanced', label: '旧经验与新机会要平衡' }]}
+        selected={rule}
+        onSelect={(value) => setRule(value as RuleChoice)}
+        feedback={rule ? getRuleFeedback(rule) : null}
+        onNext={goNext}
+      /> : null}
+
+      {step === 5 ? <PaperRevealStep
+        principle={FINAL_PRINCIPLE}
+        source='这正是 Wide & Deep Learning for Recommender Systems 中“记忆 + 泛化”的核心取舍。'
+        mappings={[
+          { term: 'Wide', chinese: '记忆旧组合', example: '老作者 + 老用户这类历史上见过的强规则。' },
+          { term: 'Deep', chinese: '泛化到相似新人', example: '把相似内容的经验迁移给没有历史的新作者。' },
+          { term: 'Logit', chinese: '门槛前总分', example: '两路贡献相加后、还没变成概率的分数。' },
+          { term: 'Sigmoid', chinese: '转成 0～1', example: '把总分压成可与首发门槛比较的概率。' },
+        ]}
+        formulaTitle='联合打分'
+        formula='p = Sigmoid(Logit) = Sigmoid(wide + deep)'
+        deepDive={<><h3>为什么不是“新人优先”？</h3><p>Deep 路径只是让新组合能借到相似经验，并不保证它一定优质。真实系统仍需小流量反馈、切片指标与回退规则。</p></>}
+        boundary='固定 3 个样本和固定参数，不包含训练、Embedding 学习、负样本、校准或线上竞价。'
+        onRestart={restart}
+      /> : null}
+    </GoldenLessonShell>
   )
 }

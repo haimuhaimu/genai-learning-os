@@ -1,14 +1,9 @@
 import { attentionCompute } from './compute.ts'
+import { GOLDEN_LESSON_STEPS, nextLessonStep, type LessonStep } from '../shared/goldenLessonModel.ts'
 
-export const LESSON_STEPS = [
-  '先猜',
-  '看 AI 犯错',
-  '只改一个条件',
-  '自己总结规律',
-  '揭示原理',
-] as const
-
-export type LessonStep = 1 | 2 | 3 | 4 | 5
+export { nextLessonStep }
+export const LESSON_STEPS = GOLDEN_LESSON_STEPS
+export type { LessonStep }
 export type RuleChoice = 'context' | 'focus'
 
 export const REFUND_EVIDENCE = [
@@ -25,10 +20,6 @@ export const PRINCIPLE_MAPPING = [
   { term: 'Key', chinese: '候选证据', example: '每句话提供“我可能与问题有关”的线索。' },
   { term: 'Value', chinese: '证据内容', example: '被选中后真正带入判断的信息。' },
 ] as const
-
-export function nextLessonStep(step: LessonStep): LessonStep {
-  return Math.min(5, step + 1) as LessonStep
-}
 
 export function getGuessFeedback(evidenceIndex: number) {
   if (evidenceIndex === 1) {

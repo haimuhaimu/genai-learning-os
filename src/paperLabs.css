@@ -254,7 +254,7 @@
   .paper-labs-page * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
 
-/* Transformer 黄金样板课：仅当前关卡可见 */
+/* 五关黄金样板课：仅当前关卡可见 */
 .paper-labs-page.is-golden-lesson {
   width: min(980px, calc(100% - 40px));
   padding-top: 24px;
@@ -465,4 +465,47 @@
 
 @media (prefers-reduced-motion: reduce) {
   .golden-lesson * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
+
+
+/* 黄金课共享题型与论文揭示 */
+.golden-choice-list { display: grid; gap: 9px; }
+.golden-choice {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  min-height: 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border: 1px solid var(--lo-line-strong);
+  border-radius: 11px;
+  color: var(--lo-ink);
+  background: #fafbfe;
+  cursor: pointer;
+  text-align: left;
+}
+.golden-choice:hover,
+.golden-choice:focus-visible { border-color: #657fac; background: #f1f5ff; }
+.golden-choice.is-selected { border: 2px solid var(--lo-accent); background: var(--lo-accent-soft); }
+.golden-choice > span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: #fff; background: #70809f; font-size: 10px; font-weight: 900; }
+.golden-choice.is-selected > span { background: var(--lo-accent); }
+.golden-choice strong { font-size: 13px; line-height: 1.55; }
+
+.golden-min-formula { margin-top: 11px; padding: 13px 15px; border: 1px solid #cbd6ed; border-radius: 10px; background: #f5f8ff; }
+.golden-min-formula span { display: block; margin-bottom: 8px; color: #344f82; font-size: 11px; font-weight: 900; }
+.golden-min-formula code { display: block; overflow-x: auto; padding: 10px; border-radius: 7px; color: #fff; background: #263555; font-size: 12px; }
+.golden-min-formula p { margin: 9px 0 0; color: #71541e; font-size: 11px; font-weight: 750; line-height: 1.6; }
+
+.golden-plain-trajectory { display: grid; gap: 6px; margin: 12px 0; padding: 0; list-style: none; }
+.golden-plain-trajectory li { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 9px; padding: 8px 11px; border: 1px solid var(--lo-line); border-radius: 8px; background: #fafbfe; }
+.golden-plain-trajectory span { color: var(--lo-accent); font-size: 10px; font-weight: 900; }
+.golden-plain-trajectory p { margin: 0; font-size: 11px; line-height: 1.45; }
+
+.golden-step-dots { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 12px; }
+.golden-step-dots i { height: 8px; border-radius: 99px; background: #e2e7f0; }
+.golden-step-dots i.is-active { background: var(--lo-accent); }
+
+@media (max-width: 700px) {
+  .golden-choice { min-height: 56px; padding: 9px 11px; }
+  .golden-plain-trajectory li { grid-template-columns: 64px 1fr; }
 }

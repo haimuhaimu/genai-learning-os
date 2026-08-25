@@ -1,72 +1,110 @@
-import { useMemo, useState } from 'react'
-import { ddpmCompute, type NoiseSchedule } from './compute'
-import { ComparisonGrid, ComparisonMetric, MechanismChain, TeachingScaffold } from '../shared/TeachingScaffold'
-import { becauseTherefore } from '../shared/teaching'
+import { useMemo, useRef, useState } from 'react'
+import { GoldenLessonShell, ContinueButton } from '../shared/GoldenLessonShell'
+import { GuessStep, MistakeStep, PaperRevealStep, RuleStep } from '../shared/GoldenLessonSteps'
+import type { LessonStep } from '../shared/goldenLessonModel'
+import {
+  FINAL_PRINCIPLE,
+  REPAIR_CHOICES,
+  evaluateNoiseAccuracy,
+  getGuessFeedback,
+  getRuleFeedback,
+  nextLessonStep,
+  type RuleChoice,
+} from './lessonModel'
 
-const baselineInput = { timestep: 40, totalSteps: 100, schedule: 'linear' as const, predictionError: 0.1, seed: 2026 }
-
-function signal(values: readonly number[]) {
-  return `[${values.map((value) => value.toFixed(2)).join(', ')}]`
+function points(values: readonly number[]) {
+  return values.map((value) => value.toFixed(2)).join(' · ')
 }
 
 export default function DdpmLab() {
-  const [timestep, setTimestep] = useState(baselineInput.timestep)
-  const [schedule, setSchedule] = useState<NoiseSchedule>(baselineInput.schedule)
-  const [predictionError, setPredictionError] = useState(baselineInput.predictionError)
-  const baseline = useMemo(() => ddpmCompute(baselineInput), [])
-  const result = useMemo(() => ddpmCompute({ ...baselineInput, timestep, schedule, predictionError }), [timestep, schedule, predictionError])
-  const changed = timestep !== baselineInput.timestep || schedule !== baselineInput.schedule || predictionError !== baselineInput.predictionError
-  const snrReading = result.signalToNoise >= 1 ? '信号仍强于噪声' : '噪声已经强于信号'
-  const qualityReading = result.reconstructionError <= baseline.reconstructionError ? '重建误差不高于基线' : '重建误差高于基线'
-  const explanation = becauseTherefore(
-    `噪声阶段走到第 ${timestep} 步，${schedule === 'linear' ? '线性教学日程' : '余弦日程'}把当前信噪比变为 ${result.signalToNoise}，同时模型估错程度为 ${predictionError.toFixed(2)}`,
-    `${snrReading}，反推干净信号时${qualityReading}（均方误差 ${result.reconstructionError}）；更晚的阶段与更大估错会让恢复难度上升，而真实产品增加去噪步数又会抬高延迟和单图成本`,
-  )
+  const [step, setStep] = useState<LessonStep>(1)
+  const [guess, setGuess] = useState<number | null>(null)
+  const [revealed, setRevealed] = useState(false)
+  const [accuracy, setAccuracy] = useState(0)
+  const [sliderTouched, setSliderTouched] = useState(false)
+  const [rule, setRule] = useState<RuleChoice | null>(null)
+  const lessonTop = useRef<HTMLDivElement>(null)
+  const result = useMemo(() => evaluateNoiseAccuracy(accuracy), [accuracy])
+
+  function goNext() {
+    setStep((current) => nextLessonStep(current))
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
+
+  function restart() {
+    setStep(1); setGuess(null); setRevealed(false); setAccuracy(0); setSliderTouched(false); setRule(null)
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
 
   return (
-    <TeachingScaffold
-      story={{
-        actor: 'AI 生成内容（AIGC）图片产品负责人正在决定默认生成档位',
-        challenge: '用户要更清晰的图，但更多去噪步骤会增加等待和算力成本；模型一旦估错噪声，最终图还可能出现结构破损。',
-        question: '当前噪声阶段与模型估错程度，怎样共同改变重建质量，并提示什么成本取舍？',
-      }}
-      tasks={['先固定第 40 步、线性噪声分配、0.10 估错程度作为基线。', '只改“噪声阶段”或“模型估错程度”，先不要同时改三个控件。', '沿着干净 → 带噪 → 重建看信号，再读信噪比与均方误差。']}
-      taskState={{ baselineReady: true, changedKnob: changed }}
-      terms={[
-        { term: 'Timestep（噪声阶段）', meaning: '当前走到加噪过程的第几步。', direction: '通常越后噪声越多、恢复越难。' },
-        { term: 'Schedule（噪声分配方式）', meaning: '噪声在各阶段如何分配。', direction: '不同方式会让同一阶段保留不同信号量。' },
-        { term: 'Prediction error（模型估错程度）', meaning: '模型预测的噪声与真实噪声相差多少。', direction: '越大 = 去噪方向越不准。' },
-        { term: 'SNR（信噪比）', meaning: '信号强度相对噪声强度。', direction: '大于 1 表示信号更强；小于 1 表示噪声占主导。' },
-        { term: 'MSE（均方误差）', meaning: '重建结果偏离干净样本的平均平方距离。', direction: '越低越接近原样本。' },
-      ]}
-      controls={
-        <fieldset className='paper-lab-controls'><legend>本轮旋钮</legend>
-          <label>Timestep（噪声阶段）<output>{timestep}/100</output><input type='range' min='1' max='100' value={timestep} onChange={(event) => setTimestep(Number(event.target.value))} /><small>调大表示观察更靠后的高噪声阶段。</small></label>
-          <label>Schedule（噪声分配方式）<select value={schedule} onChange={(event) => setSchedule(event.target.value as NoiseSchedule)}><option value='linear'>线性（教学近似）</option><option value='cosine'>余弦</option></select><small>切换后比较同一步的信噪比。</small></label>
-          <label>Prediction error（模型估错程度）<output>{predictionError.toFixed(2)}</output><input type='range' min='0' max='0.5' step='0.01' value={predictionError} onChange={(event) => setPredictionError(Number(event.target.value))} /><small>调大表示模型对噪声判断更不准。</small></label>
-        </fieldset>
-      }
-      results={
-        <>
-          <MechanismChain steps={[
-            { label: 'Clean · 干净信号', value: signal(result.cleanSample), tone: 'is-clean' },
-            { label: 'Noisy · 带噪信号', value: signal(result.noisySample), tone: 'is-noisy' },
-            { label: 'Reconstructed · 重建信号', value: signal(result.reconstructed), tone: 'is-reconstructed' },
-          ]} />
-          <ComparisonGrid>
-            <ComparisonMetric label='SNR · 信噪比' baseline={String(baseline.signalToNoise)} current={String(result.signalToNoise)} delta={snrReading} hint='不是越大越“有创意”；它只表示此刻还剩多少可辨认信号。' />
-            <ComparisonMetric label='MSE · 重建均方误差' baseline={String(baseline.reconstructionError)} current={String(result.reconstructionError)} delta={`${result.reconstructionError >= baseline.reconstructionError ? '+' : ''}${(result.reconstructionError - baseline.reconstructionError).toFixed(4)}`} hint='越低越接近干净样本；0 表示这个教学例子中完全重建。' />
-            <ComparisonMetric label='噪声阶段' baseline={`${baseline.timestep}/100`} current={`${result.timestep}/100`} delta={schedule === baselineInput.schedule ? '分配方式未变' : '已切换分配方式'} hint='阶段不是线上采样延迟本身，但帮助理解去噪任务在不同噪声强度下的难度。' />
-          </ComparisonGrid>
-        </>
-      }
-      explanation={<p className='paper-dynamic-explanation'>{explanation}</p>}
-      transfer={{
-        metric: '可用图率 / P95 生成延迟 / 单张可用图成本三项并列。',
-        guardrail: '按人像、文字、复杂构图切片；结构错误率与超时率任一越线即停。',
-        action: '先灰度低流量质量档；延迟或成本超预算就回退默认步数，失败切片转入重试或保守模型。',
-      }}
-      boundary='一维 4 点信号和闭式教学重建，不含神经网络训练、真实逐步采样、条件引导或图像空间。'
-    />
+    <GoldenLessonShell step={step} eyebrow='受污染图片修复挑战' title='怎样救回一张满是杂点的图？' lessonRef={lessonTop}>
+      {step === 1 ? <GuessStep
+        title='原图轮廓被随机杂点盖住，第一步该做什么？'
+        prompt='目标是恢复图案，同时别把真实边缘一起擦掉。请先选你认为最稳的办法。'
+        choices={REPAIR_CHOICES.map((label, value) => ({ label, value }))}
+        selected={guess}
+        onSelect={(value) => setGuess(Number(value))}
+        feedback={guess === null ? null : getGuessFeedback(guess)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 2 ? <MistakeStep
+        title='AI 用力抹平所有颗粒，连图案边缘也没了'
+        decision='输出一张平滑但变形的图'
+        reason='杂点越少，图片就一定越接近原图。'
+        consequence='后果：背景看起来更干净，但主体轮廓被误删，图片不可用。'
+        revealTitle='它没有分清“原图结构”和“后来混入的杂点”'
+        revealDetail='无差别平滑只能减少变化；如果判断错哪些是干扰，就会把原本要保留的结构一起扣掉。'
+        takeaway='修复不是擦得越多越好，而是要猜准该擦掉什么。'
+        revealed={revealed}
+        onReveal={() => setRevealed(true)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 3 ? (
+        <section aria-labelledby='golden-step-3'>
+          <span className='golden-kicker'>第 3 关 · 只改一个人话变量</span>
+          <h2 id='golden-step-3'>只调“估噪准确度”，观察轮廓能否回来</h2>
+          <p className='golden-prompt'>受污染的输入、随机杂点和修复阶段都固定，只改变 AI 对杂点的估计有多准。</p>
+          <label className='golden-slider'>
+            <span><b>估得很偏</b><b>估得准确</b></span>
+            <input aria-describedby='ddpm-slider-hint' min='0' max='100' value={accuracy} type='range' onChange={(event) => { setAccuracy(Number(event.target.value)); setSliderTouched(true) }} />
+            <small id='ddpm-slider-hint'>唯一旋钮：估噪准确度。向右移动，估计与实际混入的杂点更接近。</small>
+          </label>
+          <div className={result.repaired ? 'golden-live-result is-correct' : 'golden-live-result is-wrong'}>
+            <div><span>受污染的四个点</span><strong>{points(result.noisySample)}</strong><small>输入保持不变</small></div>
+            <div><span>修复结果</span><strong>{result.decision}</strong><small>偏离原图：{result.reconstructionError.toFixed(4)}</small></div>
+          </div>
+          <p className='golden-live-feedback' role='status'>{result.feedback}</p>
+          <ContinueButton disabled={!sliderTouched || !result.repaired} onClick={goNext} />
+        </section>
+      ) : null}
+
+      {step === 4 ? <RuleStep
+        title='刚才真正改善图片的是什么？'
+        prompt='污染程度没有变，只动了一个旋钮。请选择更准确的规律。'
+        choices={[{ value: 'erase', label: '只要擦得更多，图片就更好' }, { value: 'estimate', label: '先估准杂点，才能保住结构' }]}
+        selected={rule}
+        onSelect={(value) => setRule(value as RuleChoice)}
+        feedback={rule ? getRuleFeedback(rule) : null}
+        onNext={goNext}
+      /> : null}
+
+      {step === 5 ? <PaperRevealStep
+        principle={FINAL_PRINCIPLE}
+        source='这正是 DDPM 的核心思路：定义 Forward（加噪）过程，并学习 Reverse（反向去噪）过程。'
+        mappings={[
+          { term: 'Forward', chinese: '逐步加噪', example: '把干净图逐步变成更难辨认的输入。' },
+          { term: 'Reverse', chinese: '逐步还原', example: '每一步先估噪，再向更干净的方向移动。' },
+          { term: 'ε (epsilon)', chinese: '混入的噪声', example: '第 3 关里 AI 努力估准的“杂点”。' },
+          { term: 'SNR', chinese: '信噪比', example: '可辨认信号相对噪声还剩多少。' },
+        ]}
+        formulaTitle='一次加噪'
+        formula='xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε'
+        deepDive={<><h3>模型到底学什么？</h3><p>常见训练目标是让模型预测 ε，并最小化真实噪声与预测噪声的差：L = ‖ε − εθ(xₜ, t)‖²。预测越准，反向恢复方向越可靠。</p></>}
+        boundary='一维 4 点信号和闭式重建，不包含神经网络训练、真实逐步采样、条件引导或图像空间。'
+        onRestart={restart}
+      /> : null}
+    </GoldenLessonShell>
   )
 }

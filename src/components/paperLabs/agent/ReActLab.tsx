@@ -1,88 +1,110 @@
-import { useMemo, useState } from 'react'
-import { reactCompute, type ReactMode } from './compute'
-import { ComparisonGrid, ComparisonMetric, TeachingScaffold, TrajectoryStatus } from '../shared/TeachingScaffold'
-import { becauseTherefore } from '../shared/teaching'
+import { useMemo, useRef, useState } from 'react'
+import { GoldenLessonShell, ContinueButton } from '../shared/GoldenLessonShell'
+import { GuessStep, MistakeStep, PaperRevealStep, RuleStep } from '../shared/GoldenLessonSteps'
+import type { LessonStep } from '../shared/goldenLessonModel'
+import {
+  FINAL_PRINCIPLE,
+  REFUND_CHOICES,
+  evaluateVerification,
+  getGuessFeedback,
+  getRuleFeedback,
+  nextLessonStep,
+  type RuleChoice,
+} from './lessonModel'
 
-const baselineInput = { mode: 'react' as const, conflict: true, toolsAvailable: true, budget: 6 }
-
-const modeLabels: Record<ReactMode, string> = {
-  direct: '直接回答（不查证）',
-  cot: '只在内部推理（不调用系统）',
-  react: '边推理边查证',
-}
-
-function missingStep(result: ReturnType<typeof reactCompute>) {
-  if (result.success) return '关键步骤已齐：可按安全规则输出。'
-  if (result.failureAt.includes('外部观察')) return '还差：先查订单系统，再允许回答。'
-  if (result.failureAt.includes('CoT-only')) return '还差：调用订单系统取得外部证据。'
-  if (result.failureAt.includes('查询能力')) return '还差：恢复工具，或保持停止并转人工。'
-  if (result.failureAt.includes('观察返回')) return '还差：等待并读取工具观察。'
-  if (result.failureAt.includes('核验后')) return '还差：冲突后执行保守转人工。'
-  if (result.failureAt.includes('冲突')) return '还差：调用支付核验，再做保守决定。'
-  return '还差：在预算内形成有证据的最终动作。'
-}
+const kindLabels = { thought: '先判断', action: '去查询', observation: '读结果', answer: '做决定', stop: '停止' } as const
 
 export default function ReActLab() {
-  const [mode, setMode] = useState<ReactMode>(baselineInput.mode)
-  const [conflict, setConflict] = useState(baselineInput.conflict)
-  const [toolsAvailable, setToolsAvailable] = useState(baselineInput.toolsAvailable)
-  const [budget, setBudget] = useState(baselineInput.budget)
-  const baseline = useMemo(() => reactCompute(baselineInput), [])
-  const result = useMemo(() => reactCompute({ mode, conflict, toolsAvailable, budget }), [mode, conflict, toolsAvailable, budget])
-  const changed = mode !== baselineInput.mode || conflict !== baselineInput.conflict || toolsAvailable !== baselineInput.toolsAvailable || budget !== baselineInput.budget
-  const observations = result.steps.filter((step) => step.kind === 'observation').length
-  const baselineObservations = baseline.steps.filter((step) => step.kind === 'observation').length
-  const branchIndex = result.steps.findIndex((step) => step.text.includes('冲突') || step.kind === 'stop')
-  const explanation = becauseTherefore(
-    `${modeLabels[mode]}${toolsAvailable ? '且系统可调用' : '但系统不可调用'}，最多只能走 ${budget} 步，${conflict ? '订单与支付记录出现冲突' : '外部记录一致'}`,
-    `${result.success ? '轨迹没有猜测副作用动作，而是到达安全结果' : `轨迹在“${result.failureAt || '预算耗尽'}”处停下`}；${missingStep(result)}`,
-  )
+  const [step, setStep] = useState<LessonStep>(1)
+  const [guess, setGuess] = useState<number | null>(null)
+  const [revealed, setRevealed] = useState(false)
+  const [strictness, setStrictness] = useState(0)
+  const [sliderTouched, setSliderTouched] = useState(false)
+  const [rule, setRule] = useState<RuleChoice | null>(null)
+  const lessonTop = useRef<HTMLDivElement>(null)
+  const result = useMemo(() => evaluateVerification(strictness), [strictness])
+
+  function goNext() {
+    setStep((current) => nextLessonStep(current))
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
+
+  function restart() {
+    setStep(1); setGuess(null); setRevealed(false); setStrictness(0); setSliderTouched(false); setRule(null)
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
 
   return (
-    <TeachingScaffold
-      story={{
-        actor: '退款自动化负责人要避免智能代理（Agent）“自信地错”',
-        challenge: '模型凭经验说“可以退款”很快，但订单系统与支付系统可能冲突；一旦直接执行，就会造成重复退款。',
-        question: '这条轨迹是否真的查证过，若不能安全退款，还差哪一步？',
-      }}
-      tasks={['先保留“边推理边查证 + 有工具 + 有冲突 + 6 步预算”的安全基线。', '只改模式、预算、工具或冲突中的一个条件。', '沿轨迹找到关键分叉，再读“还差哪一步”，不要只看最终成功/失败。']}
-      taskState={{ baselineReady: true, changedKnob: changed }}
-      terms={[
-        { term: 'Mode（是否查证）', meaning: '决定直接回答、只在内部推理，还是边推理边调用系统。' },
-        { term: 'Budget（最多可走几步）', meaning: '一次任务允许的轨迹长度上限。', direction: '太小会在观察或核验前被迫停止；更大也不保证正确。' },
-        { term: 'Tools（能否调用系统）', meaning: '是否能读取订单、支付等外部事实。' },
-        { term: 'Conflict（是否出现冲突）', meaning: '不同系统返回的事实是否互相矛盾。', direction: '出现冲突时必须核验或转人工，不能任选一个相信。' },
-        { term: 'ReAct（推理—行动—观察）', meaning: '让思考、工具动作和外部观察交替出现，留下可检查轨迹。' },
-      ]}
-      controls={
-        <fieldset className='paper-lab-controls'><legend>本轮旋钮</legend>
-          <label>Mode（是否查证）<select value={mode} onChange={(event) => setMode(event.target.value as ReactMode)}><option value='direct'>直接回答 · 不查证</option><option value='cot'>只内部推理 · 不调用系统</option><option value='react'>边推理边查证</option></select></label>
-          <label>Budget（最多可走几步）<output>{budget} 步</output><input type='range' min='1' max='6' value={budget} onChange={(event) => setBudget(Number(event.target.value))} /><small>调小可观察轨迹会在哪一步被截断。</small></label>
-          <label className='paper-lab-check'><input type='checkbox' checked={toolsAvailable} onChange={(event) => setToolsAvailable(event.target.checked)} /><span>Tools · 允许调用系统<br /><small>关闭后不能获得订单事实</small></span></label>
-          <label className='paper-lab-check'><input type='checkbox' checked={conflict} onChange={(event) => setConflict(event.target.checked)} /><span>Conflict · 注入冲突<br /><small>订单与支付记录互相矛盾</small></span></label>
-        </fieldset>
-      }
-      results={
-        <>
-          <ComparisonGrid>
-            <ComparisonMetric label='安全结果' baseline={baseline.success ? '达到' : '未达到'} current={result.success ? '达到' : '未达到'} delta={result.success === baseline.success ? '与基线一致' : '相对基线已改变'} hint='“安全”可能是有确认门地执行，也可能是在冲突时停止并转人工。' />
-            <ComparisonMetric label='外部观察数' baseline={String(baselineObservations)} current={String(observations)} delta={`${observations - baselineObservations >= 0 ? '+' : ''}${observations - baselineObservations}`} hint='内部推理不是外部证据；没有 Observation 就没有查证。' />
-            <ComparisonMetric label='实际轨迹长度' baseline={`${baseline.steps.length} 步`} current={`${result.steps.length} 步`} delta={`预算上限 ${budget} 步`} hint='步数更长不自动更可靠，关键是是否跨过查询与冲突核验分叉。' />
-          </ComparisonGrid>
-          <ol className='react-trajectory' aria-label='退款自动化行动轨迹'>{result.steps.map((step, index) => {
-            const keyBranch = index === branchIndex || step.text.includes('payment.verify') || (step.kind === 'answer' && conflict)
-            return <li className={keyBranch ? 'is-key-branch' : ''} key={`${step.kind}-${index}`}><span>{step.kind}</span><p>{step.text}</p>{keyBranch ? <b>关键分叉</b> : null}</li>
-          })}</ol>
-          <TrajectoryStatus><p><b>{result.success ? '安全闭环' : '尚未闭环'}</b>{missingStep(result)}</p></TrajectoryStatus>
-        </>
-      }
-      explanation={<p className='paper-dynamic-explanation'>{explanation}</p>}
-      transfer={{
-        metric: '安全完成率 + 重复退款率 + 人工转接率，分开报告。',
-        guardrail: '冲突订单必须禁止自动退款；轨迹必须包含查询参数、观察与停止原因。',
-        action: '先对白名单低金额订单灰度；缺观察、超预算或冲突未核验时立即停自动化并转人工。',
-      }}
-      boundary='固定退款环境与规则表，不调用语言模型或真实工具；轨迹只用于说明控制流与停止条件。'
-    />
+    <GoldenLessonShell step={step} eyebrow='退款安全挑战' title='怎样避免同一订单被退两次？' lessonRef={lessonTop}>
+      {step === 1 ? <GuessStep
+        title='顾客说“钱没到账”，但客服备注写着“已处理”，你让 AI 怎么做？'
+        prompt='退款一旦重复执行就很难追回。请先选一个最稳的处理方式。'
+        choices={REFUND_CHOICES.map((label, value) => ({ label, value }))}
+        selected={guess}
+        onSelect={(value) => setGuess(Number(value))}
+        feedback={guess === null ? null : getGuessFeedback(guess)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 2 ? <MistakeStep
+        title='AI 很快答应退款，却把同一笔钱退了第二次'
+        decision='立即再次退款 199 元'
+        reason='顾客截图可信，而且快速解决能提升满意度。'
+        consequence='后果：支付系统其实已退款，商家多损失 199 元。'
+        revealTitle='它把“说得通”当成了“查证过”'
+        revealDetail='顾客截图和旧备注都可能滞后。AI 没读取当前订单、支付状态，也没有在信息冲突时停下。'
+        takeaway='关键动作前不查事实，再流畅的回答也可能造成真实损失。'
+        revealed={revealed}
+        onReveal={() => setRevealed(true)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 3 ? (
+        <section aria-labelledby='golden-step-3'>
+          <span className='golden-kicker'>第 3 关 · 只改一个人话变量</span>
+          <h2 id='golden-step-3'>只调“查证严格度”，看流程会走到哪里</h2>
+          <p className='golden-prompt'>订单仍然存在冲突、系统也都可用。向右移动，让 AI 在退款前完成更多查证。</p>
+          <label className='golden-slider'>
+            <span><b>直接相信并执行</b><b>冲突时核验并停止</b></span>
+            <input aria-describedby='react-slider-hint' min='0' max='100' value={strictness} type='range' onChange={(event) => { setStrictness(Number(event.target.value)); setSliderTouched(true) }} />
+            <small id='react-slider-hint'>唯一旋钮：查证严格度。可靠不是步骤越多，而是关键动作前拿到证据并知道何时停。</small>
+          </label>
+          <ol className='golden-plain-trajectory' aria-label='当前退款处理轨迹'>
+            {result.steps.map((item, index) => <li key={`${item.kind}-${index}`}><span>{kindLabels[item.kind]}</span><p>{item.text}</p></li>)}
+          </ol>
+          <div className={result.safe ? 'golden-live-result is-correct' : 'golden-live-result is-wrong'}>
+            <div><span>当前决定</span><strong>{result.decision}</strong><small>{result.steps.length} 个处理步骤</small></div>
+            <div><span>是否安全闭环</span><strong>{result.safe ? '是' : '否'}</strong><small>{result.feedback}</small></div>
+          </div>
+          <ContinueButton disabled={!sliderTouched || !result.safe} onClick={goNext} />
+        </section>
+      ) : null}
+
+      {step === 4 ? <RuleStep
+        title='什么让这次退款不再重复？'
+        prompt='退款条件和系统事实都没变。请选择更准确的规律。'
+        choices={[{ value: 'confidence', label: '让 AI 回答得更自信' }, { value: 'verify', label: '动作前查证，冲突时停止' }]}
+        selected={rule}
+        onSelect={(value) => setRule(value as RuleChoice)}
+        feedback={rule ? getRuleFeedback(rule) : null}
+        onNext={goNext}
+      /> : null}
+
+      {step === 5 ? <PaperRevealStep
+        principle={FINAL_PRINCIPLE}
+        source='这正是 ReAct 将推理与行动交错组织的核心：每次外部结果都会影响下一步。'
+        mappings={[
+          { term: 'Thought', chinese: '形成下一步判断', example: '先判断需要核对退款资格和状态。' },
+          { term: 'Act', chinese: '执行外部动作', example: '调用订单或支付查询。' },
+          { term: 'Observation', chinese: '读取外部结果', example: '看到“支付成功但记录已退款”的冲突。' },
+          { term: 'Stop', chinese: '明确停止', example: '证据冲突时不再自动退款，转人工。' },
+        ]}
+        formulaTitle='最小控制循环'
+        formula='Thought → Act → Observation → … → Stop'
+        deepDive={<><h3>为什么 Observation 重要？</h3><p>Thought 只是模型内部形成的判断；Observation 才是工具返回的外部事实。生产系统还要限制工具权限、记录参数和返回值，并设置步数与停止条件。</p></>}
+        boundary='固定退款环境和规则表，不调用语言模型或真实工具；轨迹只说明控制流与停止条件。'
+        onRestart={restart}
+      /> : null}
+    </GoldenLessonShell>
   )
 }

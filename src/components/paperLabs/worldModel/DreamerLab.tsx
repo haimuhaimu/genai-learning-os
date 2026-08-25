@@ -1,62 +1,106 @@
-import { useMemo, useState } from 'react'
-import { dreamerCompute } from './compute'
-import { ComparisonGrid, ComparisonMetric, TeachingScaffold } from '../shared/TeachingScaffold'
-import { becauseTherefore } from '../shared/teaching'
-
-const baselineInput = { accuracy: 0.8, imaginationLength: 8, discount: 0.95 }
+import { useMemo, useRef, useState } from 'react'
+import { GoldenLessonShell, ContinueButton } from '../shared/GoldenLessonShell'
+import { GuessStep, MistakeStep, PaperRevealStep, RuleStep } from '../shared/GoldenLessonSteps'
+import type { LessonStep } from '../shared/goldenLessonModel'
+import {
+  FINAL_PRINCIPLE,
+  ROI_CHOICES,
+  evaluateRolloutLength,
+  getGuessFeedback,
+  getRuleFeedback,
+  nextLessonStep,
+  type RuleChoice,
+} from './lessonModel'
 
 export default function DreamerLab() {
-  const [accuracy, setAccuracy] = useState(baselineInput.accuracy)
-  const [imaginationLength, setImaginationLength] = useState(baselineInput.imaginationLength)
-  const baseline = useMemo(() => dreamerCompute(baselineInput), [])
-  const result = useMemo(() => dreamerCompute({ ...baselineInput, accuracy, imaginationLength }), [accuracy, imaginationLength])
-  const changed = accuracy !== baselineInput.accuracy || imaginationLength !== baselineInput.imaginationLength
-  const cumulativeErrors = result.stepErrors.map((_, index) => result.stepErrors.slice(0, index + 1).reduce((sum, value) => sum + value, 0))
-  const explanation = becauseTherefore(
-    `模拟器可信度是 ${Math.round(accuracy * 100)}%，每一步的小偏差在向未来推演 ${imaginationLength} 步时继续叠加`,
-    `累计误差到达 ${result.accumulatedError}，想象回报相对真实回报偏差 ${result.returnBias >= 0 ? '+' : ''}${result.returnBias}；${result.needsRealValidation ? '此时必须回到真实小流量做对照验证，不能继续只信仿真 ROI' : '当前仍可做短推演观察，但上线前仍需真实验证'}`,
-  )
+  const [step, setStep] = useState<LessonStep>(1)
+  const [guess, setGuess] = useState<number | null>(null)
+  const [revealed, setRevealed] = useState(false)
+  const [length, setLength] = useState(1)
+  const [sliderTouched, setSliderTouched] = useState(false)
+  const [rule, setRule] = useState<RuleChoice | null>(null)
+  const lessonTop = useRef<HTMLDivElement>(null)
+  const result = useMemo(() => evaluateRolloutLength(length), [length])
+
+  function goNext() {
+    setStep((current) => nextLessonStep(current))
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
+
+  function restart() {
+    setStep(1); setGuess(null); setRevealed(false); setLength(1); setSliderTouched(false); setRule(null)
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
 
   return (
-    <TeachingScaffold
-      story={{
-        actor: '策略团队在仿真中看到极高投入产出比（ROI），准备扩大线上流量',
-        challenge: '模拟器每一步只错一点，长时间推演后却可能把回报高估；仿真看似省样本，线上一放量就出现回撤。',
-        question: '误差从哪一步开始累积到不可忽略，什么时候必须回真实小流量验证？',
-      }}
-      tasks={['先看 80% 模拟器可信度、向未来推演 8 步的基线。', '只改“模拟器可信度”或“推演步数”，观察单步小错如何累积。', '对比真实与想象回报偏差，并确认是否触发真实小流量验证。']}
-      taskState={{ baselineReady: true, changedKnob: changed }}
-      terms={[
-        { term: 'Accuracy（模拟器可信度）', meaning: '教学中表示模拟器预测接近真实环境的程度。', direction: '调低 = 每一步预测偏差更大；100% 仅是理想对照。' },
-        { term: 'Rollout length（向未来推演几步）', meaning: '策略在模拟世界里连续预测多远。', direction: '调大 = 节省更多真实交互，但误差有更多机会累积。' },
-        { term: 'Return bias（回报偏差）', meaning: '想象回报减去真实回报。', direction: '正值表示仿真偏乐观，负值表示偏悲观。' },
-      ]}
-      controls={
-        <fieldset className='paper-lab-controls'><legend>本轮旋钮</legend>
-          <label>Accuracy（模拟器可信度）<output>{Math.round(accuracy * 100)}%</output><input type='range' min='0.5' max='1' step='0.05' value={accuracy} onChange={(event) => setAccuracy(Number(event.target.value))} /><small>调低代表线上环境更难被仿真准确预测。</small></label>
-          <label>Rollout length（向未来推演几步）<output>{imaginationLength} 步</output><input type='range' min='1' max='12' value={imaginationLength} onChange={(event) => setImaginationLength(Number(event.target.value))} /><small>调长后重点看累计误差，而非只看想象回报。</small></label>
-        </fieldset>
-      }
-      results={
-        <>
-          <ComparisonGrid>
-            <ComparisonMetric label='真实折扣回报' baseline={String(baseline.realReturn)} current={String(result.realReturn)} delta={`观察 ${result.length} 步`} hint='教学中作为对照真值；真实业务里只能通过实际流量估计。' />
-            <ComparisonMetric label='想象回报偏差' baseline={`${baseline.returnBias >= 0 ? '+' : ''}${baseline.returnBias}`} current={`${result.returnBias >= 0 ? '+' : ''}${result.returnBias}`} delta={result.returnBias > 0 ? '模拟器偏乐观' : result.returnBias < 0 ? '模拟器偏悲观' : '无偏差'} hint='ROI 看起来更高，不代表线上也会同样增长。' />
-            <ComparisonMetric label='累计模型误差' baseline={String(baseline.accumulatedError)} current={String(result.accumulatedError)} delta={result.needsRealValidation ? '已触发真实验证' : '未触发长度规则'} hint='当前教学规则：模型不完美且推演达到 6 步，就必须回真实环境。' />
-          </ComparisonGrid>
-          <div className='dreamer-error-table' role='table' aria-label='逐步累积的模拟误差'>
-            <div role='row'><b role='columnheader'>步</b><b role='columnheader'>真实奖励</b><b role='columnheader'>想象奖励</b><b role='columnheader'>本步误差</b><b role='columnheader'>累计误差</b></div>
-            {result.stepErrors.map((error, index) => <div role='row' className={index >= 5 && accuracy < 1 ? 'needs-validation' : ''} key={index}><span role='cell'>{index + 1}</span><span role='cell'>{result.realRewards[index]}</span><span role='cell'>{result.imaginedRewards[index]}</span><span role='cell'>+{error}</span><span role='cell'><i style={{ width: `${Math.min(100, cumulativeErrors[index] / Math.max(result.accumulatedError, 0.01) * 100)}%` }} />{cumulativeErrors[index].toFixed(3)}{index === 5 && accuracy < 1 ? <em>从这里必须回真实验证</em> : null}</span></div>)}
+    <GoldenLessonShell step={step} eyebrow='仿真放量挑战' title='仿真 ROI 很高，能直接全量吗？' lessonRef={lessonTop}>
+      {step === 1 ? <GuessStep
+        title='新策略在仿真里收益大涨 30%，下一步怎么做？'
+        prompt='仿真器单步大约有八成可信，但真实用户尚未接触策略。请先选一个上线动作。'
+        choices={ROI_CHOICES.map((label, value) => ({ label, value }))}
+        selected={guess}
+        onSelect={(value) => setGuess(Number(value))}
+        feedback={guess === null ? null : getGuessFeedback(guess)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 2 ? <MistakeStep
+        title='AI 相信漂亮的仿真 ROI，直接全量后却出现回撤'
+        decision='把新策略扩大到 100% 流量'
+        reason='连续十二步仿真都赚钱，说明策略已经稳定。'
+        consequence='后果：真实用户行为与仿真有偏差，长链路把小错放大，线上 ROI 转负。'
+        revealTitle='它忽略了“下一步预测建立在上一步预测之上”'
+        revealDetail='每一步只偏一点看似无害，但后续继续拿带偏的状态做预测，累计结果可能越来越乐观。'
+        takeaway='模拟得更远能看到长期结果，也给了小错更多累积机会。'
+        revealed={revealed}
+        onReveal={() => setRevealed(true)}
+        onNext={goNext}
+      /> : null}
+
+      {step === 3 ? (
+        <section aria-labelledby='golden-step-3'>
+          <span className='golden-kicker'>第 3 关 · 只改一个人话变量</span>
+          <h2 id='golden-step-3'>只调“推演长度”，看何时不能直接相信仿真</h2>
+          <p className='golden-prompt'>模拟器可信度与收益序列都固定，只改变连续向未来推演几步。</p>
+          <label className='golden-slider'>
+            <span><b>只看下一步</b><b>连续看十二步</b></span>
+            <input aria-describedby='dreamer-slider-hint' min='1' max='12' value={length} type='range' onChange={(event) => { setLength(Number(event.target.value)); setSliderTouched(true) }} />
+            <small id='dreamer-slider-hint'>唯一旋钮：推演长度。第 6 步触发真实验证是本课的产品护栏，不是论文定理。</small>
+          </label>
+          <div className={result.needsRealValidation ? 'golden-live-result is-correct' : 'golden-live-result is-wrong'}>
+            <div><span>累计模拟误差</span><strong>{result.accumulatedError.toFixed(3)}</strong><small>想象收益偏差 {result.returnBias >= 0 ? '+' : ''}{result.returnBias.toFixed(3)}</small></div>
+            <div><span>当前动作</span><strong>{result.decision}</strong><small>{result.feedback}</small></div>
           </div>
-        </>
-      }
-      explanation={<p className='paper-dynamic-explanation'>{explanation}</p>}
-      transfer={{
-        metric: '真实小流量 ROI 为主指标；同时报告想象回报偏差与累计模型误差。',
-        guardrail: '按新用户、极端状态、分布漂移切片；推演 ≥ 6 步且模拟器非完美时强制真实验证。',
-        action: '仿真先筛方案，再用 1% 真实流量校验；真实 ROI 回撤或偏差超线就回退策略并缩短推演。',
-      }}
-      boundary='固定奖励序列与显式误差函数，不含潜变量、Actor-Critic、训练、多环境泛化或真实线上 ROI。'
-    />
+          <div className='golden-step-dots' aria-label={`正在推演 ${result.length} 步`}>{Array.from({ length: 12 }, (_, index) => <i className={index < result.length ? 'is-active' : ''} key={index} />)}</div>
+          <ContinueButton disabled={!sliderTouched || !result.needsRealValidation} onClick={goNext} />
+        </section>
+      ) : null}
+
+      {step === 4 ? <RuleStep
+        title='刚才为什么越往后越不该直接放量？'
+        prompt='模拟器本身没有改变，只增加了连续推演的长度。请选择更准确的规律。'
+        choices={[{ value: 'scale', label: '仿真收益高就能直接全量' }, { value: 'validate', label: '推得越远，越要防小错累积' }]}
+        selected={rule}
+        onSelect={(value) => setRule(value as RuleChoice)}
+        feedback={rule ? getRuleFeedback(rule) : null}
+        onNext={goNext}
+      /> : null}
+
+      {step === 5 ? <PaperRevealStep
+        principle={FINAL_PRINCIPLE}
+        source='这对应 DreamerV3 用学习到的 World Model 在潜在空间做 Imagination Rollout，并据此优化策略。'
+        mappings={[
+          { term: 'World Model', chinese: '学到的环境模型', example: '根据当前状态和动作预测下一步。' },
+          { term: 'Imagination Rollout', chinese: '在模型里连续推演', example: '第 3 关从 1 步拉到 12 步的过程。' },
+          { term: 'Discounted Return', chinese: '折扣累计回报', example: '越远的未来奖励权重通常越小。' },
+        ]}
+        formulaTitle='折扣累计回报'
+        formula='Gₜ = rₜ + γrₜ₊₁ + γ²rₜ₊₂ + …'
+        note='重要边界：第 6 步真实验证是本课程为上线决策设置的产品护栏，不是 DreamerV3 论文定理。'
+        deepDive={<><h3>论文机制与上线护栏要分开</h3><p>DreamerV3 的贡献包括学习世界模型、在想象轨迹中训练行为。真实流量验证、1% 灰度和“第 6 步”阈值是产品风险控制设计。</p></>}
+        boundary='固定奖励序列与显式误差函数，不包含潜变量、Actor-Critic、训练、多环境泛化或真实线上 ROI。'
+        onRestart={restart}
+      /> : null}
+    </GoldenLessonShell>
   )
 }

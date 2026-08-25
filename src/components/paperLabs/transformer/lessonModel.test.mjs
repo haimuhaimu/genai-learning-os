@@ -11,7 +11,7 @@ import {
 } from './lessonModel.ts'
 
 test('黄金样板课按五关顺序推进且不会越过终点', () => {
-  assert.deepEqual(LESSON_STEPS, ['先猜', '看 AI 犯错', '只改一个条件', '自己总结规律', '揭示原理'])
+  assert.deepEqual(LESSON_STEPS, ['先猜', '看 AI 犯错', '只改一个人话变量', '自己总结规律', '揭示论文术语与最小公式'])
   assert.equal(nextLessonStep(1), 2)
   assert.equal(nextLessonStep(4), 5)
   assert.equal(nextLessonStep(5), 5)
@@ -51,4 +51,10 @@ test('最终规律完整映射到 Query、Key、Value', () => {
     ['Key', '候选证据'],
     ['Value', '证据内容'],
   ])
+})
+
+test('第 3 关存在可达的关注证据通关状态', () => {
+  const reachable = Array.from({ length: 101 }, (_, balance) => evaluateEvidenceBalance(balance)).find((result) => result.approvesRefund)
+  assert.ok(reachable)
+  assert.equal(reachable.attentionIndex, 1)
 })

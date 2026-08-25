@@ -31,6 +31,9 @@ export function defineStrategyCase<const TSpec extends StrategyCaseSpec>(input: 
   if (!Array.isArray(spec.fixedDataRows) || spec.fixedDataRows.length === 0) throw new Error('Strategy Case fixedDataRows are required')
   if (typeof spec.compute !== 'function') throw new Error('Strategy Case compute() is required')
   if (typeof spec.summarize !== 'function') throw new Error('Strategy Case summarize() is required')
+  if (spec.mechanism && (!spec.mechanism.title?.trim() || !spec.mechanism.description?.trim() || typeof spec.mechanism.build !== 'function')) {
+    throw new Error('Strategy Case mechanism requires title, description and build()')
+  }
 
   const controlIds = new Set<string>()
   for (const control of spec.controls) {

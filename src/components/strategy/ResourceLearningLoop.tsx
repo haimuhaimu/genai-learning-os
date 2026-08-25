@@ -11,9 +11,9 @@ import {
 } from '../../resourceLoop'
 import type { CaseId } from './caseCatalog'
 
-type Props = { caseId: CaseId; question: string; children: ReactNode }
+type Props = { caseId: CaseId; question: string; children: ReactNode; hideInitialStep?: boolean }
 
-export default function ResourceLearningLoop({ caseId, question, children }: Props) {
+export default function ResourceLearningLoop({ caseId, question, children, hideInitialStep = false }: Props) {
   const [record, setRecord] = useState<ResourceLoopRecord | undefined>(() => readResourceLoop(caseId))
   const [initial, setInitial] = useState(record?.initialJudgment ?? '')
   const [review, setReview] = useState(record?.reviewJudgment ?? '')
@@ -49,12 +49,14 @@ export default function ResourceLearningLoop({ caseId, question, children }: Pro
         <p><ShieldCheck aria-hidden='true' />回答不会上传。资源“已触达”仅表示你主动打开过，不代表已经看完或学会。</p>
       </header>
 
-      <section className='resource-loop-step'>
-        <div className='resource-loop-step-title'><b>1</b><span><strong>首次判断</strong><small>{question}</small></span></div>
-        <label htmlFor={`initial-${caseId}`}>写下查看补充资源前的判断</label>
-        <textarea id={`initial-${caseId}`} value={initial} maxLength={4000} onChange={(event) => setInitial(event.target.value)} placeholder='我现在会如何决策？依据和不确定性是什么？' />
-        <button type='button' disabled={!initial.trim()} onClick={saveInitial}>{record?.initialJudgment ? '更新首次判断' : '保存首次判断'}</button>
-      </section>
+      {!hideInitialStep ? (
+        <section className='resource-loop-step'>
+          <div className='resource-loop-step-title'><b>1</b><span><strong>首次判断</strong><small>{question}</small></span></div>
+          <label htmlFor={`initial-${caseId}`}>写下查看补充资源前的判断</label>
+          <textarea id={`initial-${caseId}`} value={initial} maxLength={4000} onChange={(event) => setInitial(event.target.value)} placeholder='我现在会如何决策？依据和不确定性是什么？' />
+          <button type='button' disabled={!initial.trim()} onClick={saveInitial}>{record?.initialJudgment ? '更新首次判断' : '保存首次判断'}</button>
+        </section>
+      ) : null}
 
       <section className='resource-loop-resources' aria-labelledby={`resources-${caseId}`}>
         <div className='resource-loop-step-title'><b>2</b><span><strong id={`resources-${caseId}`}>主动打开补充资源</strong><small>打开动作会记录在本机；请看完后回到这里继续复盘。</small></span></div>

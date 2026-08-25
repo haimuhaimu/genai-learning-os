@@ -11,6 +11,8 @@ import StrategyControlsPanel from './StrategyControlsPanel'
 import StrategyVideoPanel from './StrategyVideoPanel'
 import StrategyPaperPanel from './StrategyPaperPanel'
 import ResourceLearningLoop from './ResourceLearningLoop'
+import StrategyPredictionPanel from './StrategyPredictionPanel'
+import MechanismSandboxPanel from './MechanismSandboxPanel'
 import type { CaseId } from './caseCatalog'
 import type { ControlValue, ControlValues, RouteId } from './types'
 
@@ -70,10 +72,12 @@ export default function StrategyCaseRunner({ caseId, go }: Props) {
 
   return (
     <StrategyCaseShell spec={spec} onExit={() => go(spec.routeId === 'ai-decision-math' ? 'decision-math' : 'strategy-cases')} exitLabel={spec.routeId === 'ai-decision-math' ? '返回数学路线' : undefined}>
+      <StrategyPredictionPanel caseId={caseKey} question={spec.question} />
       <StrategyControlsPanel schema={spec.controls} values={controls} onChange={update} />
+      {spec.mechanism ? <MechanismSandboxPanel spec={spec.mechanism} data={spec.mechanism.build(controls, evidence)} /> : null}
       <EvidencePanel fixedDataTitle={spec.fixedDataTitle} fixedDataRows={spec.fixedDataRows} evidence={evidence} />
       <DecisionSummaryPanel summary={summary} onSave={saveSummary} onBackToCenter={() => go('strategy-cases')} nextAction={nextAction} />
-      <ResourceLearningLoop caseId={caseKey} question={spec.question}>
+      <ResourceLearningLoop caseId={caseKey} question={spec.question} hideInitialStep>
         <StrategyVideoPanel videos={videoSelection.videos} remaining={videoSelection.remaining} onViewAll={() => go('videos')} onOpen={(video) => touchResource(caseKey, { type: 'video', id: video.id })} />
         <StrategyPaperPanel papers={papers} onOpen={recordPaperTouch} onOpenLab={(paper) => { recordPaperTouch(paper); go('paper-lab', { paper: paper.id }) }} onViewAll={() => go('papers')} />
       </ResourceLearningLoop>

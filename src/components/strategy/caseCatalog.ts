@@ -9,6 +9,7 @@ import { evaluatorTrustSpec } from './evaluatorTrustCase.ts'
 import { harnessLaunchWorkbenchSpec } from './harnessLaunchWorkbenchCase.ts'
 import { imageSpec } from './imageCase.ts'
 import { ragSpec } from './ragCase.ts'
+import { contextWindowBudgetSpec, ragChunkingSpec } from './mechanismCases.ts'
 import { worldModelSpec } from './worldModelCase.ts'
 import type { RouteId, StrategyCaseSpec } from './types'
 
@@ -42,7 +43,7 @@ function fromSpec<const TSpec extends StrategyCaseSpec>(spec: TSpec, extra: { fr
 
 export const strategyCaseCatalog = [
   foundationCase,
-  fromSpec(ragSpec), fromSpec(imageSpec), fromSpec(agentSpec), fromSpec(agentBookSpec), fromSpec(harnessLaunchWorkbenchSpec), fromSpec(distillSpec),
+  fromSpec(ragSpec), fromSpec(contextWindowBudgetSpec), fromSpec(ragChunkingSpec), fromSpec(imageSpec), fromSpec(agentSpec), fromSpec(agentBookSpec), fromSpec(harnessLaunchWorkbenchSpec), fromSpec(distillSpec),
   fromSpec(evaluatorTrustSpec, { frontier: true }), fromSpec(worldModelSpec, { frontier: true }),
   fromSpec(calibrationSpec, { visibility: 'hub-only' }), fromSpec(bayesRolloutSpec, { visibility: 'hub-only' }),
   fromSpec(similarityGatingSpec, { visibility: 'hub-only' }), fromSpec(optimizerStabilitySpec, { visibility: 'hub-only' }),

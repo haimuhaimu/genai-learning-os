@@ -6,4 +6,5 @@ const isGitHubPagesBuild = process.env.GITHUB_ACTIONS === 'true'
 export default defineConfig({
   base: isGitHubPagesBuild ? '/genai-learning-os/' : '/',
   plugins: [react()],
+  build: { rollupOptions: { output: { manualChunks: { react: ['react', 'react-dom'] } } } },
 })

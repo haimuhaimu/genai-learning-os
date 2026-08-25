@@ -6,7 +6,7 @@ const formatValue = (control: Extract<ControlSchema, { type: 'range' }>, value: 
 export default function StrategyControlsPanel({ schema, values, onChange }: Props) {
   return (
     <section className='strategy-controls-panel' aria-labelledby='strategy-controls-title'>
-      <header><span>策略动作</span><h2 id='strategy-controls-title'>选择上线策略</h2><p>改变任一控件即记录“已实验”；摘要需要你主动形成。</p></header>
+      <header><span>再操控</span><h2 id='strategy-controls-title'>改变机制参数</h2><p>每次调整都用同一份固定数据重新计算。</p></header>
       <div className='strategy-control-grid'>
         {schema.map((control) => {
           const value = values[control.id]

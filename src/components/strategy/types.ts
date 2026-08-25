@@ -33,6 +33,52 @@ export type DecisionEvidence = {
 }
 
 export type DecisionSummary = { text: string; nextAction: string }
+
+export type MechanismSegment = {
+  id: string
+  label: string
+  requested: number
+  retained: number
+}
+
+export type TokenBudgetMechanismData = {
+  kind: 'token-budget'
+  ariaLabel: string
+  summary: string
+  capacity: number
+  used: number
+  overflow: number
+  retainedTasks: string[]
+  droppedTasks: string[]
+  segments: MechanismSegment[]
+}
+
+export type ChunkSimulationItem = {
+  id: string
+  documentTitle: string
+  rangeLabel: string
+  preview: string
+  tokenCount: number
+  hitLabels: string[]
+  selected: boolean
+}
+
+export type ChunkSimulationMechanismData = {
+  kind: 'chunk-simulation'
+  ariaLabel: string
+  summary: string
+  query: string
+  chunks: ChunkSimulationItem[]
+  selectedCount: number
+}
+
+export type MechanismData = TokenBudgetMechanismData | ChunkSimulationMechanismData
+export type MechanismSpec = {
+  title: string
+  description: string
+  build: (controls: ControlValues, evidence: DecisionEvidence) => MechanismData
+}
+
 export type StrategyCaseSpec = {
   id: string
   routeId: Exclude<RouteId, 'foundation'>
@@ -46,6 +92,7 @@ export type StrategyCaseSpec = {
   defaults: ControlValues
   fixedDataTitle: string
   fixedDataRows: string[]
+  mechanism?: MechanismSpec
   compute: (controls: ControlValues) => DecisionEvidence
   summarize: (controls: ControlValues, evidence: DecisionEvidence) => DecisionSummary
 }

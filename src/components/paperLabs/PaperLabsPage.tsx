@@ -11,6 +11,15 @@ export default function PaperLabsPage({ paperId, go }: { paperId?: string; go: G
   const paper = paperResources.find((item) => item.id === lab.paperId)
   const unknown = Boolean(paperId && paperId !== lab.paperId)
   const Lab = lab.component
+  if (lab.paperId === 'attention-is-all-you-need') {
+    return (
+      <section className='paper-labs-page is-golden-lesson'>
+        <button type='button' className='paper-lab-back' onClick={() => go('papers')}><ArrowLeft aria-hidden='true' />返回论文库</button>
+        {unknown ? <aside role='status'>未找到“{paperId}”对应实验，已安全回退到默认实验。</aside> : null}
+        <Suspense fallback={<PageLoading />}><Lab /></Suspense>
+      </section>
+    )
+  }
   return (
     <section className='paper-labs-page'>
       <button type='button' className='paper-lab-back' onClick={() => go('papers')}><ArrowLeft aria-hidden='true' />返回论文库</button>

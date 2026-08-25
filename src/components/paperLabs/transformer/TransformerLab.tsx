@@ -1,75 +1,195 @@
-import { useMemo, useState } from 'react'
-import { attentionCompute } from './compute'
-import { ComparisonGrid, ComparisonMetric, MechanismChain, TeachingScaffold } from '../shared/TeachingScaffold'
-import { becauseTherefore } from '../shared/teaching'
+import { useMemo, useRef, useState } from 'react'
+import { AlertTriangle, ArrowRight, Check, ChevronRight, RotateCcw, Sparkles, Target } from 'lucide-react'
+import {
+  FINAL_PRINCIPLE,
+  LESSON_STEPS,
+  PRINCIPLE_MAPPING,
+  REFUND_EVIDENCE,
+  evaluateEvidenceBalance,
+  getGuessFeedback,
+  getRuleFeedback,
+  nextLessonStep,
+  type LessonStep,
+  type RuleChoice,
+} from './lessonModel'
 
-const baselineInput = { queryPosition: 2, scaleDivisor: Math.sqrt(3), causal: true }
-const keyEvidenceIndex = 1
+function StepHeader({ step }: { step: LessonStep }) {
+  return (
+    <header className='golden-lesson-header'>
+      <div className='golden-lesson-meta'>
+        <span>{step}/5 · {LESSON_STEPS[step - 1]}</span>
+        <span>约 5 分钟</span>
+      </div>
+      <div className='golden-progress' aria-label={`课程进度：第 ${step} 关，共 5 关`}>
+        {LESSON_STEPS.map((label, index) => <i key={label} className={index < step ? 'is-active' : ''} />)}
+      </div>
+      <p>退款审核微挑战</p>
+      <h1>帮 AI 找到真正的退款证据</h1>
+    </header>
+  )
+}
 
-function percent(value: number) {
-  return `${(value * 100).toFixed(1)}%`
+function ContinueButton({ onClick, disabled = false, children = '进入下一关' }: { onClick: () => void; disabled?: boolean; children?: string }) {
+  return <button className='golden-primary-button' type='button' onClick={onClick} disabled={disabled}>{children}<ChevronRight aria-hidden='true' /></button>
 }
 
 export default function TransformerLab() {
-  const [queryPosition, setQueryPosition] = useState(baselineInput.queryPosition)
-  const [scaleDivisor, setScaleDivisor] = useState(baselineInput.scaleDivisor)
-  const [causal, setCausal] = useState(baselineInput.causal)
-  const baseline = useMemo(() => attentionCompute(baselineInput), [])
-  const result = useMemo(() => attentionCompute({ queryPosition, scaleDivisor, causal }), [queryPosition, scaleDivisor, causal])
-  const changed = queryPosition !== baselineInput.queryPosition || Math.abs(scaleDivisor - baselineInput.scaleDivisor) > 0.01 || causal !== baselineInput.causal
-  const futureWeight = result.weights.reduce((sum, weight, index) => sum + (index > result.queryPosition ? weight : 0), 0)
-  const baselineFutureWeight = baseline.weights.reduce((sum, weight, index) => sum + (index > baseline.queryPosition ? weight : 0), 0)
-  const strongestIndex = result.weights.indexOf(Math.max(...result.weights))
-  const scaleMeaning = scaleDivisor < baselineInput.scaleDivisor ? '注意力更集中' : scaleDivisor > baselineInput.scaleDivisor ? '注意力更平均' : '保持基线集中度'
-  const explanation = becauseTherefore(
-    `${causal ? '因果遮罩挡住了未来信息' : '关闭遮罩让未来信息也参与'}，且当前缩放除数使${scaleMeaning}`,
-    `“${result.tokens[strongestIndex]}”获得最高权重 ${percent(result.weights[strongestIndex])}，关键证据“${result.tokens[keyEvidenceIndex]}”获得 ${percent(result.weights[keyEvidenceIndex])}${futureWeight > 0 ? `，同时有 ${percent(futureWeight)} 权重泄漏到未来 token` : '，未来 token 权重为 0'}`,
-  )
+  const [step, setStep] = useState<LessonStep>(1)
+  const [guess, setGuess] = useState<number | null>(null)
+  const [mistakeRevealed, setMistakeRevealed] = useState(false)
+  const [balance, setBalance] = useState(100)
+  const [sliderTouched, setSliderTouched] = useState(false)
+  const [ruleChoice, setRuleChoice] = useState<RuleChoice | null>(null)
+  const lessonTop = useRef<HTMLDivElement>(null)
+  const evidenceResult = useMemo(() => evaluateEvidenceBalance(balance), [balance])
+  const deepResult = useMemo(() => evaluateEvidenceBalance(0), [])
+
+  function goNext() {
+    setStep((current) => nextLessonStep(current))
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
+
+  function restart() {
+    setStep(1)
+    setGuess(null)
+    setMistakeRevealed(false)
+    setBalance(100)
+    setSliderTouched(false)
+    setRuleChoice(null)
+    requestAnimationFrame(() => lessonTop.current?.focus())
+  }
 
   return (
-    <TeachingScaffold
-      story={{
-        actor: '退款客服负责人正在检查自动生成的会话总结',
-        challenge: '摘要写得很流畅，却漏掉“扣款未到账”这条关键证据，客服可能据此拒绝本应处理的退款。',
-        question: '模型回答“该退款吗”时，关键证据到底拿到了多少注意力？',
-      }}
-      tasks={['先保留基线：问题 token 在第 3 位、开启因果遮罩。', '只改“注意力集中度”或遮罩，其他设置先不动。', '看关键证据权重、未来信息权重与输出向量如何一起变化。']}
-      taskState={{ baselineReady: true, changedKnob: changed }}
-      terms={[
-        { term: 'Query（查询）', meaning: '当前位置“要回答的问题”，不是搜索框。', direction: '换位置 = 换一个问题视角。' },
-        { term: 'Scale（缩放除数）', meaning: '控制注意力分配的集中度。', direction: '调小更集中；调大更平均。' },
-        { term: 'Causal mask（因果遮罩）', meaning: '禁止当前位置偷看未来 token。', direction: '开启更符合逐字生成；关闭可观察未来信息泄漏。' },
-        { term: 'Softmax（归一化）', meaning: '把分数转换为总和等于 100% 的权重。' },
-      ]}
-      controls={
-        <fieldset className='paper-lab-controls'><legend>本轮旋钮</legend>
-          <label>Query（当前要回答的问题）<select value={queryPosition} onChange={(event) => setQueryPosition(Number(event.target.value))}>{result.tokens.map((token, index) => <option key={`${token}-${index}`} value={index}>{index + 1} · {token}</option>)}</select><small>当前之后的 token 会被标成“未来”。</small></label>
-          <label>Scale（注意力集中度）<output>{scaleDivisor.toFixed(2)} · {scaleMeaning}</output><input type='range' min='0.5' max='3' step='0.1' value={scaleDivisor} onChange={(event) => setScaleDivisor(Number(event.target.value))} /><small>调小更偏向高分证据；调大更平均。</small></label>
-          <label className='paper-lab-check'><input type='checkbox' checked={causal} onChange={(event) => setCausal(event.target.checked)} /><span>开启 Causal mask<br /><small>不能偷看未来 token</small></span></label>
-        </fieldset>
-      }
-      results={
-        <>
-          <ComparisonGrid>
-            <ComparisonMetric label='关键证据权重 · 扣款未到账' baseline={percent(baseline.weights[keyEvidenceIndex])} current={percent(result.weights[keyEvidenceIndex])} delta={`${((result.weights[keyEvidenceIndex] - baseline.weights[keyEvidenceIndex]) * 100).toFixed(1)} 个百分点`} hint='越高表示该证据对当前输出影响越大，但注意力权重不等于因果解释。' />
-            <ComparisonMetric label='未来 token 总权重' baseline={percent(baselineFutureWeight)} current={percent(futureWeight)} delta={`${((futureWeight - baselineFutureWeight) * 100).toFixed(1)} 个百分点`} hint='开启因果遮罩时应为 0；否则可能偷看生成时尚不存在的信息。' />
-            <ComparisonMetric label='输出向量' baseline={`[${baseline.output.join(', ')}]`} current={`[${result.output.join(', ')}]`} hint='权重改变后，对 Value（信息内容）的加权汇总也会改变。' />
-          </ComparisonGrid>
-          <div className='attention-token-map' aria-label='token 角色与注意力权重'>{result.tokens.map((token, index) => <article className={index === keyEvidenceIndex ? 'is-evidence' : index > result.queryPosition ? 'is-future' : index === result.queryPosition ? 'is-query' : ''} key={`${token}-${index}`}><span>#{index + 1} {index === keyEvidenceIndex ? '关键证据' : index > result.queryPosition ? '未来 token' : index === result.queryPosition ? '当前 Query' : '上下文'}</span><b>{token}</b><i style={{ width: `${Math.max(2, result.weights[index] * 100)}%` }} /><strong>{percent(result.weights[index])}</strong></article>)}</div>
-          <MechanismChain steps={[
-            { label: 'Scores · 相关性分数', value: result.scores.map((score) => score ?? '遮罩').join(' / ') },
-            { label: 'Softmax weights · 信息份额', value: result.weights.map(percent).join(' / ') },
-            { label: 'Output · 汇总结果', value: `[${result.output.join(', ')}]` },
-          ]} />
-        </>
-      }
-      explanation={<p className='paper-dynamic-explanation'>{explanation}</p>}
-      transfer={{
-        metric: '关键证据召回率 + 摘要事实一致率，而不只看摘要流畅度。',
-        guardrail: '按“扣款未到账 / 已退款 / 重复扣款”切片；未来 token 权重必须为 0。',
-        action: '先灰度 5% 退款会话；关键证据漏写率上升即回退，并抽样检查证据—结论链。',
-      }}
-      boundary='固定 4 个 token、单头和小矩阵，不含位置编码、残差、前馈网络、训练或真实模型行为。'
-    />
+    <div className='golden-lesson' ref={lessonTop} tabIndex={-1}>
+      <StepHeader step={step} />
+
+      <main className='golden-stage' aria-live='polite'>
+        {step === 1 ? (
+          <section aria-labelledby='golden-step-1'>
+            <span className='golden-kicker'>第 1 关 · 先猜</span>
+            <h2 id='golden-step-1'>哪句话最能证明“应该退款”？</h2>
+            <p className='golden-prompt'>顾客说自己只买了一件，却被扣了两次。请先选最关键的一条证据。</p>
+            <div className='golden-evidence-list' role='radiogroup' aria-label='选择最关键的退款证据'>
+              {REFUND_EVIDENCE.map((item, index) => (
+                <button
+                  aria-checked={guess === index}
+                  className={guess === index ? 'golden-evidence is-selected' : 'golden-evidence'}
+                  key={item.text}
+                  onClick={() => setGuess(index)}
+                  role='radio'
+                  type='button'
+                >
+                  <span>{item.speaker}</span>
+                  <strong>“{item.text}”</strong>
+                </button>
+              ))}
+            </div>
+            {guess !== null ? (
+              <div className={getGuessFeedback(guess).correct ? 'golden-feedback is-correct' : 'golden-feedback is-wrong'} role='status'>
+                {getGuessFeedback(guess).correct ? <Check aria-hidden='true' /> : <AlertTriangle aria-hidden='true' />}
+                <div><strong>{getGuessFeedback(guess).title}</strong><p>{getGuessFeedback(guess).detail}</p></div>
+              </div>
+            ) : null}
+            <ContinueButton disabled={guess === null} onClick={goNext} />
+          </section>
+        ) : null}
+
+        {step === 2 ? (
+          <section aria-labelledby='golden-step-2'>
+            <span className='golden-kicker'>第 2 关 · 看 AI 犯错</span>
+            <h2 id='golden-step-2'>四句话都读到了，它却暂缓退款</h2>
+            <div className='golden-ai-decision is-wrong'>
+              <span>AI 的退款结论</span>
+              <strong>暂缓退款，转人工等待</strong>
+              <p>“顾客情绪激烈，但目前缺少可核验的重复扣款证据。”</p>
+              <small>后果：重复扣款没有被处理，顾客至少多等 24 小时。</small>
+            </div>
+            {!mistakeRevealed ? (
+              <button className='golden-reveal-button' type='button' onClick={() => setMistakeRevealed(true)}>查看它最关注了哪句话<ArrowRight aria-hidden='true' /></button>
+            ) : (
+              <>
+                <div className='golden-focus-reveal' role='status'>
+                  <AlertTriangle aria-hidden='true' />
+                  <div><span>错误关注</span><strong>“我快急疯了，马上给我退钱！”</strong><p>它用情绪强度替代了交易事实。支付系统记录明明也在输入里。</p></div>
+                </div>
+                <p className='golden-takeaway'><b>看到了全部，不等于关注对了。</b></p>
+              </>
+            )}
+            <ContinueButton disabled={!mistakeRevealed} onClick={goNext} />
+          </section>
+        ) : null}
+
+        {step === 3 ? (
+          <section aria-labelledby='golden-step-3'>
+            <span className='golden-kicker'>第 3 关 · 只改一个条件</span>
+            <h2 id='golden-step-3'>把关注点从“声量”拉回“证据”</h2>
+            <p className='golden-prompt'>四句话保持不变。只移动这个旋钮，观察 AI 最关注的话和退款结论。</p>
+            <label className='golden-slider'>
+              <span><b>更集中关键证据</b><b>综合更多信息</b></span>
+              <input
+                aria-describedby='golden-slider-hint'
+                max='100'
+                min='0'
+                onChange={(event) => { setBalance(Number(event.target.value)); setSliderTouched(true) }}
+                type='range'
+                value={balance}
+              />
+              <small id='golden-slider-hint'>可用方向键微调。向左移动，更集中于与退款问题直接相关的事实。</small>
+            </label>
+            <div className={evidenceResult.approvesRefund ? 'golden-live-result is-correct' : 'golden-live-result is-wrong'}>
+              <div><span>AI 当前最关注</span><strong>“{evidenceResult.focus.text}”</strong><small>{evidenceResult.focus.role}</small></div>
+              <div><span>退款结论</span><strong>{evidenceResult.decision}</strong><small>{evidenceResult.consequence}</small></div>
+            </div>
+            <p className='golden-live-feedback' role='status'>{evidenceResult.feedback}</p>
+            <ContinueButton disabled={!sliderTouched || !evidenceResult.approvesRefund} onClick={goNext} />
+          </section>
+        ) : null}
+
+        {step === 4 ? (
+          <section aria-labelledby='golden-step-4'>
+            <span className='golden-kicker'>第 4 关 · 自己总结规律</span>
+            <h2 id='golden-step-4'>刚才真正修复了什么？</h2>
+            <p className='golden-prompt'>四句话始终都在。请选择更准确的解释。</p>
+            <div className='golden-rule-choices'>
+              <button type='button' aria-pressed={ruleChoice === 'context'} onClick={() => setRuleChoice('context')}>上下文不够长</button>
+              <button type='button' aria-pressed={ruleChoice === 'focus'} onClick={() => setRuleChoice('focus')}>没有关注正确证据</button>
+            </div>
+            {ruleChoice ? (
+              <div className={getRuleFeedback(ruleChoice).correct ? 'golden-feedback is-correct' : 'golden-feedback is-wrong'} role='status'>
+                {getRuleFeedback(ruleChoice).correct ? <Check aria-hidden='true' /> : <AlertTriangle aria-hidden='true' />}
+                <div><strong>{getRuleFeedback(ruleChoice).title}</strong><p>{getRuleFeedback(ruleChoice).detail}</p></div>
+              </div>
+            ) : null}
+            <ContinueButton disabled={!ruleChoice} onClick={goNext}>揭晓背后的原理</ContinueButton>
+          </section>
+        ) : null}
+
+        {step === 5 ? (
+          <section aria-labelledby='golden-step-5'>
+            <span className='golden-kicker'>第 5 关 · 揭示原理</span>
+            <h2 id='golden-step-5'>你刚刚发现的规律</h2>
+            <blockquote className='golden-principle'><Sparkles aria-hidden='true' /><p>{FINAL_PRINCIPLE}</p></blockquote>
+            <p className='golden-paper-source'>这正是 Transformer 论文《Attention Is All You Need》中的核心机制之一。</p>
+            <div className='golden-mapping' aria-label='Attention 术语与刚才操作的对应关系'>
+              {PRINCIPLE_MAPPING.map((item) => <article key={item.term}><span>{item.term}</span><strong>{item.chinese}</strong><p>{item.example}</p></article>)}
+            </div>
+            <details className='golden-deep-dive'>
+              <summary>我想继续深入</summary>
+              <div>
+                <h3>完整 Attention（注意力）计算</h3>
+                <p><b>Softmax（归一化）</b>把相关性分数变成总和为 100% 的权重，再用这些权重汇总 Value（证据内容）。</p>
+                <code>Attention(Q, K, V) = Softmax(QKᵀ / √dₖ)V</code>
+                <div className='golden-weight-list'>
+                  {REFUND_EVIDENCE.map((item, index) => <div key={item.text}><span>{item.speaker} · {item.text}</span><i><b style={{ width: `${deepResult.weights[index] * 100}%` }} /></i><strong>{(deepResult.weights[index] * 100).toFixed(1)}%</strong></div>)}
+                </div>
+                <p className='golden-boundary'>教学边界：这是固定四句话、单头、小矩阵的确定性演示；注意力权重能展示信息分配，但不等于完整因果解释，也不代表生产模型表现。</p>
+              </div>
+            </details>
+            <button className='golden-restart-button' type='button' onClick={restart}><RotateCcw aria-hidden='true' />重新挑战</button>
+            <div className='golden-complete'><Target aria-hidden='true' /><span><b>通关</b> 现在试着不看页面，用自己的话复述上面的规律。</span></div>
+          </section>
+        ) : null}
+      </main>
+    </div>
   )
 }

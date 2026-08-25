@@ -39,7 +39,7 @@ type VideoResource = {
 }
 ```
 
-`id` 使用 kebab-case；`url` 和 `originalSourceUrl` 必须是 HTTPS 并命中可信域名白名单（除已有域名外，还包含 `arxiv.org`、`openreview.net`、`deepmind.google`、`ai.meta.com`、`technologyreview.com`、`hub.baai.ac.cn`、`nature.com`、`sakana.ai`、`lilianweng.github.io`、`worldmodels.github.io`、`github.com`、`statquest.org`、`zh.d2l.ai`、`speech.ee.ntu.edu.tw`、`openbmb.cn`、`practical-diffusion.org`、`stanford.edu`、`cmu.edu`、`developers.google.com`，`www` 与其他子域也允许）。只有来源明确时才填写 `durationLabel`，不要估算或虚构时长、播放量与评分。`sourceType` 为 `paper`、`blog`、`report` 时禁止填写 `durationLabel`。`casePriority` 数值越小，越优先出现在 Case 面板；应按决策贴合度显式填写，不依赖 Catalog 数组顺序。
+`id` 使用 kebab-case；`url` 和 `originalSourceUrl` 必须是 HTTPS 并命中可信域名白名单（除已有域名外，还包含 `arxiv.org`、`openreview.net`、`deepmind.google`、`ai.meta.com`、`technologyreview.com`、`hub.baai.ac.cn`、`nature.com`、`sakana.ai`、`lilianweng.github.io`、`worldmodels.github.io`、`github.com`、`statquest.org`、`zh.d2l.ai`、`speech.ee.ntu.edu.tw`、`openbmb.cn`、`practical-diffusion.org`、`stanford.edu`、`cmu.edu`、`developers.google.com`，`www` 与其他子域也允许）。YouTube 资源也可直接使用 `https://youtu.be/<id>` 分享短链；这里必须是准确的 `youtu.be` hostname，不接受 `www.youtu.be` 或其他子域。只有来源明确时才填写 `durationLabel`，不要估算或虚构时长、播放量与评分。`sourceType` 为 `paper`、`blog`、`report` 时禁止填写 `durationLabel`。`casePriority` 数值越小，越优先出现在 Case 面板；应按决策贴合度显式填写，不依赖 Catalog 数组顺序。
 
 ## 前沿方向的额外纪律
 

@@ -50,6 +50,25 @@ test('拒绝非法协议和不允许的域名', () => {
   assert.throws(() => validateVideoCatalog([validResource({ url: 'https://video.example.com/watch/example' })], references), /不允许的域名/)
 })
 
+test('接受准确的 youtu.be HTTPS 短链', () => {
+  const resource = validResource({
+    id: 'youtube-short-link',
+    sourceType: 'youtube',
+    url: 'https://youtu.be/dQw4w9WgXcQ',
+  })
+
+  assert.equal(validateVideoCatalog([resource], references)[0], resource)
+})
+
+test('拒绝伪装成 youtu.be 的域名', () => {
+  for (const url of [
+    'https://youtu.be.example.com/dQw4w9WgXcQ',
+    'https://www.youtu.be/dQw4w9WgXcQ',
+  ]) {
+    assert.throws(() => validateVideoCatalog([validResource({ url })], references), /不允许的域名/)
+  }
+})
+
 test('paper / blog / report 不允许写 durationLabel', () => {
   const paper = validResource({
     id: 'paper-video',

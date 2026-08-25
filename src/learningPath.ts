@@ -1,4 +1,4 @@
-import { foundationNodes } from './foundationData'
+import { foundationNodeSummaries } from './content/foundationSummary'
 import type { ProgressMap } from './progress'
 
 export const PERSONA_KEY = 'genai-learning-persona-v1'
@@ -53,7 +53,7 @@ export function getPersona(persona: PersonaId) {
 
 export function getNextStep(progress: ProgressMap, persona: PersonaId): NextStep {
   const profile = getPersona(persona)
-  const preferred = foundationNodes.find((node) => node.id === profile.startNode)
+  const preferred = foundationNodeSummaries.find((node) => node.id === profile.startNode)
   if (preferred && (progress[preferred.id] ?? 0) === 0) {
     return {
       eyebrow: `${profile.label} · 推荐起点`,
@@ -64,7 +64,7 @@ export function getNextStep(progress: ProgressMap, persona: PersonaId): NextStep
     }
   }
 
-  const inProgress = foundationNodes.find((node) => (progress[node.id] ?? 0) > 0 && (progress[node.id] ?? 0) < 4)
+  const inProgress = foundationNodeSummaries.find((node) => (progress[node.id] ?? 0) > 0 && (progress[node.id] ?? 0) < 4)
   if (inProgress) {
     return {
       eyebrow: '继续完成学习闭环',
@@ -75,7 +75,7 @@ export function getNextStep(progress: ProgressMap, persona: PersonaId): NextStep
     }
   }
 
-  const nextFoundation = foundationNodes.find((node) => (progress[node.id] ?? 0) < 4)
+  const nextFoundation = foundationNodeSummaries.find((node) => (progress[node.id] ?? 0) < 4)
   if (nextFoundation) {
     return {
       eyebrow: '建议主线 · 算法基础',

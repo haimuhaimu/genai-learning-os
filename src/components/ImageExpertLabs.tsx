@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, GitBranch, Image, Info, Layers3, Sigma, SlidersHorizontal, Sparkles, Timer, WandSparkles } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import LazyLearningChart from './charts/LazyLearningChart'
 
 const samplerConfig = {
   DDPM: { speed: .55, quality: .88, lowStep: .45, stochastic: true },
@@ -48,7 +48,7 @@ export function DiffusionFlowLab() {
         <div className='generation-kpis'><div><small>质量指数</small><b>{quality.toFixed(0)}</b></div><div><small>教学延迟</small><b>{speed.toFixed(2)}s</b></div><div><small>稳定性</small><b>{stability.toFixed(0)}</b></div><div><small>伪影风险</small><b>{artifact.toFixed(0)}%</b></div></div>
       </div>
     </div>
-    <div className='chart-card compact-chart'><ResponsiveContainer width='100%' height={240}><BarChart data={chartData}><CartesianGrid strokeDasharray='3 3' /><XAxis dataKey='name' /><YAxis domain={[0, 100]} /><Tooltip /><Legend /><Bar name='概念指数' dataKey='score' fill='#6875d8' radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
+    <div className='chart-card compact-chart'><LazyLearningChart data={chartData} kind='bar' xKey='name' height={240} series={[{ key: 'score', name: '概念指数', color: '#6875d8' }]} /></div>
     <div className='formula-block'><Sigma /><code>xₜ=αₜx₀+σₜε；CFG: ε̂=εu+s(εc−εu)；ODE Euler: xₜ₋Δ=xₜ−Δ·vθ(xₜ,t)</code><p>概念估算假设：每步 43–58ms，质量随步数指数饱和；CFG&gt;10 逐步增加伪影并降低多样性。分值仅用于展示趋势，不代表任何商业模型；prediction target 与 sampler 的真实兼容性必须查看具体模型文档。</p></div>
     {(cfg > 11 || steps < 8) && <div className='warning-inline'><AlertTriangle />{cfg > 11 ? 'CFG 过高：过饱和、硬轮廓与多样性下降风险正在上升。' : '步数过低：数值积分误差可能主导结果。'}</div>}
   </div>

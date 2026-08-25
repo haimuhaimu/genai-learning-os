@@ -19,7 +19,7 @@ export default function StrategyEvidenceSection({ go }: { go: Go }) {
 
   return (
     <section className='strategy-progress-section' aria-labelledby='strategy-progress-title'>
-      <header><div><span>策略证据</span><h2 id='strategy-progress-title'>8 个代表案例 + 8 个数学练习</h2></div><button type='button' onClick={() => go('strategy-cases')}>进入策略案例中心<ArrowRight /></button></header>
+      <header><div><span>策略证据</span><h2 id='strategy-progress-title'>10 个代表案例 + 8 个数学练习</h2></div><button type='button' onClick={() => go('strategy-cases')}>进入策略案例中心<ArrowRight /></button></header>
       <p className='strategy-progress-explainer'>旧进度记录你看过什么；策略证据记录你做过什么决定。</p>
       <div className='strategy-progress-grid'>
         {centerCaseCatalog.map((item) => {

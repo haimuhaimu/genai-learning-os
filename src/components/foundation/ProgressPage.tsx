@@ -18,6 +18,7 @@ import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonPro
 import NextStepCard from './NextStepCard'
 import ProgressTransfer from './ProgressTransfer'
 import StrategyEvidenceSection from './StrategyEvidenceSection'
+import CapabilityEvidenceMatrix from './CapabilityEvidenceMatrix'
 
 type Go = (page: string, options?: Record<string, string>) => void
 
@@ -98,6 +99,7 @@ export default function ProgressPage({ go }: { go: Go }) {
 
       <NextStepCard progress={progress} persona={persona} go={go} compact />
       <StrategyEvidenceSection go={go} />
+      <CapabilityEvidenceMatrix go={go} />
 
       <section className='lo-progress-transfer' aria-labelledby='case-progress-title'>
         <header><div><span>案例课程主线</span><h2 id='case-progress-title'>通过 Case 学 AI · {caseSummary.completed}/{caseSummary.total} 已通关</h2></div></header>

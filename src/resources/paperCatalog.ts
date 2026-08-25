@@ -97,7 +97,7 @@ export const paperResources = validatePaperCatalog([
   {
     id: 'attention-is-all-you-need', title: 'Attention Is All You Need', authors: 'Ashish Vaswani et al.', year: 2017,
     area: 'Transformer / LLM', level: '入门', kind: '奠基论文', url: 'https://arxiv.org/abs/1706.03762', readingMinutes: 55,
-    relatedCaseIds: ['rag-budget'], relatedRouteIds: ['foundation', 'llm'],
+    relatedCaseIds: ['rag-budget', 'context-window-budget', 'rag-chunking'], relatedRouteIds: ['foundation', 'llm'],
     oneLine: '用注意力完成序列信息路由，不再依赖循环或卷积。',
     problem: '循环网络难并行、长距离信息路径长，限制训练效率与依赖建模。',
     mechanism: '多头自注意力让 token 直接聚合相关上下文，位置编码补入顺序，FFN 负责逐 token 变换。',
@@ -127,7 +127,7 @@ export const paperResources = validatePaperCatalog([
   {
     id: 'instructgpt', title: 'Training language models to follow instructions with human feedback', authors: 'Long Ouyang et al.', year: 2022,
     area: 'Transformer / LLM', level: '进阶', kind: '方法论文', url: 'https://arxiv.org/abs/2203.02155', readingMinutes: 65,
-    relatedCaseIds: ['rag-budget'], relatedRouteIds: ['llm'],
+    relatedCaseIds: ['rag-budget', 'context-window-budget', 'rag-chunking'], relatedRouteIds: ['llm'],
     oneLine: '把人类偏好变成训练信号，让语言模型更贴近用户意图。',
     problem: '更低的预训练损失并不保证回答有用、诚实或遵循指令。',
     mechanism: '先做监督微调，再用排序偏好训练奖励模型，最后以强化学习优化策略，同时约束偏离基础模型。',
@@ -137,7 +137,7 @@ export const paperResources = validatePaperCatalog([
   {
     id: 'flashattention', title: 'FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness', authors: 'Tri Dao et al.', year: 2022,
     area: 'Transformer / LLM', level: '进阶', kind: '系统论文', url: 'https://arxiv.org/abs/2205.14135', readingMinutes: 50,
-    relatedCaseIds: ['rag-budget'], relatedRouteIds: ['llm'],
+    relatedCaseIds: ['rag-budget', 'context-window-budget', 'rag-chunking'], relatedRouteIds: ['llm'],
     oneLine: '通过 IO-aware tiling 减少显存读写，在不近似注意力的前提下提速。',
     problem: '注意力不只受 FLOPs 限制，大量 HBM 与片上 SRAM 往返同样会拖慢训练。',
     mechanism: '把计算分块放入更快的片上存储，在线维护归一化统计，避免完整注意力矩阵反复写回显存。',
@@ -147,7 +147,7 @@ export const paperResources = validatePaperCatalog([
   {
     id: 'speculative-decoding', title: 'Fast Inference from Transformers via Speculative Decoding', authors: 'Yaniv Leviathan et al.', year: 2022,
     area: 'Transformer / LLM', level: '进阶', kind: '系统论文', url: 'https://arxiv.org/abs/2211.17192', readingMinutes: 45,
-    relatedCaseIds: ['rag-budget'], relatedRouteIds: ['llm'],
+    relatedCaseIds: ['rag-budget', 'context-window-budget', 'rag-chunking'], relatedRouteIds: ['llm'],
     oneLine: '让小模型先起草多个 token，再由大模型并行验证以降低串行等待。',
     problem: '自回归生成一次只确认一个 token，难以充分利用并行硬件。',
     mechanism: '草稿模型提出候选序列，目标模型一次验证多个位置，并用接受规则保持原输出分布。',
@@ -157,7 +157,7 @@ export const paperResources = validatePaperCatalog([
   {
     id: 'pagedattention-vllm', title: 'Efficient Memory Management for Large Language Model Serving with PagedAttention', authors: 'Woosuk Kwon et al.', year: 2023,
     area: 'Transformer / LLM', level: '进阶', kind: '系统论文', url: 'https://arxiv.org/abs/2309.06180', readingMinutes: 55,
-    relatedCaseIds: ['rag-budget'], relatedRouteIds: ['llm'],
+    relatedCaseIds: ['rag-budget', 'context-window-budget', 'rag-chunking'], relatedRouteIds: ['llm'],
     oneLine: '借鉴操作系统分页管理 KV cache，减少碎片并提高并发吞吐。',
     problem: '请求长度动态变化导致 KV cache 预留、碎片与复制浪费，限制服务批量。',
     mechanism: 'PagedAttention 把连续逻辑序列映射到非连续物理块，并支持块级共享与按需分配。',

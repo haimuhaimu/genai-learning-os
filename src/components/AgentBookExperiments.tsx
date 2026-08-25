@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { ArrowRight, BookOpen, CheckCircle2, FlaskConical, Lightbulb, SlidersHorizontal, Target } from 'lucide-react'
-import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import LazyLearningChart from './charts/LazyLearningChart'
 import type { AgentBookChapterId, AgentBookLabId } from '../agentBookData'
 import {
   agentBookDisclaimer,
@@ -87,12 +87,6 @@ function pct(n: number) {
 
 function money(n: number) {
   return `¥${(Math.round(n * 100) / 100).toFixed(2)}`
-}
-
-function toNumber(v: unknown) {
-  if (typeof v === 'number') return v
-  if (typeof v === 'string') return Number(v)
-  return 0
 }
 
 function markLabDone(labId: AgentBookLabId, relatedChapters: AgentBookChapterId[]) {
@@ -401,31 +395,14 @@ function KVCacheLab({ onDone }: { onDone: () => void }) {
         <section className='agent-book-card' style={{ gridColumn: 'span 12' }}>
           <h3>TTFT（ms）随轮数变化</h3>
           <div style={{ width: '100%', height: 280, marginTop: 12 }}>
-            <ResponsiveContainer>
-              <LineChart data={model.points} margin={{ left: 8, right: 18, top: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray='4 4' stroke='rgba(15,23,42,0.12)' />
-                <XAxis dataKey='round' tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid rgba(15,23,42,0.12)' }} />
-                <Legend />
-                <Line type='monotone' dataKey='ttft' name='TTFT(ms)' stroke='rgba(16,185,129,0.85)' strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <LazyLearningChart data={model.points} kind='line' xKey='round' height={280} series={[{ key: 'ttft', name: 'TTFT(ms)', color: 'rgba(16,185,129,0.85)' }]} />
           </div>
         </section>
 
         <section className='agent-book-card' style={{ gridColumn: 'span 12' }}>
           <h3>累计成本（¥）随轮数变化</h3>
           <div style={{ width: '100%', height: 260, marginTop: 12 }}>
-            <ResponsiveContainer>
-              <AreaChart data={model.points} margin={{ left: 8, right: 18, top: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray='4 4' stroke='rgba(15,23,42,0.12)' />
-                <XAxis dataKey='round' tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid rgba(15,23,42,0.12)' }} />
-                <Area type='monotone' dataKey='cumCost' name='累计成本(¥)' stroke='rgba(59,130,246,0.85)' fill='rgba(59,130,246,0.20)' />
-              </AreaChart>
-            </ResponsiveContainer>
+            <LazyLearningChart data={model.points} kind='area' xKey='round' height={260} series={[{ key: 'cumCost', name: '累计成本(¥)', color: 'rgba(59,130,246,0.85)' }]} />
           </div>
           <button className='agent-book-action-btn primary' onClick={onDone} style={{ marginTop: 10 }}>
             <CheckCircle2 size={16} />
@@ -505,31 +482,14 @@ function StatusBarLab({ onDone }: { onDone: () => void }) {
         <section className='agent-book-card' style={{ gridColumn: 'span 12' }}>
           <h3>上下文 tokens</h3>
           <div style={{ width: '100%', height: 280, marginTop: 12 }}>
-            <ResponsiveContainer>
-              <LineChart data={model.points} margin={{ left: 8, right: 18, top: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray='4 4' stroke='rgba(15,23,42,0.12)' />
-                <XAxis dataKey='step' tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid rgba(15,23,42,0.12)' }} />
-                <Legend />
-                <Line type='monotone' dataKey='context' name='context tokens' stroke='rgba(16,185,129,0.85)' strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <LazyLearningChart data={model.points} kind='line' xKey='step' height={280} series={[{ key: 'context', name: 'context tokens', color: 'rgba(16,185,129,0.85)' }]} />
           </div>
         </section>
 
         <section className='agent-book-card' style={{ gridColumn: 'span 12' }}>
           <h3>status 占比（status / context）</h3>
           <div style={{ width: '100%', height: 260, marginTop: 12 }}>
-            <ResponsiveContainer>
-              <AreaChart data={model.points} margin={{ left: 8, right: 18, top: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray='4 4' stroke='rgba(15,23,42,0.12)' />
-                <XAxis dataKey='step' tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v) => `${Math.round(v * 100)}%`} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid rgba(15,23,42,0.12)' }} formatter={(v: unknown) => pct(toNumber(v))} />
-                <Area type='monotone' dataKey='statusShare' name='status share' stroke='rgba(245,158,11,0.9)' fill='rgba(245,158,11,0.18)' />
-              </AreaChart>
-            </ResponsiveContainer>
+            <LazyLearningChart data={model.points} kind='area' xKey='step' height={260} valueFormat='percent' series={[{ key: 'statusShare', name: 'status share', color: 'rgba(245,158,11,0.9)' }]} />
           </div>
           <button className='agent-book-action-btn primary' onClick={onDone} style={{ marginTop: 10 }}>
             <CheckCircle2 size={16} />
@@ -613,17 +573,7 @@ function PassAtKLab({ onDone }: { onDone: () => void }) {
       <section className='agent-book-card' style={{ gridColumn: 'span 12' }}>
         <h3>Pass@k vs Pass^k</h3>
         <div style={{ width: '100%', height: 300, marginTop: 12 }}>
-          <ResponsiveContainer>
-            <LineChart data={points} margin={{ left: 8, right: 18, top: 10, bottom: 8 }}>
-              <CartesianGrid strokeDasharray='4 4' stroke='rgba(15,23,42,0.12)' />
-              <XAxis dataKey='k' tickLine={false} axisLine={false} />
-              <YAxis tickFormatter={(v) => `${Math.round(v * 100)}%`} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid rgba(15,23,42,0.12)' }} formatter={(v: unknown) => pct(toNumber(v))} />
-              <Legend />
-              <Line type='monotone' dataKey='passAtK' name='Pass@k（奇观）' stroke='rgba(59,130,246,0.88)' strokeWidth={2} dot={false} />
-              <Line type='monotone' dataKey='passPowK' name='Pass^k（可靠）' stroke='rgba(16,185,129,0.88)' strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+          <LazyLearningChart data={points} kind='line' xKey='k' height={300} valueFormat='percent' series={[{ key: 'passAtK', name: 'Pass@k（奇观）', color: 'rgba(59,130,246,0.88)' }, { key: 'passPowK', name: 'Pass^k（可靠）', color: 'rgba(16,185,129,0.88)' }]} />
         </div>
       </section>
 

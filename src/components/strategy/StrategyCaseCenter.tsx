@@ -52,7 +52,7 @@ export default function StrategyCaseCenter({ go }: { go: Go }) {
 
   return (
     <section className='strategy-center'>
-      <header className='strategy-center-hero'><span>策略案例（Case）· Strategy-first</span><h1>先做决策，再理解算法</h1><p>每个案例都从业务目标开始。你要选择策略、承担代价，并说明下一轮模型该学什么。</p><a href='https://github.com/haimuhaimu/genai-learning-os/blob/main/docs/CASE_AUTHORING.md' target='_blank' rel='noopener noreferrer' aria-label='在 GitHub 打开策略案例作者指南（打开新窗口）'>你也可以贡献一个策略案例<ExternalLink aria-hidden='true' /></a><aside><b>统一学习协议</b><small>目标 → 动作 → 证据 → 代价 → 反馈 → 训练 → 摘要</small></aside></header>
+      <header className='strategy-center-hero'><span>策略案例（Case）· Strategy-first</span><h1>先做决策，再理解算法</h1><p>每个案例都从业务目标开始。你要选择策略、承担代价，并说明下一轮模型该学什么。</p><a href='https://github.com/haimuhaimu/genai-learning-os/blob/main/docs/CASE_AUTHORING.md' target='_blank' rel='noopener noreferrer' aria-label='在 GitHub 打开策略案例作者指南（打开新窗口）'>你也可以贡献一个策略案例<ExternalLink aria-hidden='true' /></a><aside><b>统一学习协议</b><small>先预测 → 再操控 → 再解释 → 最后迁移</small></aside></header>
       <nav className='strategy-filters' aria-label='按路线筛选'><Filter aria-hidden='true' />{routeFilters.map((item) => <button type='button' key={item.id} aria-pressed={filter === item.id} className={filter === item.id ? 'is-active' : ''} onClick={() => setFilter(item.id)}>{item.label}</button>)}</nav>
       {mainCases.length ? <div className='strategy-case-grid'>{mainCases.map(renderCard)}</div> : null}
       {showMathRoute ? (

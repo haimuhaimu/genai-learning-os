@@ -1,7 +1,7 @@
 {
   "name": "genai-learning-os",
   "version": "1.1.0",
-  "description": "Learn AI through product decisions: 9 tracks, 17 strategy and math cases, 7 Case Academy lessons, 43 curated videos/courses, and 23 explained core papers.",
+  "description": "Learn AI through product decisions: 9 tracks, 19 strategy and math cases, 7 Case Academy lessons, 43 curated videos/courses, and 23 explained core papers.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "haimuhaimu",
@@ -38,9 +38,10 @@
     "test": "node scripts/run-tests.mjs",
     "check:a11y": "node scripts/check-a11y-static.mjs",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "check:route-chunks": "node scripts/check-route-chunks.mjs",
     "check:videos": "tsx --test src/resources/videoCatalog.test.mjs",
     "check:prebuild": "pnpm lint && pnpm test && pnpm check:a11y",
-    "ci:check": "pnpm check:prebuild && pnpm build && pnpm check:bundle",
+    "ci:check": "pnpm check:prebuild && pnpm build && pnpm check:bundle && pnpm check:route-chunks",
     "typecheck:case-example": "tsc -p examples/strategy-case/tsconfig.json",
     "lint": "eslint .",
     "preview": "vite preview"

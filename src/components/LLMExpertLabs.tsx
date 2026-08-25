@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AlertTriangle, ArrowRight, Calculator, CheckCircle2, Database, Gauge, Info, Search, Server, Sigma, Stethoscope } from 'lucide-react'
-import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import LazyLearningChart from './charts/LazyLearningChart'
 
 const formatBytes = (bytes: number) => bytes >= 1024 ** 4 ? `${(bytes / 1024 ** 4).toFixed(2)} TiB` : bytes >= 1024 ** 3 ? `${(bytes / 1024 ** 3).toFixed(2)} GiB` : `${(bytes / 1024 ** 2).toFixed(1)} MiB`
 const formatNumber = (value: number) => value >= 1e12 ? `${(value / 1e12).toFixed(2)}T` : value >= 1e9 ? `${(value / 1e9).toFixed(2)}B` : value >= 1e6 ? `${(value / 1e6).toFixed(2)}M` : value.toFixed(0)
@@ -78,7 +78,7 @@ export function AttentionComplexityLab() {
     <header className='lab-console-head'><div><span>LAB B · LONG CONTEXT</span><h2>Attention 复杂度实验</h2><p>同时看二次 attention 与线性层成本；长上下文昂贵不只因为一个 O(n²) 标签。</p></div><Gauge /></header>
     <div className='compact-controls'><NumberField label='Hidden size' value={hidden} min={1024} max={8192} step={512} onChange={setHidden} /><NumberField label='Layers' value={layers} min={8} max={80} step={4} onChange={setLayers} /><label className='number-field'><span>Score dtype</span><select value={dtype} onChange={(e) => setDtype(+e.target.value)}><option value={2}>BF16 · 2B</option><option value={1}>INT8 · 1B</option></select></label></div>
     <div className='chart-card'>
-      <ResponsiveContainer width='100%' height={310}><LineChart data={points}><CartesianGrid strokeDasharray='3 3' stroke='#e8e5de' /><XAxis dataKey='context' /><YAxis tickFormatter={(v) => `${v}T`} /><Tooltip formatter={(value) => `${Number(value).toFixed(2)} TFLOPs`} /><Legend /><Line name='Attention（全层）' dataKey='attentionT' stroke='#d1644f' strokeWidth={3} dot /><Line name='线性/MLP（全层）' dataKey='linearT' stroke='#5968c5' strokeWidth={3} dot /></LineChart></ResponsiveContainer>
+      <LazyLearningChart data={points} kind='line' xKey='context' height={310} valueFormat='tflops' series={[{ key: 'attentionT', name: 'Attention（全层）', color: '#d1644f' }, { key: 'linearT', name: '线性/MLP（全层）', color: '#5968c5' }]} />
     </div>
     <div className='complexity-table'><div><b>Context</b><b>Attention FLOPs</b><b>线性 FLOPs</b><b>朴素 score/prob 内存*</b></div>{points.map((point) => <div key={point.context}><strong>{point.context}</strong><span>{formatNumber(point.attention)}</span><span>{formatNumber(point.linear)}</span><span>{formatBytes(point.scoreMemory)}</span></div>)}</div>
     <div className='insight-row'><Info /><p><b>交叉直觉：T ≈ 8d = {formatNumber(crossover)} tokens。</b><span>按本教学公式，超过该长度后 attention FLOPs 超过线性/MLP。FlashAttention 可避免物化完整 score/prob 矩阵并降低 HBM IO，但不会把全注意力计算复杂度变成线性。*内存列按 32 heads、score 与 probability 各一份估算，实际 kernel 差异很大。</span></p></div>
@@ -138,5 +138,5 @@ export function RAGDoctor() {
 
 export function TrafficCurve() {
   const data = useMemo(() => [1, 4, 8, 16, 32, 64, 96].map((c) => ({ concurrency: c, throughput: Math.min(2500, c * 108), p95: 130 + Math.pow(c, 1.42) * 3.2, goodput: Math.min(2250, c * 103) * (c > 64 ? .72 : 1) })), [])
-  return <div className='mini-chart-panel'><header><span>吞吐不是 goodput</span><b>教学排队曲线</b></header><ResponsiveContainer width='100%' height={220}><AreaChart data={data}><CartesianGrid strokeDasharray='3 3' /><XAxis dataKey='concurrency' /><YAxis /><Tooltip /><Legend /><Area name='throughput tok/s' dataKey='throughput' stroke='#5968c5' fill='#dfe3ff' /><Area name='SLO goodput tok/s' dataKey='goodput' stroke='#d1644f' fill='#ffe5df' /></AreaChart></ResponsiveContainer></div>
+  return <div className='mini-chart-panel'><header><span>吞吐不是 goodput</span><b>教学排队曲线</b></header><LazyLearningChart data={data} kind='area' xKey='concurrency' height={220} series={[{ key: 'throughput', name: 'throughput tok/s', color: '#5968c5' }, { key: 'goodput', name: 'SLO goodput tok/s', color: '#d1644f' }]} /></div>
 }

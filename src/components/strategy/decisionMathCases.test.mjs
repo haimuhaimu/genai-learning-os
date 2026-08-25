@@ -34,8 +34,8 @@ test('8 个数学 Case 相同输入确定，且指标有限非负', () => {
 
 test('数学 Case 全量注册但只在 Hub 可见', () => {
   assert.equal(decisionMathCaseCatalog.length, 8)
-  assert.equal(strategyCaseCatalog.length, 17)
-  assert.equal(centerCaseCatalog.length, 9)
+  assert.equal(strategyCaseCatalog.length, 19)
+  assert.equal(centerCaseCatalog.length, 11)
   assert.ok(decisionMathCaseCatalog.every((item) => item.visibility === 'hub-only' && decisionMathCaseIds.has(item.id)))
   assert.ok(centerCaseCatalog.every((item) => item.routeId !== 'ai-decision-math'))
 })

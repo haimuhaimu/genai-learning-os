@@ -1,0 +1,2 @@
+.toolbox-page { min-height: 80vh; padding: 64px max(24px, 4vw) 88px; background: var(--lo-paper); }.toolbox-hero { width: min(1180px, 100%); margin: 0 auto 30px; }.toolbox-hero > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }.content-grid-resources { align-items: stretch; }.content-grid-resources > div { min-width: 0; }.content-grid-resources article { height: 100%; }
+@media (max-width: 600px) { .toolbox-page { padding: 40px 16px 64px; } }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, BookOpen, BrainCircuit, Calculator, CheckCircle2, FlaskConical, Image as ImageIcon, Network, Sparkles } from 'lucide-react'
-import { foundationNodes } from '../../foundationData'
+import { foundationNodeSummaries, foundationProgressIds } from '../../content/foundationSummary'
 import { getNextStep, getPersona, personas, readPersona, savePersona, type PersonaId } from '../../learningPath'
 import { progressPercent, readProgress, stageLabels, type ProgressMap } from '../../progress'
 import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
@@ -50,7 +50,7 @@ export default function UnifiedMap({ go }: { go: Go }) {
   const [persona, setPersona] = useState<PersonaId>(() => readPersona())
   const [progress, setProgress] = useState<ProgressMap>(() => readProgress())
   const profile = getPersona(persona)
-  const total = progressPercent(progress, foundationNodes.map((node) => node.id))
+  const total = progressPercent(progress, foundationProgressIds)
   const next = getNextStep(progress, persona)
   const caseProgress = usePaperLessonProgressMap()
   const caseSummary = getPaperLessonSummary(caseProgress, goldenPaperLabs.map((lab) => lab.paperId))
@@ -105,7 +105,7 @@ export default function UnifiedMap({ go }: { go: Go }) {
         <article className='lo-progress-overview'>
           <header><div><span>算法基础进度</span><strong>{total}%</strong></div><button type='button' onClick={() => go('progress')}>查看完整进度<ArrowRight /></button></header>
           <div className='lo-progress-bar' aria-label={`算法基础进度 ${total}%`}><i style={{ width: `${total}%` }} /></div>
-          <div className='lo-node-row'>{foundationNodes.map((node) => { const stage = progress[node.id] ?? 0; return <button type='button' key={node.id} className={`stage-${stage}`} title={`${node.code} ${node.title}：${stageLabels[stage]}`} onClick={() => go('foundation', { node: node.id })}><span>{node.code}</span><i /></button> })}</div>
+          <div className='lo-node-row'>{foundationNodeSummaries.map((node) => { const stage = progress[node.id] ?? 0; return <button type='button' key={node.id} className={`stage-${stage}`} title={`${node.code} ${node.title}：${stageLabels[stage]}`} onClick={() => go('foundation', { node: node.id })}><span>{node.code}</span><i /></button> })}</div>
         </article>
       </section>
 

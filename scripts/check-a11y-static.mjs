@@ -84,6 +84,23 @@ const hasMainTarget = /<main\b[^>]*id=['"]main-content['"][^>]*>/.test(business)
 if (!hasSkipLink) failures.push('src/business.tsx：缺少指向 #main-content 的 lo-skip-link')
 if (!hasMainTarget) failures.push('src/business.tsx：缺少 id="main-content" 的 main 地标')
 
+const missionSources = await Promise.all([
+  'components/strategy/StrategyPredictionPanel.tsx',
+  'components/strategy/StrategyControlsPanel.tsx',
+  'components/strategy/MissionStressPanel.tsx',
+  'components/strategy/MissionDebriefCard.tsx',
+].map((path) => readFile(resolve(sourceRoot, path), 'utf8')))
+const [prediction, controls, stress, debrief] = missionSources
+if (!/role='alertdialog'/.test(prediction) || !/确认重开/.test(prediction) || !/取消/.test(prediction)) failures.push('Mission 重开缺少原生确认/取消语义')
+if (!/triggerRef\.current\?\.focus/.test(prediction) || !/inputRef\.current\?\.focus/.test(prediction)) failures.push('Mission 重开缺少焦点返回或输入焦点目标')
+if (!/<label/.test(controls) || !/<fieldset/.test(controls) || !/<legend/.test(controls)) failures.push('策略控件缺少 label/fieldset/legend 原生语义')
+if (!/document\.getElementById\(`strategy-\$\{id\}`\)/.test(stress)) failures.push('压力失败缺少稳定 control 焦点目标')
+if (!/aria-live='polite'/.test(prediction + stress + debrief)) failures.push('Mission 提交状态缺少克制的 polite live region')
+const strategyCss = await readFile(resolve(sourceRoot, 'components/strategy/strategyCases.css'), 'utf8')
+const progressCss = await readFile(resolve(sourceRoot, 'styles/progress.css'), 'utf8')
+if (!strategyCss.includes('@media(prefers-reduced-motion:reduce)') || !progressCss.includes('@media(prefers-reduced-motion:reduce)')) failures.push('Mission 或能力矩阵缺少 reduced-motion 契约')
+if (!/通过|未通过/.test(stress)) failures.push('压力结果必须提供非颜色文本状态')
+
 if (failures.length) {
   console.error(`静态 a11y 检查失败：\n- ${failures.join('\n- ')}`)
   process.exit(1)

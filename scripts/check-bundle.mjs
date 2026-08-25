@@ -1,7 +1,8 @@
-import { readFile, readdir, stat } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { collectManifestFiles, referencesBuildOutput, resolveBuildOutput } from './bundle-output.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = resolve(root, 'dist')
@@ -26,42 +27,35 @@ const formatBytes = (bytes) => `${bytes.toLocaleString('en-US')} B (${(bytes / 1
 const signed = (bytes) => `${bytes > 0 ? '+' : ''}${bytes.toLocaleString('en-US')} B`
 const percent = (value, reference) => `${((value / reference - 1) * 100).toFixed(2)}%`
 
-async function collectAssets(directory) {
-  const entries = await readdir(directory, { withFileTypes: true })
-  const nested = await Promise.all(entries.map(async (entry) => {
-    const path = resolve(directory, entry.name)
-    if (entry.isDirectory()) return collectAssets(path)
-    if (!entry.isFile() || !/\.(?:js|css)$/.test(entry.name)) return []
-    return [{ path, bytes: (await stat(path)).size, extension: entry.name.endsWith('.js') ? 'js' : 'css' }]
-  }))
-  return nested.flat()
-}
-
-async function assetBytes(url) {
-  const path = resolve(dist, url.replace(/^\/?/, ''))
-  return (await stat(path)).size
+async function inspectAsset(file) {
+  const path = resolveBuildOutput(dist, file)
+  return { file, path, bytes: (await stat(path)).size, extension: file.endsWith('.js') ? 'js' : 'css' }
 }
 
 let assets
 let html
 let manifest
 try {
-  [assets, html, manifest] = await Promise.all([
-    collectAssets(dist),
+  [html, manifest] = await Promise.all([
     readFile(resolve(dist, 'index.html'), 'utf8'),
     readFile(resolve(dist, '.vite/manifest.json'), 'utf8').then(JSON.parse),
   ])
+  assets = await Promise.all(collectManifestFiles(manifest).map(inspectAsset))
 } catch (error) {
-  console.error(`Bundle 检查失败：无法读取 dist 产物。请先运行 pnpm build。\n${error.message}`)
+  console.error(`Bundle 检查失败：无法读取本次构建的 dist manifest 及其产物。请先运行 pnpm build。\n${error.message}`)
   process.exit(1)
 }
 
 const entry = manifest['index.html']
-if (!entry?.isEntry) {
-  console.error('Bundle 检查失败：manifest 中没有 index.html 入口。')
+if (!entry?.isEntry || !entry.file?.endsWith('.js')) {
+  console.error('Bundle 检查失败：manifest 中没有有效的 index.html JS 入口。')
   process.exit(1)
 }
 
+const assetByFile = new Map(assets.map((asset) => [asset.file, asset]))
+const entryJsFiles = [entry.file]
+const entryCssFiles = entry.css ?? []
+const sumBytes = (files) => files.reduce((sum, file) => sum + (assetByFile.get(file)?.bytes ?? 0), 0)
 const scriptUrls = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+\.js)["']/g)].map((match) => match[1])
 const styleUrls = [...html.matchAll(/<link\b[^>]*\brel=["']stylesheet["'][^>]*\bhref=["']([^"']+\.css)["']/g)].map((match) => match[1])
 const totals = {
@@ -70,8 +64,8 @@ const totals = {
 }
 totals.total = totals.js + totals.css
 const largest = assets.reduce((current, asset) => asset.bytes > current.bytes ? asset : current)
-const entryJs = (await Promise.all(scriptUrls.map(assetBytes))).reduce((sum, bytes) => sum + bytes, 0)
-const entryCss = (await Promise.all(styleUrls.map(assetBytes))).reduce((sum, bytes) => sum + bytes, 0)
+const entryJs = sumBytes(entryJsFiles)
+const entryCss = sumBytes(entryCssFiles)
 const metrics = { js: totals.js, css: totals.css, total: totals.total, largestChunk: largest.bytes, entryJs, entryCss }
 
 console.log('Bundle raw 精确体积（原始、未压缩）：')
@@ -85,8 +79,11 @@ const failures = []
 for (const key of ['js', 'css', 'total', 'largestChunk', 'entryJs', 'entryCss']) {
   if (metrics[key] > limits[key]) failures.push(`${key} 超出上限 ${formatBytes(metrics[key] - limits[key])}（当前 ${formatBytes(metrics[key])}，上限 ${formatBytes(limits[key])}）`)
 }
-if (!scriptUrls.some((url) => url.endsWith(entry.file))) failures.push(`HTML 未引用 manifest 入口 ${entry.file}`)
-if (!styleUrls.length) failures.push('HTML 没有首屏 stylesheet')
+if (!scriptUrls.some((url) => referencesBuildOutput(url, entry.file))) failures.push(`HTML 未引用 manifest 入口 ${entry.file}`)
+if (!entryCssFiles.length) failures.push('manifest 入口没有首屏 CSS')
+for (const file of entryCssFiles) {
+  if (!styleUrls.some((url) => referencesBuildOutput(url, file))) failures.push(`HTML 未引用 manifest 首屏 CSS ${file}`)
+}
 
 if (failures.length) {
   console.error(`Bundle 预算检查失败：\n- ${failures.join('\n- ')}`)

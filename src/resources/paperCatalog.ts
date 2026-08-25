@@ -105,6 +105,16 @@ export const paperResources = validatePaperCatalog([
     readQuestion: 'Self-Attention、FFN 与位置编码分别解决什么约束？',
   },
   {
+    id: 'switch-transformers', title: 'Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity', authors: 'William Fedus, Barret Zoph, Noam Shazeer', year: 2021,
+    area: 'Transformer / LLM', level: '进阶', kind: '系统论文', url: 'https://arxiv.org/abs/2101.03961', readingMinutes: 55,
+    relatedCaseIds: [], relatedRouteIds: ['foundation'],
+    oneLine: '每次只激活少量专家，在扩大模型容量的同时控制单次计算量。',
+    problem: '稠密模型扩大参数时，几乎所有参数都参与每次计算，训练和服务成本随之快速上升。',
+    mechanism: 'Router 为 token 选择 Top-1 Expert，Capacity 限制单个专家负载，Auxiliary loss 鼓励更均衡的分配。',
+    productLens: '稀疏激活不等于免费扩容；质量、丢弃、专家利用率、通信延迟和单位成本必须一起验收。',
+    readQuestion: '怎样选择负载均衡强度，既避免热门专家爆仓，又不把请求分给低质量专家？',
+  },
+  {
     id: 'distilling-the-knowledge-in-a-neural-network', title: 'Distilling the Knowledge in a Neural Network', authors: 'Geoffrey Hinton, Oriol Vinyals, Jeff Dean', year: 2015,
     area: 'Transformer / LLM', level: '入门', kind: '奠基论文', url: 'https://arxiv.org/abs/1503.02531', readingMinutes: 35,
     relatedCaseIds: ['distill-retention'], relatedRouteIds: ['distill'],

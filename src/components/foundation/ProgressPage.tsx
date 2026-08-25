@@ -12,6 +12,9 @@ import {
 } from '../../agentBookData'
 import { PERSONA_CHANGE_EVENT, readPersona, type PersonaId } from '../../learningPath'
 import { clearProgress, progressPercent, readProgress, stageLabels, type LearningStage, type ProgressMap } from '../../progress'
+import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
+import { clearPaperLessonProgress, getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
+import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
 import NextStepCard from './NextStepCard'
 import ProgressTransfer from './ProgressTransfer'
 import StrategyEvidenceSection from './StrategyEvidenceSection'
@@ -26,6 +29,9 @@ export default function ProgressPage({ go }: { go: Go }) {
   const [progress, setProgress] = useState<ProgressMap>(() => readProgress())
   const [persona, setPersona] = useState<PersonaId>(() => readPersona())
   const [confirming, setConfirming] = useState(false)
+  const caseProgress = usePaperLessonProgressMap()
+  const caseSummary = getPaperLessonSummary(caseProgress, goldenPaperLabs.map((lab) => lab.paperId))
+  const nextCase = goldenPaperLabs.find((lab) => lab.paperId === caseSummary.nextId) ?? goldenPaperLabs[0]
 
   useEffect(() => {
     const sync = () => setProgress(readProgress())
@@ -58,7 +64,7 @@ export default function ProgressPage({ go }: { go: Go }) {
       setConfirming(true)
       return
     }
-    if (!clearProgress()) {
+    if (!clearProgress() || !clearPaperLessonProgress()) {
       setConfirming(false)
       return
     }
@@ -92,6 +98,12 @@ export default function ProgressPage({ go }: { go: Go }) {
 
       <NextStepCard progress={progress} persona={persona} go={go} compact />
       <StrategyEvidenceSection go={go} />
+
+      <section className='lo-progress-transfer' aria-labelledby='case-progress-title'>
+        <header><div><span>案例课程主线</span><h2 id='case-progress-title'>通过 Case 学 AI · {caseSummary.completed}/{caseSummary.total} 已通关</h2></div></header>
+        <div className='phase-grid'>{goldenPaperLabs.map((lab) => { const record = caseProgress[lab.paperId]; return <article key={lab.paperId}><button type='button' onClick={() => go('paper-lab', { paper: lab.paperId })}><b>{String(lab.order).padStart(2, '0')}</b><span>{lab.shortTitle}</span><small>{record?.completed ? '已通关 · 可复习' : record ? `继续第 ${record.step} 关` : '未开始'}</small></button></article> })}</div>
+        <button type='button' onClick={() => go('paper-lab', caseSummary.completed === caseSummary.total ? {} : { paper: nextCase.paperId })}>{caseSummary.completed === caseSummary.total ? '返回案例课程目录' : '继续案例课程'}<ArrowRight aria-hidden='true' /></button>
+      </section>
 
       <section className='lo-total-summary' aria-label='算法基础整体进度'>
         <div><span>整体进度</span><strong>{foundationTotal}%</strong></div>

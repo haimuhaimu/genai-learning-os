@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { GoldenLessonShell, ContinueButton } from '../shared/GoldenLessonShell'
+import { usePaperLesson } from '../shared/PaperLessonContext'
 import { GuessStep, MistakeStep, PaperRevealStep, RuleStep } from '../shared/GoldenLessonSteps'
 import type { LessonStep } from '../shared/goldenLessonModel'
 import {
@@ -17,7 +18,8 @@ function points(values: readonly number[]) {
 }
 
 export default function DdpmLab() {
-  const [step, setStep] = useState<LessonStep>(1)
+  const { initialStep } = usePaperLesson()
+  const [step, setStep] = useState<LessonStep>(initialStep)
   const [guess, setGuess] = useState<number | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [accuracy, setAccuracy] = useState(0)

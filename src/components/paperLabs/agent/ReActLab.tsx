@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { GoldenLessonShell, ContinueButton } from '../shared/GoldenLessonShell'
+import { usePaperLesson } from '../shared/PaperLessonContext'
 import { GuessStep, MistakeStep, PaperRevealStep, RuleStep } from '../shared/GoldenLessonSteps'
 import type { LessonStep } from '../shared/goldenLessonModel'
 import {
@@ -15,7 +16,8 @@ import {
 const kindLabels = { thought: '先判断', action: '去查询', observation: '读结果', answer: '做决定', stop: '停止' } as const
 
 export default function ReActLab() {
-  const [step, setStep] = useState<LessonStep>(1)
+  const { initialStep } = usePaperLesson()
+  const [step, setStep] = useState<LessonStep>(initialStep)
   const [guess, setGuess] = useState<number | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [strictness, setStrictness] = useState(0)

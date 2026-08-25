@@ -30,7 +30,7 @@ test('正式论文 Catalog 合法且覆盖核心方向与代表作', () => {
     '推荐系统', 'Transformer / LLM', '扩散 / 多模态', 'Agent / Harness', '自我改进 / 世界模型',
   ]))
   const ids = new Set(paperResources.map(({ id }) => id))
-  for (const id of ['wide-and-deep', 'attention-is-all-you-need', 'distilling-the-knowledge-in-a-neural-network', 'flashattention', 'ddpm', 'clip', 'react', 'traject-bench', 'reflexion', 'dreamerv3']) {
+  for (const id of ['wide-and-deep', 'attention-is-all-you-need', 'switch-transformers', 'distilling-the-knowledge-in-a-neural-network', 'flashattention', 'ddpm', 'clip', 'react', 'traject-bench', 'reflexion', 'dreamerv3']) {
     assert.ok(ids.has(id), `缺少关键代表作：${id}`)
   }
   const distillation = paperResources.find(({ id }) => id === 'distilling-the-knowledge-in-a-neural-network')

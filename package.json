@@ -1,7 +1,7 @@
 {
   "name": "genai-learning-os",
-  "version": "1.0.0",
-  "description": "Learn AI through product decisions: 9 tracks, 9 strategy cases, 8 decision-math exercises, 43 curated videos/courses, and 22 explained core papers.",
+  "version": "1.1.0",
+  "description": "Learn AI through product decisions: 9 tracks, 17 strategy and math cases, 7 Case Academy lessons, 43 curated videos/courses, and 23 explained core papers.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "haimuhaimu",

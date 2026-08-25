@@ -4,7 +4,7 @@
 
 [在线体验](https://haimuhaimu.github.io/genai-learning-os/) · [从策略案例开始](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [参与学习者共建](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) · [查看贡献指南](CONTRIBUTING.md) · [English README](README_EN.md)
 
-**9 条学习路线 · 9 个代表策略案例 + 8 个 AI 决策数学练习 · 43 条精选视频/课程 + 22 篇核心论文讲解**，包含中文课程、Karpathy 学习材料，以及从推荐系统、LLM 到 Agent 与世界模型的阅读路径。
+**9 条学习路线 · 9 个代表策略案例 + 8 个 AI 决策数学练习 · 7 门 Case Academy 黄金课 · 43 条精选视频/课程 + 23 篇核心论文讲解**，包含中文课程、Karpathy 学习材料，以及从推荐系统、LLM 到 Agent 与世界模型的阅读路径。
 
 多数教程解释模型如何运行；本项目让你先做产品策略决策，再回到算法机制，理解指标、代价和反馈闭环。
 
@@ -56,7 +56,7 @@
 
 每个统一 Strategy Case 都提供“首次判断 → 主动打开关联视频或论文 → 复盘判断 → 前后并排对比”的闭环。资源触达只在用户点击打开时记录，**不代表看完或掌握**。首次与复盘回答、触达时间均按 case 隔离保存在当前浏览器的 `genai-resource-loop-v1` 中；可单独清除当前 case，`localStorage` 不可用时会降级为当前会话状态，且不会推进既有学习进度。
 
-[论文机制演练实验室](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) 提供 Transformer、模型蒸馏、Wide & Deep、DDPM、ReAct 与 DreamerV3 六个无需后端的确定性微型实验。新增蒸馏五关黄金样板课《把昂贵大模型装进低成本小模型》，以 70B → 3B 客服/审核迁移为案例，按“先猜 → 看 AI 犯错 → 只改一个人话变量 → 自己总结 → 最后揭示术语与公式”推进，并用成本、延迟、能力保持、风险与人工复核账本作上线判断。所有实验的机制教学简化不等于完整训练复现，也不代表生产模型性能。
+[Case Academy：通过 Case 学 AI](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) 把全部七门黄金课组织为可发现、可续学、可复习的主线，覆盖 Transformer、模型蒸馏、Wide & Deep、DDPM、ReAct、DreamerV3 与 Switch Transformers。每课按“先猜 → 看 AI 犯错 → 只改一个人话变量 → 自己总结 → 最后揭示术语与公式”推进；本机安全保存关卡和通关状态。Switch Transformers 新课使用固定 12 条退款、政策、代码与检索请求，展示分流强度过低导致爆仓、适中达到 Go、高到过度均衡又损害质量的非单调取舍。所有实验均为无需后端的确定性教学简化，不等于完整训练复现或生产模型性能。
 
 ## 数学零层：先把公式翻译成人话
 
@@ -92,7 +92,7 @@
 ## 学习资源
 
 - [参考视频库](https://haimuhaimu.github.io/genai-learning-os/?page=videos)：43 条精选视频与课程，可按路线、语言、难度与内容来源筛选；新增 3Blue1Brown、StatQuest、D2L、李宏毅、OpenBMB、Hugging Face、MIT、Stanford、CMU、DeepLearning.AI 与 Google 官方入口。
-- [核心论文讲解库](https://haimuhaimu.github.io/genai-learning-os/?page=papers)：22 篇核心论文覆盖推荐系统、Transformer / LLM、扩散 / 多模态、Agent / Harness 与自我改进 / 世界模型；每篇按“30 秒看懂 / 关键机制 / 产品视角 / 带回课程的问题”组织。
+- [核心论文讲解库](https://haimuhaimu.github.io/genai-learning-os/?page=papers)：23 篇核心论文覆盖推荐系统、Transformer / LLM、扩散 / 多模态、Agent / Harness 与自我改进 / 世界模型；每篇按“30 秒看懂 / 关键机制 / 产品视角 / 带回课程的问题”组织。
 - 资源不嵌入、不自动播放，点击或阅读不计入学习进度。维护方式见 [参考视频贡献指南](docs/VIDEO_CONTRIBUTING.md) 与 [论文讲解库贡献指南](docs/PAPER_CONTRIBUTING.md)。
 
 ## 贡献一个 Case

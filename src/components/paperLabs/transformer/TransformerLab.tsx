@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { AlertTriangle, ArrowRight, Check, RotateCcw, Sparkles, Target } from 'lucide-react'
 import { AccessibleRadioGroup } from '../shared/AccessibleRadioGroup'
 import { ContinueButton, GoldenLessonShell } from '../shared/GoldenLessonShell'
+import { usePaperLesson } from '../shared/PaperLessonContext'
 import {
   FINAL_PRINCIPLE,
   PRINCIPLE_MAPPING,
@@ -15,7 +16,8 @@ import {
 } from './lessonModel'
 
 export default function TransformerLab() {
-  const [step, setStep] = useState<LessonStep>(1)
+  const { initialStep } = usePaperLesson()
+  const [step, setStep] = useState<LessonStep>(initialStep)
   const [guess, setGuess] = useState<number | null>(null)
   const [mistakeRevealed, setMistakeRevealed] = useState(false)
   const [balance, setBalance] = useState(100)

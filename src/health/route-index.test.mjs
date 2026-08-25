@@ -11,10 +11,11 @@ import {
 } from '../routeConfig.ts'
 import { strategyCaseCatalog } from '../components/strategy/caseCatalog.ts'
 import { paperResources } from '../resources/paperCatalog.ts'
-import { getPaperLab, paperLabs } from '../components/paperLabs/paperLabsRegistry.ts'
+import { getPaperLab, goldenPaperLabs, paperLabs, resolvePaperLabRoute } from '../components/paperLabs/paperLabsRegistry.ts'
 import { searchIndex } from '../searchIndex.ts'
 
 const businessSource = await readFile(new URL('../business.tsx', import.meta.url), 'utf8')
+const paperLabsPageSource = await readFile(new URL('../components/paperLabs/PaperLabsPage.tsx', import.meta.url), 'utf8')
 const dispatchedPages = new Set(
   [...businessSource.matchAll(/route\.page\s*===\s*(['"])([^'"]+)\1/g)].map((match) => match[2]),
 )
@@ -73,8 +74,10 @@ test('论文讲解库已接入路由，且每篇论文的标题、作者、方�
 test('论文实验深链、注册表和未知 ID 回退保持健康', () => {
   assert.ok(canonicalPageSet.has('paper-lab'))
   assert.ok(dispatchedPages.has('paper-lab'))
-  assert.equal(paperLabs.length, 6)
-  assert.ok(paperLabs.some((lab) => lab.paperId === 'distilling-the-knowledge-in-a-neural-network' && lab.layout === 'golden'))
+  assert.equal(paperLabs.length, 7)
+  assert.equal(goldenPaperLabs.length, 7)
+  assert.deepEqual(goldenPaperLabs.map((lab) => lab.order), [1, 2, 3, 4, 5, 6, 7])
+  assert.ok(paperLabs.some((lab) => lab.paperId === 'switch-transformers' && lab.layout === 'golden'))
   for (const lab of paperLabs) {
     assert.ok(paperResources.some((paper) => paper.id === lab.paperId), `${lab.paperId} 必须对应 Catalog 论文`)
     assert.equal(lab.layout, 'golden', `${lab.paperId} 必须使用黄金课布局`)
@@ -82,6 +85,16 @@ test('论文实验深链、注册表和未知 ID 回退保持健康', () => {
     assert.deepEqual(entry?.options, { paper: lab.paperId })
   }
   assert.equal(getPaperLab('unknown-paper').paperId, paperLabs[0].paperId)
+  assert.deepEqual(resolvePaperLabRoute(undefined), { kind: 'hub' }, '无 paper 参数必须稳定进入 Hub')
+  const invalidRoute = resolvePaperLabRoute('unknown-paper')
+  assert.equal(invalidRoute.kind, 'lesson')
+  assert.equal(invalidRoute.lab.paperId, paperLabs[0].paperId)
+  assert.equal(invalidRoute.unknown, true, '非法 paper 必须标记警告并安全回退')
+  assert.match(paperLabsPageSource, /unknown\s*\?\s*<aside[^>]+role=['"]status['"][^>]*>[^<]*已安全回退到第一课/)
+  assert.match(businessSource, /<PaperLabsPage\s+paperId=\{route\.paper\}/)
+  const academy = searchIndex.find((entry) => entry.id === 'top-paper-labs')
+  assert.equal(academy?.title, '通过 Case 学 AI')
+  assert.equal(academy?.page, 'paper-lab')
 })
 
 test('历史别名和未知 page 通过共享配置统一归一化', () => {

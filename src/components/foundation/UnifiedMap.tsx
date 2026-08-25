@@ -3,6 +3,9 @@ import { ArrowRight, BookOpen, BrainCircuit, Calculator, CheckCircle2, FlaskConi
 import { foundationNodes } from '../../foundationData'
 import { getNextStep, getPersona, personas, readPersona, savePersona, type PersonaId } from '../../learningPath'
 import { progressPercent, readProgress, stageLabels, type ProgressMap } from '../../progress'
+import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
+import { getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
+import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
 import NextStepCard from './NextStepCard'
 
 type Go = (page: string, options?: Record<string, string>) => void
@@ -49,6 +52,9 @@ export default function UnifiedMap({ go }: { go: Go }) {
   const profile = getPersona(persona)
   const total = progressPercent(progress, foundationNodes.map((node) => node.id))
   const next = getNextStep(progress, persona)
+  const caseProgress = usePaperLessonProgressMap()
+  const caseSummary = getPaperLessonSummary(caseProgress, goldenPaperLabs.map((lab) => lab.paperId))
+  const nextCase = goldenPaperLabs.find((lab) => lab.paperId === caseSummary.nextId) ?? goldenPaperLabs[0]
 
   useEffect(() => {
     const sync = () => setProgress(readProgress())
@@ -111,6 +117,11 @@ export default function UnifiedMap({ go }: { go: Go }) {
           ['3', '进入实验', '改变参数并观察结果'],
           ['4', '评审', '用证据做上线判断'],
         ].map(([index, title, text]) => <article key={index}><span>{index}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
+      </section>
+
+      <section className='lo-book-feature'>
+        <div><span>CASE ACADEMY</span><h2>通过 Case 学 AI</h2><p>七门五关黄金课：先做业务判断，再用一个旋钮找到规律，最后才揭示论文术语。</p><button type='button' onClick={() => go('paper-lab', caseSummary.completed === caseSummary.total ? {} : { paper: nextCase.paperId })}>{caseSummary.completed === caseSummary.total ? '回目录复习' : caseSummary.completed || caseProgress[nextCase.paperId] ? '继续学习' : '开始第一课'}<ArrowRight /></button></div>
+        <aside><BookOpen aria-hidden='true' /><b>{caseSummary.completed}/{caseSummary.total}</b><span>已通关</span><i /><p>支持刷新续学和通关复习</p></aside>
       </section>
 
       <section className='lo-book-feature'>

@@ -1,4 +1,7 @@
 import { ArrowRight, BookOpen, BookOpenText, BrainCircuit, Calculator, Compass, FlaskConical, GitBranch, Home, Image, Network, RefreshCw, Sigma, Sparkles } from 'lucide-react'
+import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
+import { getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
+import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
 
 type Go = (page: string, options?: Record<string, string>) => void
 
@@ -36,6 +39,9 @@ const frontierRoutes = [
 ]
 
 export default function LearningRoutesHub({ go }: { go: Go }) {
+  const caseProgress = usePaperLessonProgressMap()
+  const caseSummary = getPaperLessonSummary(caseProgress, goldenPaperLabs.map((lab) => lab.paperId))
+  const nextCase = goldenPaperLabs.find((lab) => lab.paperId === caseSummary.nextId) ?? goldenPaperLabs[0]
   const mainline = routes.filter((route) => !route.branch)
   const branch = routes.find((route) => route.branch)
   if (!branch) {
@@ -62,6 +68,10 @@ export default function LearningRoutesHub({ go }: { go: Go }) {
         <p>七条基础与应用路线覆盖算法机制、AI 决策数学、生成模型与智能体（AI Agent）工程；另有两条前沿探索路线。每条路线都连接课程、实验和评审，不需要在二十多个页面里猜入口。</p>
         <button type='button' className='strategy-route-entry' onClick={() => go('strategy-cases')}>进入策略案例（Case）中心<ArrowRight /></button>
       </header>
+      <section className='lo-routes-fallback' aria-labelledby='case-route-title'>
+        <BookOpen aria-hidden='true' /><span>案例课程主线 · {caseSummary.completed}/{caseSummary.total} 已通关</span><h1 id='case-route-title'>通过 Case 学 AI</h1><p>七门黄金课串起 Attention、蒸馏、推荐、扩散、Agent、世界模型与 MoE；支持刷新续学和通关复习。</p>
+        <div><button type='button' onClick={() => go('paper-lab', caseSummary.completed === caseSummary.total ? {} : { paper: nextCase.paperId })}>{caseSummary.completed === caseSummary.total ? '回目录复习' : '继续案例主线'}<ArrowRight aria-hidden='true' /></button></div>
+      </section>
       <div className='lo-routes-layout'>
         <section className='lo-route-mainline' aria-label='建议学习主线'>
           <header><div><span>建议主线</span><h2>从数学零层到模型蒸馏</h2></div><p>第一次看公式，可以先扫盲；也可以根据工作目标跳读。</p></header>

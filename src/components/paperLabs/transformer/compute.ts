@@ -2,7 +2,7 @@ import { dot, round, softmax } from '../shared/math.ts'
 
 export type AttentionInput = { queryPosition: number; scaleDivisor: number; causal: boolean }
 
-const tokens = ['模型', '寻找', '证据', '。'] as const
+const tokens = ['退款问题', '扣款未到账', '是否退款', '重复扣款'] as const
 const embeddings = [[1, 0, 1], [0, 1, 1], [1, 1, 0], [0.2, 0.2, 0.2]]
 const queryWeights = [[1, 0, 0], [0, 0.8, 0], [0, 0, 1]]
 const keyWeights = [[0.8, 0, 0.2], [0, 1, 0], [0.2, 0, 0.8]]

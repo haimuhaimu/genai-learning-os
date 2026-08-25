@@ -10,11 +10,11 @@ export type PaperLabDefinition = {
 }
 
 export const paperLabs = [
-  { paperId: 'attention-is-all-you-need', shortTitle: 'Transformer 注意力', eyebrow: 'TOKEN INFORMATION ROUTING', objective: '观察缩放点积注意力如何按相关性路由信息，以及因果遮罩如何阻断未来 token。', conclusion: '把“窗口够长”拆成“证据是否被正确关注”的可验证问题。', component: lazy(() => import('./transformer/TransformerLab')) },
-  { paperId: 'wide-and-deep', shortTitle: 'Wide & Deep 推荐', eyebrow: 'MEMORIZATION + GENERALIZATION', objective: '拆解记忆分支、泛化分支与联合分数在热门、冷启动和长尾切片上的差异。', conclusion: '平均收益不是验收终点；推荐策略必须看分群贡献。', component: lazy(() => import('./recsys/WideDeepLab')) },
-  { paperId: 'ddpm', shortTitle: 'DDPM 去噪', eyebrow: 'FORWARD NOISE + REVERSE ESTIMATE', objective: '用固定种子观察时间步、噪声日程与预测误差如何改变信噪比和重建误差。', conclusion: '质量、步数、延迟和可用率需要放进同一张决策表。', component: lazy(() => import('./diffusion/DdpmLab')) },
-  { paperId: 'react', shortTitle: 'ReAct 轨迹', eyebrow: 'REASON + ACT + OBSERVE', objective: '比较 Direct、CoT-only 与 ReAct，并定位冲突、工具限制和预算中的失败位置。', conclusion: 'Agent 可靠性来自工具契约、可观察轨迹与明确停止条件。', component: lazy(() => import('./agent/ReActLab')) },
-  { paperId: 'dreamerv3', shortTitle: 'DreamerV3 世界模型', eyebrow: 'REAL VS IMAGINED ROLLOUT', objective: '比较真实交互与想象 rollout 的回报，并观察模型误差如何随长度累积。', conclusion: '模拟提升样本效率，但必须持续回到真实环境校验偏差。', component: lazy(() => import('./worldModel/DreamerLab')) },
+  { paperId: 'attention-is-all-you-need', shortTitle: 'Transformer（注意力架构）', eyebrow: '信息路由 · TOKEN INFORMATION ROUTING', objective: '从退款总结漏掉关键证据出发，操作当前问题、注意力集中度与因果遮罩，追踪分数到输出的完整因果链。', conclusion: '把“窗口够长”拆成“关键证据是否被正确关注、生成时是否偷看未来”的可验证问题。', component: lazy(() => import('./transformer/TransformerLab')) },
+  { paperId: 'wide-and-deep', shortTitle: 'Wide & Deep（记忆与泛化）', eyebrow: '记忆与泛化 · MEMORIZATION + GENERALIZATION', objective: '从新内容与新商家冷启动出发，对比记忆规则和相似性泛化如何让热门、冷启动、长尾跨过门槛。', conclusion: '平均收益不是验收终点；推荐策略必须看谁先跨过门槛，以及泛化带来的误推荐代价。', component: lazy(() => import('./recsys/WideDeepLab')) },
+  { paperId: 'ddpm', shortTitle: 'DDPM（扩散去噪）', eyebrow: '加噪与反推 · FORWARD NOISE + REVERSE ESTIMATE', objective: '从 AI 生成内容（AIGC）图片质量、延迟与成本取舍出发，沿干净、带噪、重建链路读懂信噪比与重建误差。', conclusion: '可用图率、采样延迟和单张可用图成本需要放进同一张决策表。', component: lazy(() => import('./diffusion/DdpmLab')) },
+  { paperId: 'react', shortTitle: 'ReAct（推理—行动—观察）', eyebrow: '推理、行动与观察 · REASON + ACT + OBSERVE', objective: '从退款自动化避免“自信地错”出发，比较是否查证、工具、冲突与步数预算造成的关键分叉。', conclusion: 'Agent 可靠性来自外部查证、可观察轨迹、冲突核验与明确停止条件。', component: lazy(() => import('./agent/ReActLab')) },
+  { paperId: 'dreamerv3', shortTitle: 'DreamerV3（世界模型）', eyebrow: '真实与想象推演 · REAL VS IMAGINED ROLLOUT', objective: '从仿真投入产出比（ROI）很高但线上回撤出发，逐步观察模拟误差累积，并判断何时必须回真实小流量验证。', conclusion: '模拟提升样本效率，但长推演必须设置真实小流量校验与回退边界。', component: lazy(() => import('./worldModel/DreamerLab')) },
 ] as const satisfies readonly PaperLabDefinition[]
 
 export const defaultPaperLab = paperLabs[0]

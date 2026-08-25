@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AlertTriangle, ArrowRight, Check, RotateCcw, Sparkles, Target } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Bot, Check, Gauge, RotateCcw, Sparkles, Target, TrendingDown } from 'lucide-react'
 import { AccessibleRadioGroup } from './AccessibleRadioGroup'
 import { ContinueButton } from './GoldenLessonShell'
 
@@ -63,11 +63,15 @@ export function MistakeStep({ title, decision, reason, consequence, revealTitle,
     <section aria-labelledby='golden-step-2'>
       <span className='golden-kicker'>第 2 关 · 看 AI 犯错</span>
       <h2 id='golden-step-2'>{title}</h2>
-      <div className='golden-ai-decision is-wrong'>
-        <span>AI 的决定</span><strong>{decision}</strong><p>“{reason}”</p><small>{consequence}</small>
+      <div className='golden-decision-flow'>
+        <article><span><Bot aria-hidden='true' />AI 决策</span><strong>{decision}</strong></article>
+        <ArrowRight aria-hidden='true' />
+        <article><span><Gauge aria-hidden='true' />判断依据</span><p>“{reason}”</p></article>
+        <ArrowRight aria-hidden='true' />
+        <article className='is-impact'><span><TrendingDown aria-hidden='true' />业务后果</span><strong>{consequence}</strong></article>
       </div>
       {!revealed ? (
-        <button className='golden-reveal-button' type='button' onClick={onReveal}>看看错在了哪里<ArrowRight aria-hidden='true' /></button>
+        <button className='golden-reveal-button' type='button' onClick={onReveal}>定位错误节点<ArrowRight aria-hidden='true' /></button>
       ) : (
         <>
           <div className='golden-focus-reveal' role='status'><AlertTriangle aria-hidden='true' /><div><span>错误原因</span><strong>{revealTitle}</strong><p>{revealDetail}</p></div></div>
@@ -120,7 +124,7 @@ export function PaperRevealStep({ principle, source, mappings, formulaTitle, for
       <blockquote className='golden-principle'><Sparkles aria-hidden='true' /><p>{principle}</p></blockquote>
       <p className='golden-paper-source'>{source}</p>
       <div className='golden-mapping' aria-label='论文术语与刚才操作的对应关系'>
-        {mappings.map((item) => <article key={item.term}><span>{item.term}</span><strong>{item.chinese}</strong><p>{item.example}</p></article>)}
+        {mappings.map((item, index) => <article key={item.term}><i aria-hidden='true'>{String(index + 1).padStart(2, '0')}</i><span>{item.term}</span><strong>{item.chinese}</strong><p>{item.example}</p></article>)}
       </div>
       <div className='golden-min-formula'><span>最小公式 · {formulaTitle}</span><code>{formula}</code>{note ? <p>{note}</p> : null}</div>
       <details className='golden-deep-dive'>

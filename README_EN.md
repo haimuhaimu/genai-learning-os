@@ -4,7 +4,7 @@
 
 [Try it online](https://haimuhaimu.github.io/genai-learning-os/) · [Start with Strategy Cases](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [Join the learner co-build hub](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) · [Read the contribution guide](CONTRIBUTING.md) · [中文 README](README.md)
 
-**9 learning tracks · 9 representative Strategy Cases + 8 AI decision-math exercises · 43 curated videos/courses + 21 explained core papers**, with Chinese courses, Karpathy resources, and reading paths spanning recommender systems, LLMs, agents, and world models.
+**9 learning tracks · 9 representative Strategy Cases + 8 AI decision-math exercises · 43 curated videos/courses + 22 explained core papers**, with Chinese courses, Karpathy resources, and reading paths spanning recommender systems, LLMs, agents, and world models.
 
 Most tutorials explain how models run. This project asks you to make a product strategy decision first, then return to the mechanism to understand metrics, costs, and feedback loops.
 
@@ -56,7 +56,7 @@ Every Strategy Case follows the same seven-part chain:
 
 Every unified Strategy Case now supports an **initial judgment → user-opened resource → review judgment → side-by-side comparison** loop. A resource is marked as “touched” only after the learner actively opens it; this never means watched, read, or mastered. Responses and touch timestamps are isolated by case in the current browser under `genai-resource-loop-v1`. Learners can clear only the current case, and unavailable `localStorage` safely falls back to session state without advancing existing progress.
 
-The [paper mechanism labs](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) provide five deterministic, backend-free experiments for Transformer, Wide & Deep, DDPM, ReAct, and DreamerV3. The Transformer experiment is now a five-minute golden lesson, “Help AI Find the Real Refund Evidence.” It reveals one stage at a time—guess first, watch AI fail, change one condition, summarize the rule, then reveal the mechanism—until learners can explain that Attention does not let a model see more; it selects the evidence that matters for the current question. Terminology and formulas appear only after the discovery. The other labs retain their business stories, controllable variables, dynamic explanations, and transfer templates. These mechanism-level teaching simplifications are not full training reproductions and do not represent production performance.
+The [paper mechanism labs](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) provide six deterministic, backend-free experiments for Transformer, model distillation, Wide & Deep, DDPM, ReAct, and DreamerV3. The new five-stage distillation golden lesson, “Put an Expensive Large Model into a Low-Cost Small Model,” uses a 70B → 3B customer-service and moderation case. Learners guess, watch the AI fail, change one plain-language variable, state the rule, and only then reveal the paper terms and formula. A cost, latency, capability-retention, risk, and human-review ledger supports the final launch judgment. These mechanism-level teaching simplifications are not full training reproductions and do not represent production performance.
 
 ## Nine learning tracks
 
@@ -82,7 +82,7 @@ AI product managers, strategy and operations practitioners, engineers and resear
 
 The [video and course library](https://haimuhaimu.github.io/genai-learning-os/?page=videos) now contains 43 curated entries, including 3Blue1Brown, StatQuest, D2L, Hung-yi Lee, OpenBMB, Hugging Face, MIT, Stanford, CMU, DeepLearning.AI, and Google resources. Filter them by route, language, level, and origin.
 
-The new [paper explainer library](https://haimuhaimu.github.io/genai-learning-os/?page=papers) contains 21 core papers across recommender systems, Transformer / LLM, diffusion / multimodal, Agent / Harness, and self-improvement / world models. Every card presents a 30-second explanation, core mechanism, product lens, and a question to take back to the course. See the [video contribution guide](docs/VIDEO_CONTRIBUTING.md) and [paper explainer contribution guide](docs/PAPER_CONTRIBUTING.md).
+The new [paper explainer library](https://haimuhaimu.github.io/genai-learning-os/?page=papers) contains 22 core papers across recommender systems, Transformer / LLM, diffusion / multimodal, Agent / Harness, and self-improvement / world models. Every card presents a 30-second explanation, core mechanism, product lens, and a question to take back to the course. See the [video contribution guide](docs/VIDEO_CONTRIBUTING.md) and [paper explainer contribution guide](docs/PAPER_CONTRIBUTING.md).
 
 ## Contribute a Strategy Case
 

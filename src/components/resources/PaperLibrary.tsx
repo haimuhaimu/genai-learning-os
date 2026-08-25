@@ -18,7 +18,7 @@ const kindOptions: Array<FilterOption<PaperKind>> = [
   { id: '系统论文', label: '系统论文' }, { id: '评估基准', label: '评估基准' },
 ]
 const readingPaths: Array<{ title: string; description: string; paperIds: string[]; area: PaperArea }> = [
-  { title: '从 Transformer 到高吞吐服务', description: '架构 → 对齐 → 注意力 IO → 解码 → KV cache', paperIds: ['attention-is-all-you-need', 'instructgpt', 'flashattention', 'speculative-decoding', 'pagedattention-vllm'], area: 'Transformer / LLM' },
+  { title: '从 Transformer 到低成本服务', description: '架构 → 蒸馏 → 对齐 → 注意力 IO → 解码 → KV cache', paperIds: ['attention-is-all-you-need', 'distilling-the-knowledge-in-a-neural-network', 'instructgpt', 'flashattention', 'speculative-decoding', 'pagedattention-vllm'], area: 'Transformer / LLM' },
   { title: '从去噪生成到可控多模态', description: 'DDPM → 潜空间 → 空间控制 → 图文对齐', paperIds: ['ddpm', 'latent-diffusion', 'controlnet', 'clip', 'blip-2'], area: '扩散 / 多模态' },
   { title: '从 Agent 行动到可验证改进', description: '推理行动 → 工具学习 → 轨迹评估 → 反思 → 世界模型', paperIds: ['react', 'toolformer', 'traject-bench', 'reflexion', 'dreamerv3'], area: 'Agent / Harness' },
 ]

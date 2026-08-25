@@ -16,8 +16,14 @@ export default function ProductHeader({ page, go, onSearch, onFeedback, searchBu
 }) {
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const firstNavItemRef = useRef<HTMLButtonElement>(null)
   const current = primarySectionForPage(page)
   useEffect(() => setOpen(false), [page])
+  useEffect(() => {
+    if (!open) return
+    const frame = requestAnimationFrame(() => firstNavItemRef.current?.focus())
+    return () => cancelAnimationFrame(frame)
+  }, [open])
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); requestAnimationFrame(() => menuButtonRef.current?.focus()) }
@@ -29,7 +35,7 @@ export default function ProductHeader({ page, go, onSearch, onFeedback, searchBu
   return <header className='lo-product-header'>
     <button className='lo-brand' type='button' onClick={() => navigate('unified-map')} aria-label='返回 GenAI Learning OS 首页'><span className='lo-brand-mark' aria-hidden='true'>G</span><span><b>GenAI Learning OS</b><small>从机制理解到可靠决策</small></span></button>
     <nav className={`lo-primary-nav ${open ? 'is-open' : ''}`} id='lo-primary-navigation' aria-label='主导航'>
-      {primarySections.map(({ id, label, page: target }) => { const Icon = icons[id]; return <button key={id} type='button' data-nav-id={id} className={current === id ? 'is-active' : ''} aria-current={current === id ? 'page' : undefined} onClick={() => navigate(target)}><Icon aria-hidden='true' /><span>{label}</span></button> })}
+      {primarySections.map(({ id, label, page: target }, index) => { const Icon = icons[id]; return <button ref={index === 0 ? firstNavItemRef : undefined} key={id} type='button' data-nav-id={id} className={current === id ? 'is-active' : ''} aria-current={current === id ? 'page' : undefined} onClick={() => navigate(target)}><Icon aria-hidden='true' /><span>{label}</span></button> })}
       <button type='button' className='lo-mobile-search' onClick={(event) => { setOpen(false); onSearch(event.currentTarget) }}><Search aria-hidden='true' /><span>搜索</span></button>
       <button type='button' className='lo-mobile-feedback' onClick={(event) => { setOpen(false); onFeedback(event.currentTarget) }}><MessageCircle aria-hidden='true' /><span>反馈</span></button>
       <ShareButton className='lo-mobile-share' ariaLabel='复制当前页面链接' />

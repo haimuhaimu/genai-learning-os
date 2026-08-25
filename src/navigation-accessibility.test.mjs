@@ -12,8 +12,10 @@ test('导航渲染五入口配置，工具操作不混入主入口配置', () =>
   for (const tool of ['搜索', '反馈', '复制链接', '我的进度']) assert.match(headerSource, new RegExp(tool))
 })
 
-test('移动菜单声明展开状态，并在 Escape 后将焦点还给触发器', () => {
+test('移动菜单声明展开状态，展开后进入视觉顺序，并在 Escape 后将焦点还给触发器', () => {
   assert.match(headerSource, /aria-expanded=\{open\}/)
+  assert.match(headerSource, /firstNavItemRef\.current\?\.focus\(\)/)
+  assert.match(headerSource, /index === 0 \? firstNavItemRef/)
   assert.match(headerSource, /event\.key === 'Escape'/)
   assert.match(headerSource, /menuButtonRef\.current\?\.focus\(\)/)
   assert.match(headerSource, /aria-controls='lo-primary-navigation'/)

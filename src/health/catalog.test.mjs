@@ -9,6 +9,10 @@ import {
   strategyCaseCatalog,
 } from '../components/strategy/caseCatalog.ts'
 import { strategyCaseRegistry, strategyCaseSpecs } from '../components/strategy/caseRegistry.ts'
+import { caseEntries } from '../content/registry/cases.ts'
+import { labEntries } from '../content/registry/labs.ts'
+import { paperEntries, videoEntries } from '../content/registry/resources.ts'
+import { paperResources } from '../resources/paperCatalog.ts'
 import { validateVideoCatalog, videoResources } from '../resources/videoCatalog.ts'
 
 const expectedRoutes = new Set(['foundation', 'ai-decision-math', 'llm', 'image', 'agent', 'agent-book', 'distill', 'self-evolving', 'world-model'])
@@ -52,5 +56,22 @@ test('视频 catalog 合法，并覆盖所有非数学内容路线与旗舰案�
   for (const caseId of flagshipCaseIds) {
     const related = videoResources.filter((video) => video.relatedCaseIds.includes(caseId))
     assert.ok(related.length >= 2, `${caseId} 至少需要两条视频资源`)
+  }
+})
+
+
+test('统一 registry 与案例、实验、视频、论文 catalog 双向投影无遗漏或漂移', () => {
+  assert.deepEqual(new Set(caseEntries.map((entry) => entry.legacyId)), new Set(strategyCaseCatalog.map((entry) => entry.id)))
+  assert.deepEqual(new Set(videoEntries.map((entry) => entry.resource.id)), new Set(videoResources.map((entry) => entry.id)))
+  assert.deepEqual(new Set(paperEntries.map((entry) => entry.resource.id)), new Set(paperResources.map((entry) => entry.id)))
+  assert.ok(labEntries.some((entry) => entry.family === 'foundation'))
+  assert.ok(labEntries.some((entry) => entry.family === 'expert'))
+  assert.ok(labEntries.some((entry) => entry.family === 'agent'))
+  assert.ok(labEntries.some((entry) => entry.family === 'agent-book'))
+  assert.ok(labEntries.some((entry) => entry.family === 'distill'))
+  assert.ok(labEntries.some((entry) => entry.family === 'paper'))
+  for (const entry of caseEntries) {
+    const original = strategyCaseCatalog.find((item) => item.id === entry.legacyId)
+    assert.deepEqual(entry.route, { page: original.page, options: original.options })
   }
 })

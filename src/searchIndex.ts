@@ -1,11 +1,9 @@
-import { agentBookChapters, agentBookLabIds } from './agentBookData'
+import { agentBookChapters } from './agentBookData'
 import { agentExpertModules } from './agentExpertData'
-import { distillExperiments, distillModules } from './distillData'
+import { distillModules } from './distillData'
 import { foundationNodes } from './foundationData'
-import { flagshipCaseIds, strategyCaseCatalog } from './components/strategy/caseCatalog'
-import { videoResources } from './resources/videoCatalog'
-import { paperResources } from './resources/paperCatalog'
-import { paperLabs } from './components/paperLabs/paperLabsRegistry'
+import { visibleContentEntries } from './content/registry'
+import { primarySections } from './navigation'
 
 export type SearchDestination = {
   id: string
@@ -17,150 +15,70 @@ export type SearchDestination = {
   options?: Record<string, string>
 }
 
-const topLevel: SearchDestination[] = [
-  ['home', '首页', '统一学习地图', '学习入口 导航 首页', 'unified-map'],
-  ['routes', '学习路线', '九条学习路线与前沿支线', '路径 课程', 'routes'],
-  ['math-primer', '数学零层（Math Primer）：符号与基础概念扫盲', '不是数学课，把 AI 公式翻译成人话', '数学扫盲 数轴 实数 变量 函数 指数 对数 求和 Σ 平均值 期望 方差 概率 条件概率 向量 矩阵 点积 导数 梯度 参数 权重 Loss 分布 熵 KL', 'math-primer'],
-  ['decision-math', 'AI 决策数学', '8 个 3–5 分钟案例：从数字到策略判断', '数学 概率 校准 贝叶斯 相似度 梯度 熵 KL 因果 奖励 误差传播', 'decision-math'],
-  ['strategy-cases', '策略案例（Case）中心', 'Strategy-first：先做产品决策，再看证据、业务代价与反馈闭环', '策略 决策 case 证据 strategy-first product decisions trade-offs feedback loops 策略案例 业务代价', 'strategy-cases'],
-  ['videos', '参考视频库（可选）', '先做策略决策，再按卡点补机制', '视频 课程 参考资源 机制 决策', 'videos'],
-  ['papers', '核心论文讲解库', '30 秒看懂、关键机制、产品视角与带回课程的问题', '论文 paper arxiv 讲解 精读 阅读路线 推荐系统 Transformer LLM 扩散 多模态 Agent Harness 世界模型', 'papers'],
-  ['paper-labs', '通过 Case 学 AI', 'Case Academy：七门可续学、可复习的五关黄金课', '案例课程 Case Academy 论文实验 paper lab 机制复现 注意力 蒸馏 推荐 去噪 Agent 世界模型 MoE 混合专家', 'paper-lab'],
-  ['labs', '实验室', '全部互动实验目录', '实验 lab', 'labs'],
-  ['reviews', '评审中心', '方案、上线与可靠性评审', 'rubric veto', 'reviews'],
-  ['co-build', '学习者共建中心', '从 1 分钟反馈到深度 Strategy Case，共建可验证的学习体验', '共建 贡献 good first issue Strategy Case 内容建议 工程维护', 'co-build'],
-  ['progress', '我的进度', '本机学习记录与迁移', '备份 导入 导出', 'progress'],
-  ['handbook', '公式与指标手册', '统一查询关键公式与指标', '手册 公式 指标', 'handbook'],
-].map(([id, title, subtitle, keywords, page]) => ({ id: `top-${id}`, group: '顶级入口', title, subtitle, keywords: keywords.split(' '), page }))
+const sectionSubtitles: Record<string, string> = {
+  'unified-map': '学习总览、个性化推荐与继续学习',
+  routes: '按主题和层级选择结构化学习路线',
+  'strategy-cases': '先做产品决策，再核对证据与代价',
+  labs: '通过调整变量观察机制结果',
+  toolbox: '统一发现视频与核心论文',
+}
 
-const routes: SearchDestination[] = [
-  ['foundation', '算法基础', '分布、优化、Transformer 与 MoE', '数学 机制'],
-  ['decision-math', 'AI 决策数学', '校准、贝叶斯、相似度、优化、因果与序贯决策', 'ECE Beta cosine gradient KL A/B reward 状态转移'],
-  ['expert-llm', 'LLM 系统', '训练、推理、服务和评估决策', 'KV Cache RAG'],
-  ['expert-image', '图像生成', '扩散、控制与生产评估', 'Diffusion Flow'],
-  ['expert-agent', 'Agent 系统', 'Loop、工具、记忆、安全与上线', '智能体 MCP'],
-  ['agent-book', 'Agent Book', 'Context、Harness 与持续进化', 'AI Agent 手册'],
-  ['distill-course', '模型蒸馏', '教师、数据、损失与上线闸门', 'KD Distillation'],
-].map(([page, title, subtitle, keywords]) => ({ id: `route-${page}`, group: '学习路线', title, subtitle, keywords: keywords.split(' '), page }))
+const topLevel: SearchDestination[] = primarySections.map((section) => ({
+  id: `top-${section.page}`,
+  group: '主要入口',
+  title: section.label,
+  subtitle: sectionSubtitles[section.page],
+  keywords: [section.label, section.page],
+  page: section.page,
+}))
+
+const utilityEntries: SearchDestination[] = [
+  { id: 'top-videos', group: '直接入口', title: '参考视频库', subtitle: '按学习卡点补充机制资料', keywords: ['视频', '课程', '资源'], page: 'videos' },
+  { id: 'top-papers', group: '直接入口', title: '核心论文讲解库', subtitle: '查看关键机制、产品视角与阅读问题', keywords: ['论文', 'paper', 'arxiv'], page: 'papers' },
+  { id: 'top-reviews', group: '直接入口', title: '评审中心', subtitle: '方案、上线与可靠性评审', keywords: ['rubric', 'veto', '评审'], page: 'reviews' },
+  { id: 'top-progress', group: '直接入口', title: '我的进度', subtitle: '本机学习记录与迁移', keywords: ['备份', '导入', '导出'], page: 'progress' },
+  { id: 'top-handbook', group: '直接入口', title: '公式与指标手册', subtitle: '统一查询关键公式与指标', keywords: ['手册', '公式', '指标'], page: 'handbook' },
+  { id: 'top-co-build', group: '直接入口', title: '学习者共建中心', subtitle: '从反馈到 Strategy Case，共建可验证的学习体验', keywords: ['共建', '贡献', '反馈', 'good first issue', 'Strategy Case'], page: 'co-build' },
+]
+
+const registryEntries: SearchDestination[] = visibleContentEntries.map((entry) => {
+  const legacyId = 'legacyId' in entry ? entry.legacyId : entry.id.split(':').at(-1) ?? entry.id
+  const id = entry.type === 'case'
+    ? `strategy-${legacyId}`
+    : entry.type === 'lab'
+      ? entry.family === 'paper' ? `paper-lab-${legacyId}` : `lab-${entry.family}-${legacyId}`
+      : `${entry.type}-${legacyId}`
+  const resourceKeywords = entry.type === 'video'
+    ? [entry.resource.org, entry.resource.speaker ?? '', entry.resource.whyWorthWatching, ...entry.resource.relatedRouteIds]
+    : entry.type === 'paper'
+      ? [entry.resource.authors, entry.resource.area, entry.resource.oneLine, entry.resource.problem, entry.resource.mechanism, entry.resource.productLens, entry.resource.readQuestion]
+      : []
+  return {
+    id,
+    group: { course: '学习路线', case: '策略案例', lab: '互动实验', video: '参考视频库', paper: '论文讲解库' }[entry.type],
+    title: entry.title,
+    subtitle: entry.summary,
+    keywords: [legacyId, ...entry.tags, ...resourceKeywords],
+    page: entry.route.page,
+    options: entry.route.options,
+  }
+})
 
 const foundation: SearchDestination[] = foundationNodes.map((node) => ({
-  id: `foundation-${node.id}`,
-  group: '算法基础',
-  title: `${node.code} · ${node.title}`,
-  subtitle: node.intuition,
-  keywords: [node.formula, node.experiment, ...node.related],
-  page: 'foundation',
-  options: { node: node.id },
+  id: `foundation-${node.id}`, group: '算法基础', title: `${node.code} / ${node.title}`, subtitle: node.intuition,
+  keywords: [node.formula, node.experiment, ...node.related], page: 'foundation', options: { node: node.id },
 }))
-
-const foundationLabMeta = [
-  ['softmax-ce', 'Softmax & Cross-Entropy', 'logits、温度、概率、entropy 与交叉熵'],
-  ['kl-divergence', 'KL / JS 分布比较', '方向性、mode-covering 与 mode-seeking'],
-  ['gradient-descent', '梯度下降轨迹', '收敛、震荡、发散与梯度爆炸'],
-  ['mlp-forward', 'MLP 前向与维度流', '激活、参数量、死神经元与 FLOPs'],
-  ['transformer-block', 'Transformer Block', 'Pre/Post-LN、残差与 token mixing'],
-  ['moe-router', 'MoE Router', 'Top-k、capacity、负载与 overflow'],
-  ['case-overconfident', '一次上线策略，如何改变模型学到什么？', '冷启动、作者触达与风险治理中的策略、反馈和训练数据'],
-]
-const foundationLabs: SearchDestination[] = foundationLabMeta.map(([id, title, subtitle]) => ({
-  id: `foundation-lab-${id}`, group: '算法基础实验', title, subtitle, keywords: [id, '基础实验', ...(id === 'case-overconfident' ? ['上线策略', '冷启动', '流量分配', '作者触达', '风险治理', '人工复核', '反馈样本', '交叉熵', '阈值', '预算'] : [])], page: 'foundation-lab', options: { experiment: id },
-}))
-
 const bookChapters: SearchDestination[] = agentBookChapters.map((chapter) => ({
-  id: `agent-book-${chapter.id}`,
-  group: 'Agent Book 十章',
-  title: `${chapter.id.toUpperCase()} · ${chapter.titleZh}`,
-  subtitle: chapter.oneLiner,
-  keywords: [chapter.titleEn, chapter.theme, ...chapter.tags, ...chapter.coreConcepts],
-  page: 'agent-book',
-  options: { chapter: chapter.id },
+  id: `agent-book-${chapter.id}`, group: 'Agent Book 十章', title: `${chapter.id.toUpperCase()} / ${chapter.titleZh}`, subtitle: chapter.oneLiner,
+  keywords: [chapter.titleEn, chapter.theme, ...chapter.tags, ...chapter.coreConcepts], page: 'agent-book', options: { chapter: chapter.id },
 }))
-
-const bookLabTitles: Record<(typeof agentBookLabIds)[number], string> = {
-  'harness-diagnose': 'Harness 五要素诊断',
-  'kv-cache': 'KV Cache 反模式模拟',
-  'status-bar': 'Status Bar 沙盘',
-  'pass-at-k': 'Pass@k vs Pass^k',
-  'new-info-criterion': '多 Agent 新信息判据',
-  'evolution-router': '持续进化更新路由',
-}
-const bookLabs: SearchDestination[] = agentBookLabIds.map((id) => ({
-  id: `agent-book-lab-${id}`, group: 'Agent Book 实验', title: bookLabTitles[id], subtitle: '可运行的 Agent 工程机制实验', keywords: [id, 'Agent Book'], page: 'agent-book-lab', options: { experiment: id },
-}))
-
 const distillCourses: SearchDestination[] = distillModules.map((module) => ({
-  id: `distill-${module.id}`, group: '蒸馏课程', title: `${module.code} · ${module.title}`, subtitle: module.lead, keywords: [module.formula ?? '', ...module.mechanism], page: 'distill-course', options: { module: module.id },
+  id: `distill-${module.id}`, group: '蒸馏课程', title: `${module.code} / ${module.title}`, subtitle: module.lead,
+  keywords: [module.formula ?? '', ...module.mechanism], page: 'distill-course', options: { module: module.id },
 }))
-const distillLabs: SearchDestination[] = distillExperiments.map(([id, code, title]) => ({
-  id: `distill-lab-${id}`, group: '蒸馏实验', title: `${code} · ${title}`, subtitle: '模型蒸馏互动实验', keywords: [id, 'KD 蒸馏'], page: 'distill-lab', options: { experiment: id },
-}))
-
 const agentCourses: SearchDestination[] = agentExpertModules.map((module) => ({
-  id: `agent-expert-${module.id}`, group: 'Agent 专家课', title: `${module.no} · ${module.title}`, subtitle: module.subtitle, keywords: [module.formula, ...module.metrics], page: 'expert-agent', options: { module: module.id },
-}))
-const agentLabMeta = [
-  ['loop-simulator', 'Loop Simulator'], ['tool-contract', 'Tool Contract'], ['planner-executor', 'Planner / Executor'], ['memory-governance', 'Memory Governance'],
-  ['security-gate', 'Security Gate'], ['multi-agent', 'Multi-Agent'], ['observability', 'Observability'], ['launch-gate', 'Launch Gate'],
-]
-const agentLabs: SearchDestination[] = agentLabMeta.map(([id, title]) => ({
-  id: `agent-lab-${id}`, group: 'Agent 专家实验', title, subtitle: 'Agent 系统机制实验', keywords: [id, '智能体 Agent'], page: 'agent-lab', options: { experiment: id },
+  id: `agent-expert-${module.id}`, group: 'Agent 专家课', title: `${module.no} / ${module.title}`, subtitle: module.subtitle,
+  keywords: [module.formula, ...module.metrics], page: 'expert-agent', options: { module: module.id },
 }))
 
-const reviewAndManual: SearchDestination[] = [
-  { id: 'review-evaluation', group: '评审与手册', title: '方案是否值得做', subtitle: '目标、能力边界、成本与评测证据', keywords: ['方案评估'], page: 'evaluation' },
-  { id: 'review-launch', group: '评审与手册', title: '系统是否可以上线', subtitle: '可靠性、安全、回滚与 Launch Gate', keywords: ['上线评审'], page: 'distill-lab', options: { experiment: 'launch-gate' } },
-  { id: 'review-agent', group: '评审与手册', title: 'Agent 可靠性评审卡', subtitle: 'Rubric、veto、工具与拓扑', keywords: ['评审卡'], page: 'agent-book-review' },
-  { id: 'review-sandbox', group: '评审与手册', title: '方案评审沙盘', subtitle: '形成可追溯的产品判断', keywords: ['review sandbox'], page: 'review' },
-  { id: 'manual', group: '评审与手册', title: '公式与指标手册', subtitle: '关键公式、指标与决策口径', keywords: ['handbook'], page: 'handbook' },
-]
-
-const strategyCases: SearchDestination[] = strategyCaseCatalog.map((item) => ({
-  id: `strategy-${item.id}`,
-  group: '策略案例',
-  title: item.title,
-  subtitle: `${item.routeLabel} · ${item.question}`,
-  keywords: [
-    item.id, item.routeLabel, 'strategy-first', 'product decisions', 'trade-offs', 'feedback loops', '策略案例', '业务代价',
-    ...(item.routeId === 'ai-decision-math' ? ['概率', '统计', '优化', '因果', '序贯决策', '数学练习'] : []),
-    ...(flagshipCaseIds.has(item.id) ? ['精选案例', 'flagship'] : []),
-  ],
-  page: item.page,
-  options: item.options,
-}))
-
-const routeLabels = new Map(strategyCaseCatalog.map((item) => [item.routeId, item.routeLabel]))
-const videoEntries: SearchDestination[] = videoResources.map((video) => ({
-  id: `video-${video.id}`,
-  group: '参考视频库',
-  title: video.title,
-  subtitle: `${video.org} · ${video.speaker ? `${video.speaker} · ` : ''}${video.relatedRouteIds.map((routeId) => routeLabels.get(routeId) ?? routeId).join(' / ')} · ${video.contentOrigin}`,
-  keywords: [video.title, video.speaker ?? '', video.org, video.contentOrigin, video.whyWorthWatching, video.language === 'zh' ? '中文' : '英文', video.level, ...video.relatedRouteIds],
-  page: 'videos',
-}))
-
-const paperEntries: SearchDestination[] = paperResources.map((paper) => ({
-  id: `paper-${paper.id}`,
-  group: '论文讲解库',
-  title: paper.title,
-  subtitle: `${paper.authors} · ${paper.area} · ${paper.year}`,
-  keywords: [
-    paper.title, paper.authors, paper.area, paper.level, paper.kind, paper.oneLine,
-    paper.problem, paper.mechanism, paper.productLens, paper.readQuestion,
-  ],
-  page: 'papers',
-}))
-
-const paperLabEntries: SearchDestination[] = paperLabs.map((lab) => ({
-  id: `paper-lab-${lab.paperId}`,
-  group: '论文机制实验',
-  title: lab.shortTitle,
-  subtitle: lab.objective,
-  keywords: [lab.paperId, lab.eyebrow, lab.conclusion, '机制复现', '确定性实验'],
-  page: 'paper-lab',
-  options: { paper: lab.paperId },
-}))
-
-export const searchIndex = [
-  ...topLevel, ...strategyCases, ...videoEntries, ...paperEntries, ...paperLabEntries, ...routes, ...foundation, ...foundationLabs, ...bookChapters, ...bookLabs,
-  ...distillCourses, ...distillLabs, ...agentCourses, ...agentLabs, ...reviewAndManual,
-]
+export const searchIndex = [...topLevel, ...utilityEntries, ...registryEntries, ...foundation, ...bookChapters, ...distillCourses, ...agentCourses]

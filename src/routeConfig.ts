@@ -31,6 +31,7 @@ export const canonicalPages = [
   'image',
   'lab',
   'evaluation',
+  'toolbox',
 ] as const
 
 export type Page = typeof canonicalPages[number]

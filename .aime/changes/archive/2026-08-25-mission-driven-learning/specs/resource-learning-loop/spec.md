@@ -1,8 +1,5 @@
-# resource-learning-loop Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change p0-learning-loop-paper-labs. Update Purpose after archive.
-## Requirements
 ### Requirement: 首次判断
 系统 SHALL 在每个 Strategy Case 中允许学习者针对案例核心问题保存一份首次判断，并 SHALL 将记录按 caseId 隔离保存在本机；首次判断保存后 MUST 立即锁定为只读，任何后续调参、快照或压力结果不得覆盖该预测。系统 SHALL 沿用 `genai-resource-loop-v1` 存储键，并在持久化不可用时保持当前会话内的锁定与比较能力。
 
@@ -21,37 +18,7 @@ TBD - created by archiving change p0-learning-loop-paper-labs. Update Purpose af
 - **THEN** 系统继续提供当前会话内的预测锁定与比较能力
 - **AND** 页面不得崩溃或错误推进其他学习进度
 
-### Requirement: 资源触达记录
-系统 SHALL 在学习者主动打开案例关联的视频或论文时记录资源类型、资源 ID 和触达时间，但 MUST NOT 将触达等同于完成学习。
-
-#### Scenario: 打开关联资源
-- **WHEN** 学习者从案例页打开一个视频或论文
-- **THEN** 系统记录该资源已被触达
-- **AND** 外链仍以安全的新窗口方式打开
-
-#### Scenario: 重复打开资源
-- **WHEN** 学习者重复打开同一资源
-- **THEN** 系统仅保留一条资源记录并更新最近触达时间
-
-### Requirement: 复盘判断与前后对比
-系统 SHALL 在首次判断存在后允许学习者保存复盘判断，并 SHALL 并排展示两次回答与变化提示。
-
-#### Scenario: 完成一轮闭环
-- **WHEN** 学习者已保存首次判断、触达至少一个资源并保存复盘判断
-- **THEN** 系统展示首次判断和复盘判断的并排对比
-- **AND** 标记本案例已完成一次资源学习闭环
-
-#### Scenario: 尚未触达资源
-- **WHEN** 学习者尝试在未触达任何资源时保存复盘判断
-- **THEN** 系统允许保存但明确提示尚未形成完整资源闭环
-
-### Requirement: 隐私与清除
-系统 SHALL 明确说明闭环回答仅保存在当前浏览器，并 SHALL 允许学习者清除当前案例记录。
-
-#### Scenario: 清除当前案例记录
-- **WHEN** 学习者确认清除当前案例记录
-- **THEN** 系统仅删除当前 caseId 的首次判断、复盘判断和资源触达记录
-- **AND** 不影响其他案例或现有学习进度
+## ADDED Requirements
 
 ### Requirement: 经确认重开当前任务
 系统 SHALL 为已锁定预测的案例提供明确的“重开任务”操作，并 MUST 在执行前要求确认。确认后系统 MUST 仅清除当前 caseId 的首次预测和 mission 本轮比较状态（自定义快照、最近压力结果及临时复盘聚合），同时保留该案例的资源触达、既有复盘判断、已形成策略证据、其他进度以及其他案例记录；取消确认 MUST 不改变任何状态。
@@ -78,4 +45,3 @@ TBD - created by archiving change p0-learning-loop-paper-labs. Update Purpose af
 - **WHEN** 某案例的可选 mission 状态包含未知 control、非有限 metric、非法日期或超长文本
 - **THEN** 系统丢弃或截断无效的新增字段并保留合法旧资源闭环字段
 - **AND** 不影响其他案例记录或导致页面崩溃
-

@@ -3,15 +3,15 @@ import { useEffect, useRef, useState } from 'react'
 import type { DecisionSummary } from './types'
 
 type NextAction = { label: string; onClick: () => void }
-type Props = { summary: DecisionSummary; onSave: (text: string) => void; onBackToCenter: () => void; nextAction: NextAction }
+type Props = { summary: DecisionSummary; onSave: (text: string) => void; onFormed?: (text: string) => void; onBackToCenter: () => void; nextAction: NextAction }
 
-export default function DecisionSummaryPanel({ summary, onSave, onBackToCenter, nextAction }: Props) {
+export default function DecisionSummaryPanel({ summary, onSave, onFormed, onBackToCenter, nextAction }: Props) {
   const [formed, setFormed] = useState(false)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'fallback'>('idle')
   const textRef = useRef<HTMLTextAreaElement>(null)
   useEffect(() => { setFormed(false); setCopyStatus('idle') }, [summary.text])
 
-  const form = () => { setFormed(true); onSave(summary.text) }
+  const form = () => { setFormed(true); onSave(summary.text); onFormed?.(summary.text) }
   const copy = async () => {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable')

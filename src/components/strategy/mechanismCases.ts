@@ -126,6 +126,18 @@ export const contextWindowBudgetSpec = defineStrategyCase({
   fixedDataTitle: '8 项固定任务',
   fixedDataRows: ['角色与格式约束 2 项', '历史承接 2 项', '检索证据 2 项', '工具与回答 2 项'],
   mechanism: { title: '窗口预算堆叠', description: '比较每类 token 的请求量与实际保留量。', build: buildContextWindowMechanism },
+  mission: {
+    id: 'limited-window-service', role: '客服助手上下文预算负责人',
+    objective: '在受限窗口中保留全部固定任务，并控制截断与单次综合代价。',
+    gates: [
+      { id: 'task-coverage', metricId: 'coverage', operator: '>=', target: 100, label: '固定任务保留', returnControlId: 'retrievalK' },
+      { id: 'no-truncation', metricId: 'truncation', operator: '<=', target: 0, label: '窗口截断', returnControlId: 'historyTurns' },
+      { id: 'bounded-cost', metricId: 'cost', operator: '<=', target: .2, label: '单次综合代价', returnControlId: 'answerMode' },
+    ],
+    stressPresets: [{ id: 'eight-k-window', label: '8k 紧缩窗口', description: '业务容量临时降至 8k，其余策略保持不变。', overrides: { window: 8000 } }],
+    capabilities: ['budget-allocation', 'tradeoff-reasoning', 'robustness-testing', 'transfer-explanation'],
+    transferQuestion: '如果下一批请求的工具返回翻倍，你会先保留什么、压缩什么，并用哪项证据复核？',
+  },
   compute: calculateContextWindow,
   summarize: summarizeContextWindow,
 })
@@ -255,6 +267,18 @@ export const ragChunkingSpec = defineStrategyCase({
         selectedCount: simulation.selected.length,
       }
     },
+  },
+  mission: {
+    id: 'refund-evidence-retrieval', role: '企业退款知识库 RAG 产品负责人',
+    objective: '覆盖全部必要证据，同时限制噪声和上下文预算。',
+    gates: [
+      { id: 'evidence-coverage', metricId: 'answerable', operator: '>=', target: 100, label: '必要证据覆盖', returnControlId: 'chunkSize' },
+      { id: 'noise-control', metricId: 'noise', operator: '<=', target: 75, label: '检索噪声', returnControlId: 'overlap' },
+      { id: 'context-budget', metricId: 'contextTokens', operator: '<=', target: 2000, label: '上下文 token', returnControlId: 'contextCap' },
+    ],
+    stressPresets: [{ id: 'broad-recall-tight-cap', label: '高召回紧预算', description: '召回扩至 10 块，同时上下文上限收紧。', overrides: { topK: 10, contextCap: 2000 } }],
+    capabilities: ['evidence-retrieval', 'tradeoff-reasoning', 'robustness-testing', 'transfer-explanation'],
+    transferQuestion: '换成跨章节制度文档后，你会怎样重设切块策略，并用什么失败样本验证？',
   },
   compute: calculateRagChunking,
   summarize: summarizeRagChunking,

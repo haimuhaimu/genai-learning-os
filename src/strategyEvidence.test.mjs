@@ -96,3 +96,25 @@ test('策略证据仅在成功持久化后派发兼容事件与最小 detail', (
     else Object.defineProperty(globalThis, 'CustomEvent', { configurable: true, value: originalCustomEvent })
   }
 })
+
+
+test('压力通过证据取去重并集且不降低历史 level', () => {
+  const formed = { ...base, level: 2, summaryText: '策略摘要', missionEvidence: { passedStressPresetIds: ['stress-a'], lastStressAt: '2026-08-19T02:00:00.000Z' } }
+  const merged = mergeStrategyEvidence([formed], { ...base, level: 1, missionEvidence: { passedStressPresetIds: ['stress-a', 'stress-b'], lastStressAt: '2026-08-19T03:00:00.000Z' } })[0]
+  assert.equal(merged.level, 2)
+  assert.deepEqual(merged.missionEvidence.passedStressPresetIds, ['stress-a', 'stress-b'])
+  assert.equal(merged.summaryText, '策略摘要')
+})
+
+test('旧记录兼容，损坏压力字段被独立清洗', () => {
+  const legacy = sanitizeEvidenceRecord(base)
+  assert.equal(legacy.missionEvidence, undefined)
+  const safe = sanitizeEvidenceRecord({ ...base, missionEvidence: { passedStressPresetIds: ['good-preset', 'good-preset', '../bad', 4], lastStressAt: 'bad' } })
+  assert.deepEqual(safe.missionEvidence.passedStressPresetIds, ['good-preset'])
+  assert.equal(safe.missionEvidence.lastStressAt, undefined)
+})
+
+test('失败压力不写入通过覆盖', () => {
+  const merged = mergeStrategyEvidence([], { ...base, missionEvidence: { passedStressPresetIds: [] } })[0]
+  assert.equal(merged.missionEvidence, undefined)
+})

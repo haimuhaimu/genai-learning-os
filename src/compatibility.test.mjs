@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import { legacyAliases, legacyCanonicalPages, legacyProgressValues, legacyRouteKeys, legacyStorageKeys } from './compatibility.fixture.ts'
+import { legacyAliases, legacyCanonicalPages, legacyCaseDeepLinks, legacyEvidenceRecord, legacyPrimaryNavigation, legacyProgressValues, legacyResourceRecord, legacyRouteKeys, legacyStorageKeys } from './compatibility.fixture.ts'
+import { primarySections } from './navigation.ts'
+import { sanitizeResourceLoopRecord } from './resourceLoop.ts'
+import { sanitizeEvidenceRecord } from './strategyEvidence.ts'
 import { readProgress } from './progress.ts'
 import { canonicalPages, normalizePage, pageAliases, routeKeys } from './routeConfig.ts'
 
@@ -12,13 +15,14 @@ const sourceFiles = await Promise.all([
 ].map((path) => readFile(new URL(path, import.meta.url), 'utf8')))
 const allStorageSource = sourceFiles.join('\n')
 
-test('变更前 canonical 页面、map 别名与八类深链参数保持不变', () => {
-  assert.equal(legacyCanonicalPages.length, 32)
-  assert.deepEqual(canonicalPages.slice(0, 32), legacyCanonicalPages)
+test('变更前 33 个 canonical 页面、五入口、map 别名与八类深链参数保持不变', () => {
+  assert.equal(legacyCanonicalPages.length, 33)
+  assert.deepEqual(canonicalPages, legacyCanonicalPages)
+  assert.deepEqual(primarySections.map(({ label, page }) => [label, page]), legacyPrimaryNavigation)
   assert.deepEqual(pageAliases, legacyAliases)
   assert.deepEqual(routeKeys, legacyRouteKeys)
-  assert.equal(canonicalPages[32], 'toolbox')
   assert.equal(normalizePage('map'), 'unified-map')
+  assert.deepEqual(legacyCaseDeepLinks.map((caseId) => `?page=strategy-case&case=${caseId}`), ['?page=strategy-case&case=context-window-budget', '?page=strategy-case&case=rag-chunking'])
 })
 
 test('变更前本机存储键原样保留且没有清库迁移', () => {
@@ -43,4 +47,10 @@ test('首页、详情页与聚合页读取同一份变更前进度值', () => {
   assert.deepEqual({ ...homeRead }, legacyProgressValues)
   assert.deepEqual({ ...detailRead }, legacyProgressValues)
   assert.deepEqual({ ...aggregateRead }, legacyProgressValues)
+})
+
+
+test('旧资源闭环与策略证据记录无需迁移即可读取', () => {
+  assert.equal(sanitizeResourceLoopRecord(legacyResourceRecord).initialJudgment, '先控制输入')
+  assert.equal(sanitizeEvidenceRecord(legacyEvidenceRecord).summaryText, '旧策略')
 })

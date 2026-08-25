@@ -51,3 +51,22 @@ test('案例目录更新为 19 个，其中 11 个在中心可见', () => {
   assert.ok(centerCaseCatalog.some((item) => item.id === 'context-window-budget' && item.routeId === 'llm'))
   assert.ok(centerCaseCatalog.some((item) => item.id === 'rag-chunking' && item.routeId === 'llm'))
 })
+
+
+test('两个 mission 冻结默认与压力 raw 指标和失败旋钮', async () => {
+  const { contextWindowBudgetSpec, ragChunkingSpec } = await import('./mechanismCases.ts')
+  const { runStressPreset } = await import('./missionEngine.ts')
+  const context = runStressPreset(contextWindowBudgetSpec, contextWindowBudgetSpec.defaults, contextWindowBudgetSpec.mission.stressPresets[0])
+  assert.deepEqual(context.evidence.metrics.map((item) => item.value), [87.5, 11.894273127753303, 8120, 14.374449339207047, 0.3442290748898678])
+  assert.deepEqual(context.failedControlIds, ['retrievalK', 'historyTurns', 'answerMode'])
+  const rag = runStressPreset(ragChunkingSpec, ragChunkingSpec.defaults, ragChunkingSpec.mission.stressPresets[0])
+  assert.deepEqual(rag.evidence.metrics.map((item) => item.value), [100, 83.33333333333334, 12, 1968, 379.6])
+  assert.deepEqual(rag.failedControlIds, ['overlap'])
+  assert.equal(runStressPreset(contextWindowBudgetSpec, { ...contextWindowBudgetSpec.defaults, historyTurns: 2, answerMode: '短答' }, contextWindowBudgetSpec.mission.stressPresets[0]).evaluation.passed, true)
+  assert.equal(runStressPreset(ragChunkingSpec, { ...ragChunkingSpec.defaults, chunkSize: 128 }, ragChunkingSpec.mission.stressPresets[0]).evaluation.passed, true)
+})
+
+test('机制与 mission 计算不读取随机数或网络', async () => {
+  const source = await (await import('node:fs/promises')).readFile(new URL('./mechanismCases.ts', import.meta.url), 'utf8')
+  assert.doesNotMatch(source, /Math\.random|fetch\s*\(|XMLHttpRequest|WebSocket/)
+})

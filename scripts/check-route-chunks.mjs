@@ -12,11 +12,13 @@ const routeEntries = [
   'src/components/hubs/LabsHub.tsx',
   'src/components/hubs/ResourcesHub.tsx',
   'src/components/strategy/StrategyCaseRunner.tsx',
+  'src/components/foundation/ProgressPage.tsx',
 ]
 const pageStyles = [
   'src/learning-os.css',
   'src/styles/hubs.css',
   'src/components/strategy/strategyCases.css',
+  'src/styles/progress.css',
 ]
 
 let manifest
@@ -69,6 +71,26 @@ for (const source of routeEntries.slice(0, 4)) {
   const imports = manifest[source]?.imports ?? []
   if (recharts && imports.some((key) => manifest[key]?.file === recharts.file)) failures.push(`${source} 静态依赖 Recharts`)
 }
+
+const missionFiles = ['MissionBrief.tsx', 'MissionComparisonPanel.tsx', 'MissionStressPanel.tsx', 'MissionDebriefCard.tsx', 'missionEngine.ts']
+const missionSource = (await Promise.all(missionFiles.map((file) => readFile(resolve(root, 'src/components/strategy', file), 'utf8')))).join('\n')
+if (/from ['"]recharts|import\(['"]recharts/.test(missionSource)) failures.push('Mission UI 依赖了 Recharts')
+const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
+const expectedDependencies = ['lucide-react', 'react', 'react-dom', 'recharts']
+if (JSON.stringify(Object.keys(packageJson.dependencies).sort()) !== JSON.stringify(expectedDependencies.sort())) failures.push('package.json dependencies 相对冻结清单发生变化')
+const strategyChunk = manifest['src/components/strategy/StrategyCaseRunner.tsx']?.file
+const progressChunk = manifest['src/components/foundation/ProgressPage.tsx']?.file
+for (const source of routeEntries.slice(0, 4)) {
+  const file = manifest[source]?.file
+  if (!file) continue
+  const output = await readFile(resolve(dist, file), 'utf8')
+  if (/压力挑战|任务复盘/.test(output)) failures.push(`${source} 包含案例 Mission UI`)
+}
+if (entry?.file) {
+  const output = await readFile(resolve(dist, entry.file), 'utf8')
+  if (/压力挑战|任务复盘|任务能力证据覆盖/.test(output)) failures.push('入口 JS 包含 Mission 实现')
+}
+if (!strategyChunk || !progressChunk) failures.push('Mission 使用路由缺少独立 chunk')
 
 if (failures.length) {
   console.error(`路由 chunk 检查失败：\n- ${failures.join('\n- ')}`)

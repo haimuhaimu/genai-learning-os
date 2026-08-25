@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { applyFeedbackNudge, type FeedbackNudgeSignal } from '../../feedback/nudgePolicy'
 import { PROGRESS_CHANGE_EVENT, type ProgressChangeDetail } from '../../progress'
-import { STRATEGY_EVIDENCE_EVENT, type StrategyEvidenceChangeDetail } from '../../strategyEvidence'
+import { STRATEGY_EVIDENCE_EVENT, type StrategyEvidenceChangeDetail } from '../../strategyEvidenceEvent'
 
 let nudgeShownThisPageSession = false
 

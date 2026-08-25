@@ -14,7 +14,6 @@ export default defineConfig({
         manualChunks(id) {
           if (/node_modules\/(?:react|react-dom|scheduler)\//.test(id)) return 'react'
           if (id.includes('/node_modules/recharts/')) return 'recharts'
-          if (id.includes('/node_modules/d3-') || id.includes('/node_modules/internmap/')) return 'recharts-d3'
           if (id.includes('/node_modules/lucide-react/')) return 'icons'
         },
       },

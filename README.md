@@ -56,7 +56,7 @@
 
 每个统一 Strategy Case 都提供“首次判断 → 主动打开关联视频或论文 → 复盘判断 → 前后并排对比”的闭环。资源触达只在用户点击打开时记录，**不代表看完或掌握**。首次与复盘回答、触达时间均按 case 隔离保存在当前浏览器的 `genai-resource-loop-v1` 中；可单独清除当前 case，`localStorage` 不可用时会降级为当前会话状态，且不会推进既有学习进度。
 
-[论文机制复现实验室](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) 提供 Transformer、Wide & Deep、DDPM、ReAct 与 DreamerV3 五个无需后端的确定性微型实验。每个实验都展示可调变量、实时结果、机制解释、产品 / 策略结论和简化边界；它们用于验证核心机制，不代表论文完整训练结果或生产模型性能。
+[论文机制演练实验室](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) 提供 Transformer、Wide & Deep、DDPM、ReAct 与 DreamerV3 五个无需后端的确定性微型实验。体验采用**业务故事驱动的论文机制演练**：每个实验都按“30 秒业务情境 → 3 步操作 → 基线与当前对比 → 因为…所以…动态解释 → 业务灰度模板”展开，并为首次出现的英文术语提供中文解释。它们用于帮助非算法背景学习者理解关键因果关系；机制教学简化不等于完整训练复现，也不代表生产模型性能。
 
 ## 数学零层：先把公式翻译成人话
 
@@ -134,7 +134,7 @@ pnpm check:a11y
 pnpm check:bundle
 ```
 
-CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 118 项，并拦截无障碍与产物体积回退。
+CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 122 项，并拦截无障碍与产物体积回退。
 
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 

@@ -56,7 +56,7 @@ Every Strategy Case follows the same seven-part chain:
 
 Every unified Strategy Case now supports an **initial judgment → user-opened resource → review judgment → side-by-side comparison** loop. A resource is marked as “touched” only after the learner actively opens it; this never means watched, read, or mastered. Responses and touch timestamps are isolated by case in the current browser under `genai-resource-loop-v1`. Learners can clear only the current case, and unavailable `localStorage` safely falls back to session state without advancing existing progress.
 
-The [paper mechanism labs](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) provide five deterministic, backend-free experiments for Transformer, Wide & Deep, DDPM, ReAct, and DreamerV3. Each shows adjustable variables, live results, a mechanism explanation, a product/strategy takeaway, and simplification boundaries. They demonstrate core mechanisms rather than reproducing full paper training results or production-model performance.
+The [paper mechanism labs](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) provide five deterministic, backend-free experiments for Transformer, Wide & Deep, DDPM, ReAct, and DreamerV3. These are **business-story-driven paper mechanism exercises**: every lab follows a 30-second scenario → three guided actions → baseline-versus-current comparison → dynamic “because…therefore…” explanation → business rollout template, with plain-language Chinese explanations for first-use English terms. They help non-algorithm learners understand key causal relationships; mechanism-level teaching simplification is not a full training reproduction and does not represent production performance.
 
 ## Nine learning tracks
 

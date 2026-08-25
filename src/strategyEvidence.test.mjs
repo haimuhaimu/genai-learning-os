@@ -118,3 +118,71 @@ test('失败压力不写入通过覆盖', () => {
   const merged = mergeStrategyEvidence([], { ...base, missionEvidence: { passedStressPresetIds: [] } })[0]
   assert.equal(merged.missionEvidence, undefined)
 })
+
+
+const completion = (overrides = {}) => ({
+  attemptStartedAt: '2026-08-26T01:00:00.000Z',
+  formedAt: '2026-08-26T03:00:00.000Z',
+  prediction: '先控制预算',
+  finalControls: { k: 5, mode: '带引用生成' },
+  stress: { presetId: 'stress-a', passed: true, baseControls: { k: 5, mode: '带引用生成' }, ranAt: '2026-08-26T02:00:00.000Z' },
+  ...overrides,
+})
+
+test('完整 Mission 完成证据原子清洗并保持 controls 绑定', () => {
+  const safe = sanitizeEvidenceRecord({ ...base, level: 2, summaryText: '形成摘要', missionCompletion: completion() })
+  assert.equal(safe.missionCompletion.prediction, '先控制预算')
+  assert.deepEqual({ ...safe.missionCompletion.finalControls }, { k: 5, mode: '带引用生成' })
+  assert.deepEqual({ ...safe.missionCompletion.stress.baseControls }, { k: 5, mode: '带引用生成' })
+})
+
+test('不同 controls 或时间倒置的摘要与压力不能拼成完整证据', () => {
+  const mismatched = sanitizeEvidenceRecord({ ...base, level: 2, summaryText: '错误摘要', missionCompletion: completion({ finalControls: { k: 10, mode: '带引用生成' } }) })
+  assert.equal(mismatched.missionCompletion, undefined)
+  const wrongAttempt = sanitizeEvidenceRecord({ ...base, level: 2, summaryText: '错误尝试', missionCompletion: completion({ attemptStartedAt: '2026-08-26T02:30:00.000Z' }) })
+  assert.equal(wrongAttempt.missionCompletion, undefined)
+})
+
+test('分离的旧摘要和压力字段不会被 merge 升级为 missionCompletion', () => {
+  const formed = { ...base, level: 2, summaryText: '旧摘要', updatedAt: '2026-08-26T03:00:00.000Z' }
+  const stressed = { ...base, level: 1, summaryText: '', updatedAt: '2026-08-26T04:00:00.000Z', missionEvidence: { passedStressPresetIds: ['stress-a'], lastStressAt: '2026-08-26T02:00:00.000Z' } }
+  const merged = mergeStrategyEvidence([formed], stressed)[0]
+  assert.equal(merged.missionCompletion, undefined)
+  assert.equal(merged.level, 2)
+  assert.deepEqual(merged.missionEvidence.passedStressPresetIds, ['stress-a'])
+})
+
+test('失败压力可保存在完成包但不新增通过集合', () => {
+  const failed = completion({ stress: { ...completion().stress, passed: false } })
+  const merged = mergeStrategyEvidence([], { ...base, level: 2, summaryText: 'No-Go', missionCompletion: failed })[0]
+  assert.equal(merged.missionCompletion.stress.passed, false)
+  assert.equal(merged.missionEvidence, undefined)
+})
+
+
+test('Mission 完成证据写入失败时不派发完成事件', () => {
+  const originalWindow = globalThis.window
+  const originalCustomEvent = globalThis.CustomEvent
+  const events = []
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { dispatchEvent: (event) => events.push(event) } })
+  Object.defineProperty(globalThis, 'CustomEvent', { configurable: true, value: class CustomEvent { constructor(type, init) { this.type = type; this.detail = init?.detail } } })
+  try {
+    const result = saveStrategyEvidence({ ...base, level: 2, summaryText: '形成摘要', missionCompletion: completion() }, { getItem: () => null, setItem: () => { throw new Error('storage unavailable') } })
+    assert.deepEqual(result, [])
+    assert.equal(events.length, 0)
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window
+    else Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow })
+    if (originalCustomEvent === undefined) delete globalThis.CustomEvent
+    else Object.defineProperty(globalThis, 'CustomEvent', { configurable: true, value: originalCustomEvent })
+  }
+})
+
+
+test('已有原子完成包不会吸收后续不同 controls 的摘要文本', () => {
+  const formed = { ...base, level: 2, summaryText: '绑定摘要', missionCompletion: completion(), updatedAt: '2026-08-26T03:00:00.000Z' }
+  const later = { ...base, level: 2, controls: { k: 10, mode: '带引用生成' }, summaryText: '未绑定摘要', updatedAt: '2026-08-26T04:00:00.000Z' }
+  const merged = mergeStrategyEvidence([formed], later)[0]
+  assert.equal(merged.summaryText, '绑定摘要')
+  assert.equal(merged.missionCompletion.prediction, '先控制预算')
+})

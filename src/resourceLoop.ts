@@ -48,7 +48,13 @@ function cleanMissionAttempt(raw: unknown): MissionAttempt | undefined {
   }
   if (stressRaw && typeof stressRaw === 'object' && !Array.isArray(stressRaw)) {
     const presetId = Reflect.get(stressRaw, 'presetId'), passed = Reflect.get(stressRaw, 'passed'), ranAt = Reflect.get(stressRaw, 'ranAt'), metrics = cleanMetrics(Reflect.get(stressRaw, 'metrics'))
-    if (validId(presetId) && typeof passed === 'boolean' && validDate(ranAt) && metrics.length) lastStress = { presetId, passed, ranAt, metrics }
+    const baseControlsRaw = Reflect.get(stressRaw, 'baseControls'), effectiveControlsRaw = Reflect.get(stressRaw, 'effectiveControls')
+    const baseControls = cleanControls(baseControlsRaw), effectiveControls = cleanControls(effectiveControlsRaw)
+    if (validId(presetId) && typeof passed === 'boolean' && validDate(ranAt) && metrics.length) lastStress = {
+      presetId, passed, ranAt, metrics,
+      ...(baseControlsRaw && typeof baseControlsRaw === 'object' && !Array.isArray(baseControlsRaw) ? { baseControls } : {}),
+      ...(effectiveControlsRaw && typeof effectiveControlsRaw === 'object' && !Array.isArray(effectiveControlsRaw) ? { effectiveControls } : {}),
+    }
   }
   return snapshot || lastStress ? { snapshot, lastStress } : undefined
 }

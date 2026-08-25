@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
-import { AlertTriangle, ArrowRight, Check, ChevronRight, RotateCcw, Sparkles, Target } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check, RotateCcw, Sparkles, Target } from 'lucide-react'
+import { AccessibleRadioGroup } from '../shared/AccessibleRadioGroup'
+import { ContinueButton, GoldenLessonShell } from '../shared/GoldenLessonShell'
 import {
   FINAL_PRINCIPLE,
-  LESSON_STEPS,
   PRINCIPLE_MAPPING,
   REFUND_EVIDENCE,
   evaluateEvidenceBalance,
@@ -12,26 +13,6 @@ import {
   type LessonStep,
   type RuleChoice,
 } from './lessonModel'
-
-function StepHeader({ step }: { step: LessonStep }) {
-  return (
-    <header className='golden-lesson-header'>
-      <div className='golden-lesson-meta'>
-        <span>{step}/5 · {LESSON_STEPS[step - 1]}</span>
-        <span>约 5 分钟</span>
-      </div>
-      <div className='golden-progress' aria-label={`课程进度：第 ${step} 关，共 5 关`}>
-        {LESSON_STEPS.map((label, index) => <i key={label} className={index < step ? 'is-active' : ''} />)}
-      </div>
-      <p>退款审核微挑战</p>
-      <h1>帮 AI 找到真正的退款证据</h1>
-    </header>
-  )
-}
-
-function ContinueButton({ onClick, disabled = false, children = '进入下一关' }: { onClick: () => void; disabled?: boolean; children?: string }) {
-  return <button className='golden-primary-button' type='button' onClick={onClick} disabled={disabled}>{children}<ChevronRight aria-hidden='true' /></button>
-}
 
 export default function TransformerLab() {
   const [step, setStep] = useState<LessonStep>(1)
@@ -60,30 +41,23 @@ export default function TransformerLab() {
   }
 
   return (
-    <div className='golden-lesson' ref={lessonTop} tabIndex={-1}>
-      <StepHeader step={step} />
-
-      <main className='golden-stage' aria-live='polite'>
+    <GoldenLessonShell step={step} eyebrow='退款审核微挑战' title='帮 AI 找到真正的退款证据' lessonRef={lessonTop}>
         {step === 1 ? (
           <section aria-labelledby='golden-step-1'>
             <span className='golden-kicker'>第 1 关 · 先猜</span>
             <h2 id='golden-step-1'>哪句话最能证明“应该退款”？</h2>
             <p className='golden-prompt'>顾客说自己只买了一件，却被扣了两次。请先选最关键的一条证据。</p>
-            <div className='golden-evidence-list' role='radiogroup' aria-label='选择最关键的退款证据'>
-              {REFUND_EVIDENCE.map((item, index) => (
-                <button
-                  aria-checked={guess === index}
-                  className={guess === index ? 'golden-evidence is-selected' : 'golden-evidence'}
-                  key={item.text}
-                  onClick={() => setGuess(index)}
-                  role='radio'
-                  type='button'
-                >
-                  <span>{item.speaker}</span>
-                  <strong>“{item.text}”</strong>
-                </button>
-              ))}
-            </div>
+            <AccessibleRadioGroup
+              ariaLabel='选择最关键的退款证据'
+              className='golden-evidence-list'
+              options={REFUND_EVIDENCE.map((item, value) => ({ key: item.text, value }))}
+              selected={guess}
+              onSelect={setGuess}
+              getOptionClassName={(_, isSelected) => isSelected ? 'golden-evidence is-selected' : 'golden-evidence'}
+              renderOption={(_, index) => (
+                <><span>{REFUND_EVIDENCE[index].speaker}</span><strong>“{REFUND_EVIDENCE[index].text}”</strong></>
+              )}
+            />
             {guess !== null ? (
               <div className={getGuessFeedback(guess).correct ? 'golden-feedback is-correct' : 'golden-feedback is-wrong'} role='status'>
                 {getGuessFeedback(guess).correct ? <Check aria-hidden='true' /> : <AlertTriangle aria-hidden='true' />}
@@ -121,7 +95,7 @@ export default function TransformerLab() {
 
         {step === 3 ? (
           <section aria-labelledby='golden-step-3'>
-            <span className='golden-kicker'>第 3 关 · 只改一个条件</span>
+            <span className='golden-kicker'>第 3 关 · 只改一个人话变量</span>
             <h2 id='golden-step-3'>把关注点从“声量”拉回“证据”</h2>
             <p className='golden-prompt'>四句话保持不变。只移动这个旋钮，观察 AI 最关注的话和退款结论。</p>
             <label className='golden-slider'>
@@ -166,13 +140,14 @@ export default function TransformerLab() {
 
         {step === 5 ? (
           <section aria-labelledby='golden-step-5'>
-            <span className='golden-kicker'>第 5 关 · 揭示原理</span>
+            <span className='golden-kicker'>第 5 关 · 揭示论文术语与最小公式</span>
             <h2 id='golden-step-5'>你刚刚发现的规律</h2>
             <blockquote className='golden-principle'><Sparkles aria-hidden='true' /><p>{FINAL_PRINCIPLE}</p></blockquote>
             <p className='golden-paper-source'>这正是 Transformer 论文《Attention Is All You Need》中的核心机制之一。</p>
             <div className='golden-mapping' aria-label='Attention 术语与刚才操作的对应关系'>
               {PRINCIPLE_MAPPING.map((item) => <article key={item.term}><span>{item.term}</span><strong>{item.chinese}</strong><p>{item.example}</p></article>)}
             </div>
+            <div className='golden-min-formula'><span>最小公式 · 注意力</span><code>Attention(Q, K, V) = Softmax(QKᵀ / √dₖ)V</code></div>
             <details className='golden-deep-dive'>
               <summary>我想继续深入</summary>
               <div>
@@ -189,7 +164,6 @@ export default function TransformerLab() {
             <div className='golden-complete'><Target aria-hidden='true' /><span><b>通关</b> 现在试着不看页面，用自己的话复述上面的规律。</span></div>
           </section>
         ) : null}
-      </main>
-    </div>
+    </GoldenLessonShell>
   )
 }

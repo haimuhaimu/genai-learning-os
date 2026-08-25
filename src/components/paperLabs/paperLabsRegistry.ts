@@ -10,7 +10,7 @@ export type PaperLabDefinition = {
 }
 
 export const paperLabs = [
-  { paperId: 'attention-is-all-you-need', shortTitle: 'Transformer（注意力架构）', eyebrow: '信息路由 · TOKEN INFORMATION ROUTING', objective: '从退款总结漏掉关键证据出发，操作当前问题、注意力集中度与因果遮罩，追踪分数到输出的完整因果链。', conclusion: '把“窗口够长”拆成“关键证据是否被正确关注、生成时是否偷看未来”的可验证问题。', component: lazy(() => import('./transformer/TransformerLab')) },
+  { paperId: 'attention-is-all-you-need', shortTitle: '找到退款证据', eyebrow: '退款证据挑战', objective: '在五个逐步解锁的关卡中，先判断证据，再观察 AI 犯错、调节关注重点，并用自己的话总结规律。', conclusion: 'Attention 不是让模型看到更多，而是围绕当前问题选择更重要的证据。', component: lazy(() => import('./transformer/TransformerLab')) },
   { paperId: 'wide-and-deep', shortTitle: 'Wide & Deep（记忆与泛化）', eyebrow: '记忆与泛化 · MEMORIZATION + GENERALIZATION', objective: '从新内容与新商家冷启动出发，对比记忆规则和相似性泛化如何让热门、冷启动、长尾跨过门槛。', conclusion: '平均收益不是验收终点；推荐策略必须看谁先跨过门槛，以及泛化带来的误推荐代价。', component: lazy(() => import('./recsys/WideDeepLab')) },
   { paperId: 'ddpm', shortTitle: 'DDPM（扩散去噪）', eyebrow: '加噪与反推 · FORWARD NOISE + REVERSE ESTIMATE', objective: '从 AI 生成内容（AIGC）图片质量、延迟与成本取舍出发，沿干净、带噪、重建链路读懂信噪比与重建误差。', conclusion: '可用图率、采样延迟和单张可用图成本需要放进同一张决策表。', component: lazy(() => import('./diffusion/DdpmLab')) },
   { paperId: 'react', shortTitle: 'ReAct（推理—行动—观察）', eyebrow: '推理、行动与观察 · REASON + ACT + OBSERVE', objective: '从退款自动化避免“自信地错”出发，比较是否查证、工具、冲突与步数预算造成的关键分叉。', conclusion: 'Agent 可靠性来自外部查证、可观察轨迹、冲突核验与明确停止条件。', component: lazy(() => import('./agent/ReActLab')) },

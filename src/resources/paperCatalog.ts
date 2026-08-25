@@ -105,6 +105,16 @@ export const paperResources = validatePaperCatalog([
     readQuestion: 'Self-Attention、FFN 与位置编码分别解决什么约束？',
   },
   {
+    id: 'distilling-the-knowledge-in-a-neural-network', title: 'Distilling the Knowledge in a Neural Network', authors: 'Geoffrey Hinton, Oriol Vinyals, Jeff Dean', year: 2015,
+    area: 'Transformer / LLM', level: '入门', kind: '奠基论文', url: 'https://arxiv.org/abs/1503.02531', readingMinutes: 35,
+    relatedCaseIds: ['distill-retention'], relatedRouteIds: ['distill'],
+    oneLine: '让低成本小模型同时学习正确答案和大模型对其他答案的相对判断。',
+    problem: '只用唯一正确答案训练，会丢掉大模型在相近类别与决策边界上的丰富信息。',
+    mechanism: '提高温度得到更平滑的教师分布，让学生联合学习硬标签与软目标，并用 T² 保持软目标梯度量级。',
+    productLens: '把 70B 能力迁到 3B，必须同时核算成本、延迟、能力保持、边界风险与人工复核容量。',
+    readQuestion: '哪个中间温度既保留主答案，又暴露足够的边界信息供小模型学习？',
+  },
+  {
     id: 'instructgpt', title: 'Training language models to follow instructions with human feedback', authors: 'Long Ouyang et al.', year: 2022,
     area: 'Transformer / LLM', level: '进阶', kind: '方法论文', url: 'https://arxiv.org/abs/2203.02155', readingMinutes: 65,
     relatedCaseIds: ['rag-budget'], relatedRouteIds: ['llm'],

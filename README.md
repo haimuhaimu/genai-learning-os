@@ -4,7 +4,7 @@
 
 [在线体验](https://haimuhaimu.github.io/genai-learning-os/) · [从策略案例开始](https://haimuhaimu.github.io/genai-learning-os/?page=strategy-cases) · [参与学习者共建](https://haimuhaimu.github.io/genai-learning-os/?page=co-build) · [查看贡献指南](CONTRIBUTING.md) · [English README](README_EN.md)
 
-**9 条学习路线 · 9 个代表策略案例 + 8 个 AI 决策数学练习 · 43 条精选视频/课程 + 21 篇核心论文讲解**，包含中文课程、Karpathy 学习材料，以及从推荐系统、LLM 到 Agent 与世界模型的阅读路径。
+**9 条学习路线 · 9 个代表策略案例 + 8 个 AI 决策数学练习 · 43 条精选视频/课程 + 22 篇核心论文讲解**，包含中文课程、Karpathy 学习材料，以及从推荐系统、LLM 到 Agent 与世界模型的阅读路径。
 
 多数教程解释模型如何运行；本项目让你先做产品策略决策，再回到算法机制，理解指标、代价和反馈闭环。
 
@@ -56,7 +56,7 @@
 
 每个统一 Strategy Case 都提供“首次判断 → 主动打开关联视频或论文 → 复盘判断 → 前后并排对比”的闭环。资源触达只在用户点击打开时记录，**不代表看完或掌握**。首次与复盘回答、触达时间均按 case 隔离保存在当前浏览器的 `genai-resource-loop-v1` 中；可单独清除当前 case，`localStorage` 不可用时会降级为当前会话状态，且不会推进既有学习进度。
 
-[论文机制演练实验室](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) 提供 Transformer、Wide & Deep、DDPM、ReAct 与 DreamerV3 五个无需后端的确定性微型实验。其中 Transformer 已升级为 5 分钟“黄金样板课”《帮 AI 找到真正的退款证据》：一次只解锁一关，按“先猜 → 看 AI 犯错 → 只改一个条件 → 自己总结 → 揭示原理”推进，直到学习者能复述“Attention 不是让模型看到更多，而是围绕当前问题选择更重要的证据”。术语与公式只在通关时渐进揭示。其他实验保持业务故事、可操作变量、动态解释与业务迁移模板；机制教学简化不等于完整训练复现，也不代表生产模型性能。
+[论文机制演练实验室](https://haimuhaimu.github.io/genai-learning-os/?page=paper-lab) 提供 Transformer、模型蒸馏、Wide & Deep、DDPM、ReAct 与 DreamerV3 六个无需后端的确定性微型实验。新增蒸馏五关黄金样板课《把昂贵大模型装进低成本小模型》，以 70B → 3B 客服/审核迁移为案例，按“先猜 → 看 AI 犯错 → 只改一个人话变量 → 自己总结 → 最后揭示术语与公式”推进，并用成本、延迟、能力保持、风险与人工复核账本作上线判断。所有实验的机制教学简化不等于完整训练复现，也不代表生产模型性能。
 
 ## 数学零层：先把公式翻译成人话
 
@@ -92,7 +92,7 @@
 ## 学习资源
 
 - [参考视频库](https://haimuhaimu.github.io/genai-learning-os/?page=videos)：43 条精选视频与课程，可按路线、语言、难度与内容来源筛选；新增 3Blue1Brown、StatQuest、D2L、李宏毅、OpenBMB、Hugging Face、MIT、Stanford、CMU、DeepLearning.AI 与 Google 官方入口。
-- [核心论文讲解库](https://haimuhaimu.github.io/genai-learning-os/?page=papers)：21 篇核心论文覆盖推荐系统、Transformer / LLM、扩散 / 多模态、Agent / Harness 与自我改进 / 世界模型；每篇按“30 秒看懂 / 关键机制 / 产品视角 / 带回课程的问题”组织。
+- [核心论文讲解库](https://haimuhaimu.github.io/genai-learning-os/?page=papers)：22 篇核心论文覆盖推荐系统、Transformer / LLM、扩散 / 多模态、Agent / Harness 与自我改进 / 世界模型；每篇按“30 秒看懂 / 关键机制 / 产品视角 / 带回课程的问题”组织。
 - 资源不嵌入、不自动播放，点击或阅读不计入学习进度。维护方式见 [参考视频贡献指南](docs/VIDEO_CONTRIBUTING.md) 与 [论文讲解库贡献指南](docs/PAPER_CONTRIBUTING.md)。
 
 ## 贡献一个 Case
@@ -134,7 +134,7 @@ pnpm check:a11y
 pnpm check:bundle
 ```
 
-CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 127 项，并拦截无障碍与产物体积回退。
+CI 会在 Pull Request 与 Pages 部署前执行自动化回归；当前全量测试共 153 项，并拦截无障碍与产物体积回退。
 
 所有公式、估算、图表与实验结果均为机制级教学模拟，不代表商业模型的真实实现或实测性能。生产决策应使用目标模型、真实数据、日志、压测、安全审查与组织规范验证。
 

@@ -73,7 +73,8 @@ test('论文讲解库已接入路由，且每篇论文的标题、作者、方�
 test('论文实验深链、注册表和未知 ID 回退保持健康', () => {
   assert.ok(canonicalPageSet.has('paper-lab'))
   assert.ok(dispatchedPages.has('paper-lab'))
-  assert.equal(paperLabs.length, 5)
+  assert.equal(paperLabs.length, 6)
+  assert.ok(paperLabs.some((lab) => lab.paperId === 'distilling-the-knowledge-in-a-neural-network' && lab.layout === 'golden'))
   for (const lab of paperLabs) {
     assert.ok(paperResources.some((paper) => paper.id === lab.paperId), `${lab.paperId} 必须对应 Catalog 论文`)
     assert.equal(lab.layout, 'golden', `${lab.paperId} 必须使用黄金课布局`)

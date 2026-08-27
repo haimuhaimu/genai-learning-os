@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { emptyK3Draft, estimateWeightMemory, sanitizeK3Draft, validateK3Step } from './k3BuildLearning.ts'
+import { applyK3Guide, emptyK3Draft, estimateWeightMemory, sanitizeK3Draft, validateK3Step } from './k3BuildLearning.ts'
 
 test('K3 任务定义必须包含输入输出与两条失败标准', () => {
   const draft = emptyK3Draft()
@@ -37,4 +37,16 @@ test('K3 草稿只保留白名单字符串字段', () => {
   assert.equal(clean.goal.task, '任务')
   assert.equal('unknown' in clean.goal, false)
   assert.deepEqual(clean.api, { request: '', response: '', contract: '' })
+})
+
+test('引导模式能为非技术用户生成可直接继续的步骤', () => {
+  let draft = emptyK3Draft()
+  const choices = { scenario: 'summary', device: 'mac', focus: 'format' }
+  for (const id of ['goal', 'runtime', 'model', 'infer', 'api', 'evaluate']) {
+    draft = applyK3Guide(id, draft, choices)
+    assert.deepEqual(validateK3Step(id, draft), [])
+  }
+  assert.match(draft.goal.task, /运营同学/)
+  assert.equal(draft.runtime.stack, 'Ollama')
+  assert.equal(draft.evaluate.samples.split('\n').length, 10)
 })

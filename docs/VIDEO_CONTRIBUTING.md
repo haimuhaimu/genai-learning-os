@@ -74,7 +74,7 @@ type VideoResource = {
 pnpm run check:videos
 pnpm run lint
 pnpm run build
-node --test
+pnpm test
 git diff --check
 ```
 

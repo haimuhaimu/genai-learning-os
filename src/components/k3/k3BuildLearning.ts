@@ -210,3 +210,111 @@ export function validateK3Step(id: K3StepId, draft: K3Draft): string[] {
   if (!enough(value.review, 30)) errors.push('请补充本轮复盘。');
   return errors;
 }
+
+export interface K3LearningCard {
+  id: K3StepId;
+  title: string;
+  question: string;
+  options: { id: string; label: string }[];
+  answer: string;
+  observation: string;
+  explanation: string;
+  learned: string;
+  evidence: string;
+}
+
+export const K3_LEARNING_CARDS: K3LearningCard[] = [
+  {
+    id: 'goal',
+    title: '先定义问题，不急着选模型',
+    question: '如果想用大模型总结运营周报，第一件事应该做什么？',
+    options: [
+      { id: 'largest', label: '下载参数最大的模型' },
+      { id: 'goal', label: '写清输入、输出和失败标准' },
+      { id: 'code', label: '先学会写 Python' },
+    ],
+    answer: 'goal',
+    observation: '模型大小不能替代任务定义。同一个模型，在目标模糊时也会输出一堆看似正确的废话。',
+    explanation: '搭模型不是先选技术，而是先定义它要解决的问题，以及什么结果算失败。',
+    learned: '我能先写清任务，再判断是否需要大模型。',
+    evidence: 'K3 很强，但仍需要明确的任务和评测目标。',
+  },
+  {
+    id: 'runtime',
+    title: '分清模型和运行工具',
+    question: '模型权重和 Ollama、vLLM 这类工具是什么关系？',
+    options: [
+      { id: 'same', label: '它们是同一个东西' },
+      { id: 'runner', label: '权重是能力数据，工具负责加载和运行' },
+      { id: 'cloud', label: '只有云端模型才需要运行工具' },
+    ],
+    answer: 'runner',
+    observation: '同一份模型权重可以被不同推理工具加载，工具会影响安装难度、速度和并发能力。',
+    explanation: '可以把权重理解成大脑里的知识，把推理工具理解成让大脑运转起来的身体。',
+    learned: '我能区分模型权重、推理框架和运行环境。',
+    evidence: '个人体验适合 Ollama，服务部署通常考虑 vLLM 等工具。',
+  },
+  {
+    id: 'model',
+    title: '用参数量估算设备压力',
+    question: '一台只有 8 GiB 可用内存的电脑，适合直接运行 7B、16-bit 模型吗？',
+    options: [
+      { id: 'yes', label: '适合，7B 小于 8 GiB' },
+      { id: 'no', label: '不适合，权重已约 14 GiB' },
+      { id: 'context', label: '只和上下文长度有关' },
+    ],
+    answer: 'no',
+    observation: '7B × 16 bit ÷ 8，权重就约 14 GB，还没有计算运行时开销。换成 4-bit 后约 3.5 GB。',
+    explanation: '参数量决定要存多少数字，量化位宽决定每个数字占多少空间。',
+    learned: '我能用“参数量 × 位宽 ÷ 8”粗估模型能否装下。',
+    evidence: 'K3 有 2.8T 总参数，即使低比特量化也不是个人电脑规模。',
+  },
+  {
+    id: 'infer',
+    title: '看懂一次推理发生了什么',
+    question: '模型回答很慢时，最先应该记录哪组信息？',
+    options: [
+      { id: 'color', label: '页面颜色和按钮数量' },
+      { id: 'metric', label: '输入长度、生成速度和峰值内存' },
+      { id: 'name', label: '模型名称是否好记' },
+    ],
+    answer: 'metric',
+    observation: '模型逐个生成 token。输入越长、输出越多、模型越大，等待和资源占用通常越高。',
+    explanation: '推理不是一次性吐出答案，而是把上下文读入后，一个 token 接一个 token 地生成。',
+    learned: '我能用输入长度、生成速度和内存解释一次推理。',
+    evidence: 'K3 支持 1M 上下文，但支持很长不等于使用成本为零。',
+  },
+  {
+    id: 'api',
+    title: '理解模型如何变成产品能力',
+    question: '为什么跑通模型后，还需要封装 API？',
+    options: [
+      { id: 'pretty', label: '只是为了界面更好看' },
+      { id: 'contract', label: '让其他产品按固定格式稳定调用' },
+      { id: 'smart', label: 'API 会自动让模型更聪明' },
+    ],
+    answer: 'contract',
+    observation: 'API 约定输入、输出、超时和错误，让网页、机器人或工作流不需要理解模型内部细节。',
+    explanation: '模型是能力，API 是产品与这项能力之间的合同。',
+    learned: '我能解释模型、API 和上层产品之间的关系。',
+    evidence: '真正可用的模型服务还要处理并发、超时、鉴权和错误。',
+  },
+  {
+    id: 'evaluate',
+    title: '不用“感觉不错”判断模型',
+    question: '固定保留 10 条测试问题，最重要的作用是什么？',
+    options: [
+      { id: 'demo', label: '让演示页面看起来更丰富' },
+      { id: 'compare', label: '更换模型或提示词后可以稳定比较' },
+      { id: 'train', label: '让模型自动完成训练' },
+    ],
+    answer: 'compare',
+    observation: '固定样本能让前后结果可比较，避免只挑表现好的案例，也能暴露格式、事实和拒答问题。',
+    explanation: '评测集像一把固定的尺子。没有它，每次优化都只能凭感觉。',
+    learned: '我能用固定样本比较模型版本，而不是只看一次答案。',
+    evidence: '模型规模不是唯一指标，任务质量必须通过具体样本验证。',
+  },
+];
+
+export const checkK3Answer = (id: K3StepId, answer: string): boolean =>
+  K3_LEARNING_CARDS.find((card) => card.id === id)?.answer === answer;

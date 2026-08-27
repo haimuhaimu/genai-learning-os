@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { applyK3Guide, emptyK3Draft, estimateWeightMemory, sanitizeK3Draft, validateK3Step } from './k3BuildLearning.ts'
+import { applyK3Guide, checkK3Answer, emptyK3Draft, estimateWeightMemory, sanitizeK3Draft, validateK3Step } from './k3BuildLearning.ts'
 
 test('K3 任务定义必须包含输入输出与两条失败标准', () => {
   const draft = emptyK3Draft()
@@ -49,4 +49,15 @@ test('引导模式能为非技术用户生成可直接继续的步骤', () => {
   assert.match(draft.goal.task, /运营同学/)
   assert.equal(draft.runtime.stack, 'Ollama')
   assert.equal(draft.evaluate.samples.split('\n').length, 10)
+})
+
+test('六关问题都有唯一正确答案', () => {
+  const answers = {
+    goal: 'goal', runtime: 'runner', model: 'no',
+    infer: 'metric', api: 'contract', evaluate: 'compare'
+  }
+  for (const [id, answer] of Object.entries(answers)) {
+    assert.equal(checkK3Answer(id, answer), true)
+    assert.equal(checkK3Answer(id, 'wrong'), false)
+  }
 })

@@ -66,7 +66,7 @@ interface LayerStyle extends CSSProperties {
 
 const layerStyle = (index: number): LayerStyle => ({ '--i': index });
 
-const stepKeys = K3_STEP_IDS.map((id) => `k3:build:${id}`);
+const stepKeys = K3_STEP_IDS.map((id) => `k3:concept:${id}`);
 const presets = [0.5, 1.5, 3, 7];
 
 function SectionNav({ go }: { go: Go }) {
@@ -312,8 +312,8 @@ export default function K3BuildLabPage({
         <header>
           <span>04</span>
           <div>
-            <h2>六步跑通自己的模型</h2>
-            <p>每一步都要提交真实证据，通过校验才能解锁下一步。</p>
+            <h2>六关看懂模型是怎么搭起来的</h2>
+            <p>每关先做一个判断，再用现象和 K3 参数讲清背后的知识。</p>
           </div>
           <strong>{completed}/6</strong>
         </header>

@@ -20,30 +20,30 @@ const routes = [
 ]
 
 const k3BuildSteps = [
-  ['goal', '写清任务', '定义输入、输出和失败标准', BrainCircuit],
-  ['runtime', '准备环境', '安装 Python 与推理框架', Cpu],
-  ['model', '选择模型', '从 0.5B 到 7B 起步', Calculator],
-  ['infer', '完成推理', '记录输出、耗时与内存', Sparkles],
-  ['api', '封装 API', '把模型变成可调用接口', Network],
-  ['evaluate', '建立评测', '用 10 条样本检查结果', FlaskConical],
+  ['goal', '定义问题', '先明确任务，再选择模型', BrainCircuit],
+  ['runtime', '理解运行', '区分模型权重与推理工具', Cpu],
+  ['model', '估算大小', '判断自己的设备能否运行', Calculator],
+  ['infer', '看懂推理', '认识 token、速度和内存', Sparkles],
+  ['api', '理解 API', '知道模型如何进入产品', Network],
+  ['evaluate', '学会评测', '用固定样本代替主观感觉', FlaskConical],
 ] as const
 
 function K3HeroCard({ progress, go }: { progress: ProgressMap; go: Go }) {
-  const completed = k3BuildSteps.filter(([id]) => (progress[`k3:build:${id}`] ?? 0) >= 4).length
-  const nextStep = k3BuildSteps.find(([id]) => (progress[`k3:build:${id}`] ?? 0) < 4)?.[1]
+  const completed = k3BuildSteps.filter(([id]) => (progress[`k3:concept:${id}`] ?? 0) >= 4).length
+  const nextStep = k3BuildSteps.find(([id]) => (progress[`k3:concept:${id}`] ?? 0) < 4)?.[1]
   return (
     <aside className='lo-hero-path' aria-label={`个人模型搭建进度 ${completed}/6`}>
       <header>
         <span>K3 BUILD LAB</span>
-        <b>{completed === 6 ? '你的模型闭环已经跑通' : '搭出你的第一台模型'}</b>
+        <b>{completed === 6 ? '六个模型判断已经掌握' : '学会搭模型的六个判断'}</b>
       </header>
       <div className='lo-hero-path-list'>
         {k3BuildSteps.map(([id, label, note, Icon], index) => {
-          const done = (progress[`k3:build:${id}`] ?? 0) >= 4
+          const done = (progress[`k3:concept:${id}`] ?? 0) >= 4
           return <button key={id} type='button' onClick={() => go('k3-build-lab', { section: 'build' })}><i>{done ? <CheckCircle2 aria-label='已完成' /> : index + 1}</i><Icon aria-hidden='true' /><span><b>{label}</b><small>{note}</small></span><ArrowRight aria-hidden='true' /></button>
         })}
       </div>
-      <footer><span>{completed === 6 ? '成果：模型闭环已跑通' : `下一步：${nextStep}`}</span><button type='button' onClick={() => go('k3-build-lab')}>{completed ? '继续搭建' : '开始搭建'}</button></footer>
+      <footer><span>{completed === 6 ? '成果：六条可复述的模型知识' : `下一关：${nextStep}`}</span><button type='button' onClick={() => go('k3-build-lab')}>{completed ? '复习知识' : '开始学习'}</button></footer>
     </aside>
   )
 }

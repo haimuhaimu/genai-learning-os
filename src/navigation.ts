@@ -37,6 +37,7 @@ export const pageSectionMap: Record<Page, PrimarySectionId> = {
   'foundation-lab': 'labs',
   'distill-lab': 'labs',
   'expert-lab': 'labs',
+  'k3-build-lab': 'labs',
   'agent-lab': 'labs',
   'agent-book-lab': 'labs',
   'paper-lab': 'labs',

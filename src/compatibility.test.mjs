@@ -17,7 +17,8 @@ const allStorageSource = sourceFiles.join('\n')
 
 test('变更前 33 个 canonical 页面、五入口、map 别名与八类深链参数保持不变', () => {
   assert.equal(legacyCanonicalPages.length, 33)
-  assert.deepEqual(canonicalPages, legacyCanonicalPages)
+  assert.deepEqual(canonicalPages.filter((page) => page !== 'k3-build-lab'), legacyCanonicalPages)
+  assert.ok(canonicalPages.includes('k3-build-lab'))
   assert.deepEqual(primarySections.map(({ label, page }) => [label, page]), legacyPrimaryNavigation)
   assert.deepEqual(pageAliases, legacyAliases)
   assert.deepEqual(routeKeys, legacyRouteKeys)

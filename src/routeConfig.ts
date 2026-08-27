@@ -21,6 +21,7 @@ export const canonicalPages = [
   'expert-image',
   'expert-agent',
   'expert-lab',
+  'k3-build-lab',
   'agent-lab',
   'agent-book',
   'agent-book-lab',

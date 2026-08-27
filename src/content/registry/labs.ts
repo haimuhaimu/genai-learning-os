@@ -52,6 +52,7 @@ function createLabs(
 export const labEntries: readonly LabEntry[] = [
   ...createLabs('foundation', 'foundation-lab', ['foundation'], foundationLabs, 'beginner'),
   ...createLabs('expert', 'expert-lab', ['llm'], expertLabs, 'intermediate'),
+  { id: 'lab:expert:k3-build-lab', legacyId: 'k3-build-lab', type: 'lab', family: 'expert', title: 'K3 架构与显存实验', summary: '拆解 Kimi K3 的稀疏激活，并估算个人模型的权重显存。', route: { page: 'k3-build-lab', options: { section: 'lab' } }, tags: ['llm'], level: 'beginner', status: 'published' },
   ...createLabs('agent', 'agent-lab', ['agent'], agentLabs, 'intermediate'),
   ...createLabs('agent-book', 'agent-book-lab', ['agent', 'agent-book'], agentBookLabIds.map((id) => [id, agentBookTitles[id]]), 'advanced'),
   ...createLabs('distill', 'distill-lab', ['distillation'], distillExperiments.map(([id, , title]) => [id, title]), 'advanced'),

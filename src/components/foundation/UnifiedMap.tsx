@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, BookOpen, BrainCircuit, Calculator, CheckCircle2, FlaskConical, Image as ImageIcon, Network, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpen, BrainCircuit, Calculator, CheckCircle2, Cpu, FlaskConical, Image as ImageIcon, Network, Sparkles } from 'lucide-react'
 import { foundationNodeSummaries, foundationProgressIds } from '../../content/foundationSummary'
-import { getNextStep, getPersona, personas, readPersona, savePersona, type PersonaId } from '../../learningPath'
-import { progressPercent, readProgress, stageLabels, type ProgressMap } from '../../progress'
+import { getPersona, personas, readPersona, savePersona, type PersonaId } from '../../learningPath'
+import { progressPercent, PROGRESS_CHANGE_EVENT, readProgress, stageLabels, type ProgressMap } from '../../progress'
 import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
 import { getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
 import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
@@ -19,29 +19,31 @@ const routes = [
   { label: '模型蒸馏', page: 'distill-course', icon: FlaskConical, note: '能力到部署' },
 ]
 
-function HeroRouteMap({ go }: { go: Go }) {
+const k3BuildSteps = [
+  ['goal', '写清任务', '定义输入、输出和失败标准', BrainCircuit],
+  ['runtime', '准备环境', '安装 Python 与推理框架', Cpu],
+  ['model', '选择模型', '从 0.5B 到 7B 起步', Calculator],
+  ['infer', '完成推理', '记录输出、耗时与内存', Sparkles],
+  ['api', '封装 API', '把模型变成可调用接口', Network],
+  ['evaluate', '建立评测', '用 10 条样本检查结果', FlaskConical],
+] as const
+
+function K3HeroCard({ progress, go }: { progress: ProgressMap; go: Go }) {
+  const completed = k3BuildSteps.filter(([id]) => (progress[`k3:build:${id}`] ?? 0) >= 4).length
+  const nextStep = k3BuildSteps.find(([id]) => (progress[`k3:build:${id}`] ?? 0) < 4)?.[1]
   return (
-    <aside className='lo-hero-path' aria-label='可交互学习路径'>
+    <aside className='lo-hero-path' aria-label={`个人模型搭建进度 ${completed}/6`}>
       <header>
-        <span>建议学习顺序</span>
-        <b>从机制基础走向可靠系统</b>
+        <span>K3 BUILD LAB</span>
+        <b>{completed === 6 ? '你的模型闭环已经跑通' : '搭出你的第一台模型'}</b>
       </header>
       <div className='lo-hero-path-list'>
-        {routes.map(({ icon: Icon, ...route }, index) => (
-          <button key={route.page} type='button' onClick={() => go(route.page)}>
-            <i>{index + 1}</i>
-            <Icon aria-hidden='true' />
-            <span><b>{route.label}</b><small>{route.note}</small></span>
-            <ArrowRight aria-hidden='true' />
-          </button>
-        ))}
+        {k3BuildSteps.map(([id, label, note, Icon], index) => {
+          const done = (progress[`k3:build:${id}`] ?? 0) >= 4
+          return <button key={id} type='button' onClick={() => go('k3-build-lab', { section: 'build' })}><i>{done ? <CheckCircle2 aria-label='已完成' /> : index + 1}</i><Icon aria-hidden='true' /><span><b>{label}</b><small>{note}</small></span><ArrowRight aria-hidden='true' /></button>
+        })}
       </div>
-      <button className='lo-hero-branch' type='button' onClick={() => go('expert-image')}>
-        <ImageIcon aria-hidden='true' />
-        <span><b>并行支线：图像生成</b><small>算法基础后可随时进入</small></span>
-        <ArrowRight aria-hidden='true' />
-      </button>
-      <footer><span>九条路线按能力目标组织</span><button type='button' onClick={() => go('routes')}>查看路线全图</button></footer>
+      <footer><span>{completed === 6 ? '成果：模型闭环已跑通' : `下一步：${nextStep}`}</span><button type='button' onClick={() => go('k3-build-lab')}>{completed ? '继续搭建' : '开始搭建'}</button></footer>
     </aside>
   )
 }
@@ -51,15 +53,14 @@ export default function UnifiedMap({ go }: { go: Go }) {
   const [progress, setProgress] = useState<ProgressMap>(() => readProgress())
   const profile = getPersona(persona)
   const total = progressPercent(progress, foundationProgressIds)
-  const next = getNextStep(progress, persona)
   const caseProgress = usePaperLessonProgressMap()
   const caseSummary = getPaperLessonSummary(caseProgress, goldenPaperLabs.map((lab) => lab.paperId))
   const nextCase = goldenPaperLabs.find((lab) => lab.paperId === caseSummary.nextId) ?? goldenPaperLabs[0]
 
   useEffect(() => {
     const sync = () => setProgress(readProgress())
-    window.addEventListener('genai-progress-change', sync)
-    return () => window.removeEventListener('genai-progress-change', sync)
+    window.addEventListener(PROGRESS_CHANGE_EVENT, sync)
+    return () => window.removeEventListener(PROGRESS_CHANGE_EVENT, sync)
   }, [])
 
   const choosePersona = (id: PersonaId) => {
@@ -71,16 +72,14 @@ export default function UnifiedMap({ go }: { go: Go }) {
     <section className='lo-home'>
       <div className='lo-home-hero'>
         <div className='lo-hero-copy'>
-          <h1>通过产品决策，<br /><em>学会理解 AI</em></h1>
-          <p>Strategy-first AI Learning：先选择策略、权衡业务代价，再回到算法机制与反馈闭环。</p>
+          <h1>从读懂 2.8T，<br /><em>到搭出自己的模型</em></h1>
+          <p>以 Kimi K3 真实参数为起点，跑通架构、显存、推理、API 与评测。</p>
           <div className='lo-hero-actions'>
-            <button type='button' onClick={() => go('strategy-cases')}>进入策略案例（Case）中心<ArrowRight /></button>
-            <button type='button' className='is-secondary' onClick={() => go('routes')}>选择学习路线</button>
-            <button type='button' className='is-secondary' onClick={() => go(next.page, next.options)}>继续上次学习</button>
+            <button type='button' onClick={() => go('k3-build-lab')}><Cpu />开始搭建<ArrowRight /></button>
+            <button type='button' className='is-secondary' onClick={() => go('routes')}>浏览全部路线</button>
           </div>
-          <p className='lo-hero-facts'>做决策 → 看证据 → 算代价 → 找反馈；九条路线共用同一套 Strategy Case 协议。</p>
         </div>
-        <HeroRouteMap go={go} />
+        <K3HeroCard progress={progress} go={go} />
       </div>
 
       <section className='lo-persona-section'>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowRight, BarChart3, BookOpenCheck, Boxes, CircleHelp, FlaskConical, Gauge, GitCompareArrows, ScrollText, Sigma } from 'lucide-react'
 import type { ExpertModule, ExpertTrack } from '../expertData'
 import DecisionBriefPractice from './course/DecisionBriefPractice'
+import { ScalingAllocationExperiment } from './course/ConceptExperiments'
 
 const icons = [Boxes, GitCompareArrows, Sigma, BarChart3]
 
@@ -62,6 +63,7 @@ export default function ExpertCourse({ modules, track, initialModule, onOpenLab,
       </div>
 
       <div className='expert-card-grid'>
+        {track === 'llm' && module.id === 'scaling' ? <section className='expert-card' style={{ gridColumn: '1 / -1' }}><header><FlaskConical /><span>先做实验，再解释</span></header><ScalingAllocationExperiment /></section> : null}
         <section className='expert-card architecture-card'>
           <header><Boxes /><span>架构机制</span></header><p>{module.architecture}</p>
         </section>

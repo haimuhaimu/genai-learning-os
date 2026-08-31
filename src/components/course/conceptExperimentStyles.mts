@@ -24,4 +24,9 @@ export const conceptExperimentStyles = {
   step: { minWidth: 61, padding: 8, borderRadius: 7, background: '#eef0f5', textAlign: 'center' },
   stepValue: { display: 'block', marginTop: 4, fontSize: 14 },
   teacher: { margin: '0 0 10px', color: '#647084', fontSize: 11 },
+  metricGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(95px,1fr))', gap: 7, marginTop: 10 },
+  metric: { display: 'grid', gap: 5, padding: 10, borderRadius: 8, background: '#eef1f5' },
+  choiceRow: { display: 'flex', flexWrap: 'wrap', gap: 7 },
+  choice: { padding: '8px 11px', border: '1px solid #d5dbe5', borderRadius: 8, color: '#505b6d', background: '#fff', cursor: 'pointer' },
+  activeChoice: { color: '#fff', borderColor: '#4655b5', background: '#4655b5' },
 } satisfies Record<string, CSSProperties>

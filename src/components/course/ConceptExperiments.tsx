@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { blendDistillationTargets, simulateGradientDescent, softmaxAtTemperature, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateMlpSize, compareScalingAllocation, crossEntropyLoss, simulateGradientDescent, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -42,4 +42,44 @@ export function DistillationTargetExperiment({ onRun }: ExperimentProps) {
   const blended = blendDistillationTargets(alpha).map((value, index) => ({ label: labels[index], value }))
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='教师认为答案最像体育，但也有一点财经意味。只学标准答案时，这些相似性会全部丢失。' control={<div style={styles.control}><p style={styles.teacher}>教师软答案：体育 68%，财经 24%，科技 8%</p><div style={styles.controlTop}><label htmlFor='distill-alpha'>硬标签权重 α</label><b>{alpha.toFixed(1)}</b></div><input id='distill-alpha' aria-label='蒸馏硬标签权重' style={styles.range} type='range' min='0' max='1' step='0.1' value={alpha} onChange={(event) => { setAlpha(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><RotateCcw size={15} />混合学习信号</button></div>} before={<><b>只学标准答案</b><Bars items={hard} /></>} after={ran ? <><b>硬标签 {Math.round(alpha * 100)}% + 教师 {Math.round((1 - alpha) * 100)}%</b><Bars items={blended} /></> : <p>调整权重，再混合两个信号。</p>} conclusion={ran ? alpha === 1 ? '只用硬标签时，学生只知道谁对，不知道其他答案有多相似。' : '软答案把类别之间的相似性也交给学生，这就是蒸馏常说的暗知识。' : undefined} details={<><p>α 控制硬标签，1-α 控制教师软答案。真实训练还会使用温度与 KL，但先理解两个监督信号如何混合就够了。</p><code style={styles.code}>target = alpha * hardLabel + (1 - alpha) * teacherDistribution</code></>} />
+}
+
+export function CrossEntropyExperiment({ onRun }: ExperimentProps) {
+  const [probability, setProbability] = useState(0.2)
+  const [ran, setRan] = useState(false)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='模型给正确答案多少把握，会直接决定这次犯错要付多大代价。只改正确答案的概率，观察损失。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='correct-probability'>正确答案概率</label><b>{Math.round(probability * 100)}%</b></div><input id='correct-probability' aria-label='正确答案概率' style={styles.range} type='range' min='0.05' max='0.95' step='0.05' value={probability} onChange={(event) => { setProbability(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />计算犯错代价</button></div>} before={<div style={styles.metricGrid}><span style={styles.metric}><small>正确答案概率</small><b>90%</b></span><span style={styles.metric}><small>损失</small><b>{crossEntropyLoss(0.9)}</b></span></div>} after={ran ? <div style={styles.metricGrid}><span style={styles.metric}><small>正确答案概率</small><b>{Math.round(probability * 100)}%</b></span><span style={styles.metric}><small>损失</small><b>{crossEntropyLoss(probability)}</b></span></div> : <p>选择一个概率，再计算损失。</p>} conclusion={ran ? probability < 0.5 ? '正确答案得到的概率越低，惩罚上升得越快，训练会更用力纠正这类错误。' : '正确答案已经拿到较高概率，因此这次错误的惩罚较小。' : undefined} details={<><p>交叉熵只看正确答案得到的概率，并取负对数。它会放大“非常自信但猜错”的问题。</p><code style={styles.code}>loss = -log(correctAnswerProbability)</code></>} />
+}
+
+function SignalValues({ inputs, outputs }: { inputs: number[]; outputs: number[] }) {
+  return <div style={styles.steps}>{inputs.map((input, index) => <span key={input} style={styles.step}><small>输入 {input}</small><b style={styles.stepValue}>输出 {outputs[index]}</b></span>)}</div>
+}
+
+export function ActivationExperiment({ onRun }: ExperimentProps) {
+  const inputs = [-2, -0.5, 0.5, 2]
+  const [activation, setActivation] = useState<ActivationName>('relu')
+  const [ran, setRan] = useState(false)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='先给网络四个信号。保持输入不变，只切换滤网，看看哪些信息被保留。' control={<div style={styles.control}><div style={styles.choiceRow}>{(['relu', 'silu'] as const).map((name) => <button key={name} type='button' aria-pressed={activation === name} style={{ ...styles.choice, ...(activation === name ? styles.activeChoice : {}) }} onClick={() => { setActivation(name); setRan(false) }}>{name === 'relu' ? 'ReLU：直接截断' : 'SiLU：平滑通过'}</button>)}</div><button type='button' style={styles.run} onClick={run}><Play size={15} />让信号通过</button></div>} before={<><b>没有激活函数</b><SignalValues inputs={inputs} outputs={inputs} /></>} after={ran ? <><b>{activation === 'relu' ? 'ReLU' : 'SiLU'} 处理后</b><SignalValues inputs={inputs} outputs={applyActivation(inputs, activation)} /></> : <p>选择滤网，再观察输出。</p>} conclusion={ran ? activation === 'relu' ? 'ReLU 把负信号直接归零，简单高效，但可能让部分神经元再也没有输出。' : 'SiLU 不会把负信号一刀切掉，变化更平滑，也保留了少量信息。' : undefined} details={<><p>没有激活函数，多层线性变换仍可合并成一层。非线性让网络能够描述弯曲、复杂的关系。</p><code style={styles.code}>{activation === 'relu' ? 'output = max(0, input)' : 'output = input * sigmoid(input)'}</code></>} />
+}
+
+function MlpReadout({ multiplier }: { multiplier: number }) {
+  const result = calculateMlpSize(1024, multiplier)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>中间宽度</small><b>{result.hiddenWidth}</b></span><span style={styles.metric}><small>参数量</small><b>{(result.parameters / 1e6).toFixed(1)}M</b></span><span style={styles.metric}><small>FP16 权重</small><b>{result.memoryMb} MB</b></span></div>
+}
+
+export function MlpWidthExperiment({ onRun }: ExperimentProps) {
+  const [multiplier, setMultiplier] = useState(8)
+  const [ran, setRan] = useState(false)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='MLP 像每个 Token 都会经过的知识加工区。固定模型宽度，只扩大中间层，观察成本怎样增长。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='mlp-multiplier'>中间层宽度倍率</label><b>{multiplier} 倍</b></div><input id='mlp-multiplier' aria-label='MLP 中间层宽度倍率' style={styles.range} type='range' min='2' max='8' step='1' value={multiplier} onChange={(event) => { setMultiplier(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />扩大 MLP</button></div>} before={<><b>常见基线：4 倍</b><MlpReadout multiplier={4} /></>} after={ran ? <><b>你的选择：{multiplier} 倍</b><MlpReadout multiplier={multiplier} /></> : <p>调整宽度，再计算参数账单。</p>} conclusion={ran ? multiplier > 4 ? '中间层越宽，能够容纳更多变换，但参数、显存和计算也会按比例增加。' : '缩窄中间层能降低成本，但也可能限制模型处理复杂模式的容量。' : undefined} details={<><p>示例固定模型宽度为 1024，忽略偏置。两张矩阵分别负责升维和降维。</p><code style={styles.code}>parameters = 2 * modelWidth * hiddenWidth</code></>} />
+}
+
+export function ScalingAllocationExperiment({ onRun }: ExperimentProps) {
+  const [multiplier, setMultiplier] = useState(4)
+  const [ran, setRan] = useState(false)
+  const result = compareScalingAllocation(multiplier)
+  const readout = (item: typeof result.balanced) => <div style={styles.metricGrid}><span style={styles.metric}><small>参数量</small><b>{item.parametersB}B</b></span><span style={styles.metric}><small>训练数据</small><b>{item.tokensB}B</b></span><span style={styles.metric}><small>FP16 权重显存</small><b>{item.weightMemoryGb} GB</b></span></div>
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='假设起点是 7B 参数和 140B Token。算力增加后，别急着把预算全塞进参数，先比较两种分法。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='compute-budget'>训练算力预算</label><b>{multiplier} 倍</b></div><input id='compute-budget' aria-label='训练算力预算倍率' style={styles.range} type='range' min='1' max='16' step='1' value={multiplier} onChange={(event) => { setMultiplier(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />比较预算分法</button></div>} before={<><b>只扩大参数</b>{readout(result.modelOnly)}</>} after={ran ? <><b>参数与数据一起扩大</b>{readout(result.balanced)}</> : <p>选择算力预算，再比较两种分法。</p>} conclusion={ran ? '在相同训练算力下，同时增加参数和数据，能避免模型变大却没吃够数据，也显著减轻推理显存压力。' : undefined} details={<><p>这是教学近似，不是跨架构定律。因为训练计算量近似与参数量 N 和数据量 D 的乘积成正比，两者一起扩展时，各自约按算力平方根增长。</p><code style={styles.code}>compute ≈ 6 * parameters * tokens</code></>} />
 }

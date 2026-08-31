@@ -3,7 +3,7 @@ import { AlertTriangle, Check, ChevronLeft, ChevronRight, CircleHelp, FlaskConic
 import type { Chapter } from '../courseData'
 import { markProgress } from '../progress'
 import DeepPracticePanel from './course/DeepPracticePanel'
-import { AttentionDilutionExperiment, ContextWindowExperiment, TokenFormatExperiment } from './course/ConceptExperiments'
+import { AttentionDilutionExperiment, ContextWindowExperiment, CrossEntropyExperiment, EmbeddingChunkingExperiment, KLDivergenceExperiment, SoftmaxTemperatureExperiment, TokenFormatExperiment } from './course/ConceptExperiments'
 import './CourseTrack.css'
 
 type Props = {
@@ -18,6 +18,8 @@ export default function CourseTrack({ chapters, tone, initialChapter, onOpenLab 
   const [active, setActive] = useState(initialIndex)
   const [answer, setAnswer] = useState<boolean | null>(null)
   const chapter = chapters[active]
+  const markExperiment = () => markProgress(chapter.id, 3)
+  const inlineExperiment = tone !== 'llm' ? null : chapter.id === 'llm-token' ? <TokenFormatExperiment onRun={markExperiment} /> : chapter.id === 'llm-embed' ? <EmbeddingChunkingExperiment onRun={markExperiment} /> : chapter.id === 'llm-attention' ? <AttentionDilutionExperiment onRun={markExperiment} /> : chapter.id === 'llm-pretrain' ? <CrossEntropyExperiment onRun={markExperiment} /> : chapter.id === 'llm-decode' ? <SoftmaxTemperatureExperiment onRun={markExperiment} /> : chapter.id === 'llm-context' ? <ContextWindowExperiment onRun={markExperiment} /> : chapter.id === 'llm-align' ? <KLDivergenceExperiment onRun={markExperiment} /> : null
 
   useEffect(() => {
     const requested = chapters.findIndex((item) => item.id === initialChapter)
@@ -75,13 +77,10 @@ export default function CourseTrack({ chapters, tone, initialChapter, onOpenLab 
             <div className='lesson-title'><FlaskConical size={18} /><span>核心概念</span></div>
             <p>{chapter.concept}</p>
           </section>
-          {tone === 'llm' && chapter.id === 'llm-token' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><TokenFormatExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
-          {tone === 'llm' && chapter.id === 'llm-attention' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><AttentionDilutionExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
-          {tone === 'llm' && chapter.id === 'llm-context' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><ContextWindowExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
+          {inlineExperiment ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div>{inlineExperiment}</section> : null}
           <section className='lesson-card formula-card'>
-            <div className='lesson-title'><Sigma size={18} /><span>最小必要公式</span></div>
-            <code>{chapter.formula}</code>
-            <small>先建立参数直觉，再在下方深度练习中亲手计算。</small>
+            <div className='lesson-title'><Sigma size={18} /><span>{inlineExperiment ? '实验后再看公式' : '最小必要公式'}</span></div>
+            {inlineExperiment ? <details><summary>展开公式与解释</summary><code>{chapter.formula}</code><small>先建立参数直觉，再在下方深度练习中亲手计算。</small></details> : <><code>{chapter.formula}</code><small>先建立参数直觉，再在下方深度练习中亲手计算。</small></>}
           </section>
           <section className='lesson-card'>
             <div className='lesson-title'><SlidersHorizontal size={18} /><span>产品可控参数</span></div>

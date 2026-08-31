@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateKvCacheUsage, calculateMlpSize, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -169,4 +169,18 @@ export function ResidualPathExperiment({ onRun }: ExperimentProps) {
   const result = simulateResidualSignal(layers)
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='把信息连续传过很多层。每层都会有少量损耗，只改变网络深度，观察残差通道能保留多少原始信号。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='transformer-layers'>Transformer 深度</label><b>{layers} 层</b></div><input id='transformer-layers' aria-label='Transformer 网络深度' style={styles.range} type='range' min='2' max='48' step='2' value={layers} onChange={(event) => { setLayers(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />让信号穿过网络</button></div>} before={<><b>浅层基线</b><ResidualReadout layers={4} /></>} after={ran ? <><b>你的深度配置</b><ResidualReadout layers={layers} /></> : <p>增加网络深度，再观察信号。</p>} conclusion={ran ? result.withoutResidual < 20 ? '网络变深后，普通路径里的信号快速衰减；残差连接提供捷径，让深层网络仍能保留和更新信息。' : '浅层网络的信号损耗还不明显，继续加深后残差连接的重要性会快速上升。' : undefined} details={<><p>这是展示累积效应的教学模型，不代表真实梯度数值。示例假设普通路径每层保留 93%，残差路径每层保留 99.5%。</p><code style={styles.code}>remainingSignal = retentionPerLayer ^ layerCount</code></>} />
+}
+
+function ChunkReadout({ overlap }: { overlap: number }) {
+  const result = calculateEmbeddingChunks(1800, 400, overlap)
+  const repeatedTokens = result.indexedTokens - result.totalTokens
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>切块数量</small><b>{result.count} 块</b></span><span style={styles.metric}><small>每次前进</small><b>{result.step} Token</b></span><span style={styles.metric}><small>重复索引</small><b>{repeatedTokens} Token</b></span></div>
+}
+
+export function EmbeddingChunkingExperiment({ onRun }: ExperimentProps) {
+  const [overlap, setOverlap] = useState(100)
+  const [ran, setRan] = useState(false)
+  const result = calculateEmbeddingChunks(1800, 400, overlap)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='把一篇 1800 Token 文档固定切成 400 Token 大小，只调整相邻块的重叠，观察召回连续性要付出的索引成本。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='chunk-overlap'>相邻块重叠</label><b>{overlap} Token</b></div><input id='chunk-overlap' aria-label='文档切块重叠大小' style={styles.range} type='range' min='0' max='300' step='50' value={overlap} onChange={(event) => { setOverlap(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />重新切块</button></div>} before={<><b>完全不重叠</b><ChunkReadout overlap={0} /></>} after={ran ? <><b>重叠 {overlap} Token</b><ChunkReadout overlap={overlap} /></> : <p>调整重叠大小，再观察块数和重复索引。</p>} conclusion={ran ? overlap === 0 ? '不重叠最省索引成本，但一句话落在边界时，前后信息可能被拆开。' : result.count >= 12 ? '重叠过大时，同一内容被反复索引，召回重复、存储和计算成本都会上升。' : '适度重叠能保留跨边界语义，但要用真实召回效果验证这部分额外成本。' : undefined} details={<><p>每块固定 400 Token，有效步长等于块大小减去重叠。最后不足一整块的内容也需要单独建立索引。</p><code style={styles.code}>count = 1 + ceil((totalTokens - chunkSize) / (chunkSize - overlap))</code></>} />
 }

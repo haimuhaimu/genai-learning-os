@@ -101,3 +101,12 @@ test('网络加深时残差连接保留更多教学信号', async () => {
   assert.ok(deep.withResidual > deep.withoutResidual)
   assert.ok(deep.withoutResidual < shallow.withoutResidual)
 })
+
+test('文档切块计算包含尾块并反映重叠成本', async () => {
+  const { calculateEmbeddingChunks } = await import('./conceptExperimentMath.ts')
+  const standard = calculateEmbeddingChunks(1800, 400, 100)
+  const shorter = calculateEmbeddingChunks(1300, 400, 100)
+  assert.equal(standard.count, 6)
+  assert.equal(shorter.count, 4)
+  assert.ok(standard.indexedTokens > standard.totalTokens)
+})

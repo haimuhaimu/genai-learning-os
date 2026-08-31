@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap');
 
 :root { --ink:#20222c; --muted:#727686; --paper:#f8f7f3; --line:#e6e3dc; --llm:#ed765f; --llm-soft:#fff0e9; --image:#6875de; --image-soft:#eef0ff; --white:#fff; }
 * { box-sizing:border-box; }

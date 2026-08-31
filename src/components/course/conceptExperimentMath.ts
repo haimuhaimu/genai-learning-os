@@ -148,3 +148,12 @@ export function simulateResidualSignal(layers: number) {
     withResidual: Math.round(100 * 0.995 ** safeLayers),
   }
 }
+
+export function calculateEmbeddingChunks(totalTokens: number, chunkSize: number, overlap: number) {
+  const safeTotal = Math.max(1, Math.round(totalTokens))
+  const safeChunkSize = Math.max(1, Math.round(chunkSize))
+  const safeOverlap = Math.min(safeChunkSize - 1, Math.max(0, Math.round(overlap)))
+  const step = safeChunkSize - safeOverlap
+  const count = 1 + Math.ceil(Math.max(0, safeTotal - safeChunkSize) / step)
+  return { totalTokens: safeTotal, chunkSize: safeChunkSize, overlap: safeOverlap, step, count, indexedTokens: safeTotal + Math.max(0, count - 1) * safeOverlap }
+}

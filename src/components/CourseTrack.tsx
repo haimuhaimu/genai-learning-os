@@ -3,7 +3,7 @@ import { AlertTriangle, Check, ChevronLeft, ChevronRight, CircleHelp, FlaskConic
 import type { Chapter } from '../courseData'
 import { markProgress } from '../progress'
 import DeepPracticePanel from './course/DeepPracticePanel'
-import { AttentionDilutionExperiment, CfgGuidanceExperiment, ContextWindowExperiment, CrossEntropyExperiment, DiffusionNoiseExperiment, EmbeddingChunkingExperiment, KLDivergenceExperiment, SamplingStepsExperiment, SoftmaxTemperatureExperiment, TokenFormatExperiment, VaeCompressionExperiment } from './course/ConceptExperiments'
+import { AttentionDilutionExperiment, CfgGuidanceExperiment, ContextWindowExperiment, CrossEntropyExperiment, DiffusionNoiseExperiment, DenoiseStrengthExperiment, EffectiveImageCostExperiment, EmbeddingChunkingExperiment, KLDivergenceExperiment, NegativePromptExperiment, PromptTruncationExperiment, SamplingStepsExperiment, SoftmaxTemperatureExperiment, TokenFormatExperiment, VaeCompressionExperiment } from './course/ConceptExperiments'
 import './CourseTrack.css'
 
 type Props = {
@@ -20,7 +20,7 @@ export default function CourseTrack({ chapters, tone, initialChapter, onOpenLab 
   const chapter = chapters[active]
   const markExperiment = () => markProgress(chapter.id, 3)
   const llmExperiment = tone !== 'llm' ? null : chapter.id === 'llm-token' ? <TokenFormatExperiment onRun={markExperiment} /> : chapter.id === 'llm-embed' ? <EmbeddingChunkingExperiment onRun={markExperiment} /> : chapter.id === 'llm-attention' ? <AttentionDilutionExperiment onRun={markExperiment} /> : chapter.id === 'llm-pretrain' ? <CrossEntropyExperiment onRun={markExperiment} /> : chapter.id === 'llm-decode' ? <SoftmaxTemperatureExperiment onRun={markExperiment} /> : chapter.id === 'llm-context' ? <ContextWindowExperiment onRun={markExperiment} /> : chapter.id === 'llm-align' ? <KLDivergenceExperiment onRun={markExperiment} /> : null
-  const imageExperiment = tone !== 'image' ? null : chapter.id === 'img-space' ? <VaeCompressionExperiment onRun={markExperiment} /> : chapter.id === 'img-diffusion' ? <DiffusionNoiseExperiment onRun={markExperiment} /> : chapter.id === 'img-sample' ? <><CfgGuidanceExperiment onRun={markExperiment} /><SamplingStepsExperiment onRun={markExperiment} /></> : null
+  const imageExperiment = tone !== 'image' ? null : chapter.id === 'img-space' ? <VaeCompressionExperiment onRun={markExperiment} /> : chapter.id === 'img-text' ? <PromptTruncationExperiment onRun={markExperiment} /> : chapter.id === 'img-diffusion' ? <DiffusionNoiseExperiment onRun={markExperiment} /> : chapter.id === 'img-sample' ? <><CfgGuidanceExperiment onRun={markExperiment} /><SamplingStepsExperiment onRun={markExperiment} /></> : chapter.id === 'img-prompt' ? <NegativePromptExperiment onRun={markExperiment} /> : chapter.id === 'img-control' ? <DenoiseStrengthExperiment onRun={markExperiment} /> : chapter.id === 'img-eval' ? <EffectiveImageCostExperiment onRun={markExperiment} /> : null
   const inlineExperiment = llmExperiment ?? imageExperiment
 
   useEffect(() => {

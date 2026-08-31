@@ -187,3 +187,26 @@ export function calculateSamplingTradeoff(steps: number, millisecondsPerStep: nu
   const quality = Math.round(100 * (1 - Math.exp(-safeSteps / 14)))
   return { steps: safeSteps, latency: Number((safeSteps * safeMilliseconds / 1000).toFixed(1)), quality }
 }
+
+export function calculatePromptTruncation(tokenCount: number, limit = 77) {
+  const safeLimit = Math.max(1, Math.round(limit))
+  const safeTokens = Math.max(1, Math.round(tokenCount))
+  const visibleTokens = Math.min(safeTokens, safeLimit)
+  const ignoredTokens = Math.max(0, safeTokens - safeLimit)
+  return { tokenCount: safeTokens, limit: safeLimit, visibleTokens, ignoredTokens, usage: Math.round(visibleTokens / safeLimit * 100), isTruncated: ignoredTokens > 0 }
+}
+
+export function calculateDenoiseRetention(strength: number) {
+  const safeStrength = Math.min(1, Math.max(0, strength))
+  return { strength: safeStrength, retention: Math.round((1 - safeStrength) * 100), variability: Math.round(safeStrength * 100) }
+}
+
+export function calculateEffectiveImageCost(successRate: number, generationCost = 0.16, auditCost = 0.12) {
+  const safeRate = Math.min(1, Math.max(0.01, successRate))
+  return { successRate: safeRate, attempts: Number((1 / safeRate).toFixed(1)), totalUnitCost: Number((generationCost / safeRate + auditCost).toFixed(2)) }
+}
+
+export function calculateNegativeSuppression(count: number) {
+  const safeCount = Math.min(10, Math.max(0, Math.round(count)))
+  return { count: safeCount, errorProbability: Math.max(1, Math.round(25 * Math.exp(-safeCount * 0.4))) }
+}

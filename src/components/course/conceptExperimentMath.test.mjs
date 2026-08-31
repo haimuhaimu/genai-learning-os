@@ -140,3 +140,33 @@ test('增加采样步数会增加延迟且质量收益递减', async () => {
   assert.equal(slow.latency, 8)
   assert.ok(slow.quality - fast.quality < fast.quality)
 })
+
+test('超过文本编码上限的提示 Token 会被忽略', async () => {
+  const { calculatePromptTruncation } = await import('./conceptExperimentMath.ts')
+  const short = calculatePromptTruncation(60)
+  const long = calculatePromptTruncation(100)
+  assert.equal(short.isTruncated, false)
+  assert.equal(long.visibleTokens, 77)
+  assert.equal(long.ignoredTokens, 23)
+})
+
+test('重绘强度越高原图保留越少', async () => {
+  const { calculateDenoiseRetention } = await import('./conceptExperimentMath.ts')
+  assert.deepEqual(calculateDenoiseRetention(0.3), { strength: 0.3, retention: 70, variability: 30 })
+})
+
+test('成功率提升会降低单位有效图成本', async () => {
+  const { calculateEffectiveImageCost } = await import('./conceptExperimentMath.ts')
+  const low = calculateEffectiveImageCost(0.2)
+  const high = calculateEffectiveImageCost(0.8)
+  assert.equal(low.totalUnitCost, 0.92)
+  assert.equal(high.totalUnitCost, 0.32)
+  assert.ok(high.totalUnitCost < low.totalUnitCost)
+})
+
+test('增加负向提示会降低但不能归零错误特征概率', async () => {
+  const { calculateNegativeSuppression } = await import('./conceptExperimentMath.ts')
+  assert.equal(calculateNegativeSuppression(0).errorProbability, 25)
+  assert.ok(calculateNegativeSuppression(5).errorProbability < 5)
+  assert.ok(calculateNegativeSuppression(10).errorProbability > 0)
+})

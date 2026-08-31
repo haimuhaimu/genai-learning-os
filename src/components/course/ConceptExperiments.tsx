@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateCfgEffect, calculateDiffusionNoise, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, calculateSamplingTradeoff, calculateVaeCompression, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateCfgEffect, calculateDenoiseRetention, calculateDiffusionNoise, calculateEffectiveImageCost, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, calculateNegativeSuppression, calculatePromptTruncation, calculateSamplingTradeoff, calculateVaeCompression, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -237,4 +237,56 @@ export function SamplingStepsExperiment({ onRun }: ExperimentProps) {
   const baseline = calculateSamplingTradeoff(20, 200)
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='固定其他设置，每一步耗时 200ms。只增加采样步数，看看等待时间和质量收益是不是一起线性增长。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='sampling-steps'>采样步数</label><b>{steps} 步</b></div><input id='sampling-steps' aria-label='图像采样步数' style={styles.range} type='range' min='5' max='60' step='5' value={steps} onChange={(event) => { setSteps(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />开始采样</button></div>} before={<><b>20 步基线</b><SamplingReadout steps={20} /></>} after={ran ? <><b>你的采样预算</b><SamplingReadout steps={steps} /></> : <p>调整步数，再比较延迟与质量。</p>} conclusion={ran ? steps > 30 ? `比 20 步多等 ${(result.latency - baseline.latency).toFixed(1)} 秒，但质量指数只增加 ${result.quality - baseline.quality}；采样步数越多，边际收益越小。` : '低步数能快速出候选图，适合探索阶段；确定方向后再增加步数做最终交付。' : undefined} details={<><p>质量指数使用饱和曲线演示边际收益，不对应具体模型跑分。真实最佳步数要按模型、采样器和业务标准实测。</p><code style={styles.code}>latency = steps * timePerStep; qualityGain gradually saturates</code></>} />
+}
+
+function PromptLimitReadout({ tokenCount }: { tokenCount: number }) {
+  const result = calculatePromptTruncation(tokenCount)
+  return <><Bars items={[{ label: '编码器能看到', value: result.usage }, { label: '未用容量', value: 100 - result.usage }]} /><div style={styles.metricGrid}><span style={styles.metric}><small>提示 Token</small><b>{result.tokenCount}</b></span><span style={styles.metric}><small>进入编码器</small><b>{result.visibleTokens}</b></span><span style={styles.metric}><small>被截断</small><b style={{ color: result.isTruncated ? '#9e3f43' : '#2d654f' }}>{result.ignoredTokens}</b></span></div></>
+}
+
+export function PromptTruncationExperiment({ onRun }: ExperimentProps) {
+  const [tokenCount, setTokenCount] = useState(100)
+  const [ran, setRan] = useState(false)
+  const result = calculatePromptTruncation(tokenCount)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='以常见的 77 Token 文本编码上限为例。固定模型，只把提示词越写越长，看看后面的描述是否真的进入模型。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='prompt-token-count'>提示词长度</label><b>{tokenCount} Token</b></div><input id='prompt-token-count' aria-label='图像提示词 Token 数量' style={styles.range} type='range' min='20' max='120' step='5' value={tokenCount} onChange={(event) => { setTokenCount(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />送入文本编码器</button></div>} before={<><b>精简提示：60 Token</b><PromptLimitReadout tokenCount={60} /></>} after={ran ? <><b>你的提示长度</b><PromptLimitReadout tokenCount={tokenCount} /></> : <p>增加描述长度，再观察模型真正能看到多少。</p>} conclusion={ran ? result.isTruncated ? `最后 ${result.ignoredTokens} 个 Token 没有进入编码器。把关键主体和关系放在前面，比无止境堆风格词更可靠。` : '当前提示仍在编码窗口内；继续增加文字不一定更好，还要避免概念彼此冲突。' : undefined} details={<><p>77 Token 是部分 CLIP 配置的典型上限，不是所有图像模型的统一限制。生产中应读取目标模型对应文本编码器的真实上限。</p><code style={styles.code}>visibleTokens = min(promptTokens, encoderLimit)</code></>} />
+}
+
+function NegativePromptReadout({ count }: { count: number }) {
+  const result = calculateNegativeSuppression(count)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>负向约束数量</small><b>{result.count} 条</b></span><span style={styles.metric}><small>错误特征概率</small><b>{result.errorProbability}%</b></span><span style={styles.metric}><small>是否绝对禁止</small><b>否</b></span></div>
+}
+
+export function NegativePromptExperiment({ onRun }: ExperimentProps) {
+  const [count, setCount] = useState(5)
+  const [ran, setRan] = useState(false)
+  const result = calculateNegativeSuppression(count)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='固定模型、正向提示和随机种子，只增加负向提示。观察“不想要的特征”是被删除了，还是只变得更少见。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='negative-prompt-count'>负向提示数量</label><b>{count} 条</b></div><input id='negative-prompt-count' aria-label='负向提示词数量' style={styles.range} type='range' min='0' max='10' step='1' value={count} onChange={(event) => { setCount(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />应用负向提示</button></div>} before={<><b>不使用负向提示</b><NegativePromptReadout count={0} /></>} after={ran ? <><b>加入 {count} 条负向约束</b><NegativePromptReadout count={count} /></> : <p>增加负向提示，再观察错误概率。</p>} conclusion={ran ? result.errorProbability <= 5 ? '错误特征明显减少，却没有变成 0%。负向提示是概率上的软引导，不是程序里的硬删除。' : '少量负向提示只能轻微压低错误概率；结构性问题通常还需要模型、控制条件或后处理解决。' : undefined} details={<><p>概率曲线是教学模拟。负向提示过多还可能互相冲突或损伤正常画面，不能把所有失败词都无限追加。</p><code style={styles.code}>errorProbability = baseProbability * exp(-constraintCount * strength)</code></>} />
+}
+
+function DenoiseReadout({ strength }: { strength: number }) {
+  const result = calculateDenoiseRetention(strength)
+  return <><Bars items={[{ label: '原图结构保留', value: result.retention }, { label: '模型重构空间', value: result.variability }]} /><div style={styles.metricGrid}><span style={styles.metric}><small>重绘强度</small><b>{result.strength.toFixed(1)}</b></span><span style={styles.metric}><small>原图保留</small><b>{result.retention}%</b></span></div></>
+}
+
+export function DenoiseStrengthExperiment({ onRun }: ExperimentProps) {
+  const [strength, setStrength] = useState(0.8)
+  const [ran, setRan] = useState(false)
+  const result = calculateDenoiseRetention(strength)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='图生图不是简单加滤镜。固定原图和提示词，只调重绘强度，观察模型自由发挥与保留原图之间的交换。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='denoise-strength'>重绘强度</label><b>{strength.toFixed(1)}</b></div><input id='denoise-strength' aria-label='图生图重绘强度' style={styles.range} type='range' min='0' max='1' step='0.1' value={strength} onChange={(event) => { setStrength(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />重新绘制图片</button></div>} before={<><b>轻微修改：强度 0.2</b><DenoiseReadout strength={0.2} /></>} after={ran ? <><b>你的重绘设置</b><DenoiseReadout strength={strength} /></> : <p>调整强度，再观察保留与重构。</p>} conclusion={ran ? result.retention < 40 ? '高强度给模型更多重构空间，但主体、构图和身份特征都可能偏离原图。' : '低到中等强度更适合修饰细节；如果目标是换构图，需要主动提高重绘强度。' : undefined} details={<><p>这是建立参数方向感的教学映射。真实保留程度还受采样器、提示词、ControlNet 和模型能力影响。</p><code style={styles.code}>structureRetention ≈ 1 - denoiseStrength</code></>} />
+}
+
+function CostReadout({ successRate }: { successRate: number }) {
+  const result = calculateEffectiveImageCost(successRate)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>业务成功率</small><b>{Math.round(result.successRate * 100)}%</b></span><span style={styles.metric}><small>平均尝试次数</small><b>{result.attempts} 次</b></span><span style={styles.metric}><small>单位有效图成本</small><b>¥{result.totalUnitCost}</b></span></div>
+}
+
+export function EffectiveImageCostExperiment({ onRun }: ExperimentProps) {
+  const [successRate, setSuccessRate] = useState(0.8)
+  const [ran, setRan] = useState(false)
+  const result = calculateEffectiveImageCost(successRate)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='单次生成只要 ¥0.16，看起来很便宜。但交付成本取决于多少张候选里才有一张真正可用。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='image-success-rate'>有效图片成功率</label><b>{Math.round(successRate * 100)}%</b></div><input id='image-success-rate' aria-label='有效图片成功率' style={styles.range} type='range' min='0.1' max='0.9' step='0.1' value={successRate} onChange={(event) => { setSuccessRate(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />计算真实交付成本</button></div>} before={<><b>低成功率：20%</b><CostReadout successRate={0.2} /></>} after={ran ? <><b>你的生产成功率</b><CostReadout successRate={successRate} /></> : <p>调整成功率，再计算一张有效图的成本。</p>} conclusion={ran ? result.totalUnitCost < 0.4 ? '成功率提升后，废片和重试一起减少。生产优化不能只盯单次推理价格，更要提升首次可用率。' : '大量废片把便宜的单次生成放大成昂贵的交付成本；提示、模型和审核链路都需要优化。' : undefined} details={<><p>教学假设每次生成 ¥0.16，每张最终有效图另有 ¥0.12 审核成本，暂不计人工返工和后处理。</p><code style={styles.code}>effectiveCost = generationCost / successRate + auditCost</code></>} />
 }

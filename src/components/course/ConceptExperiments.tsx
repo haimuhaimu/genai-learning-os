@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateCfgEffect, calculateDiffusionNoise, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, calculateSamplingTradeoff, calculateVaeCompression, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -183,4 +183,58 @@ export function EmbeddingChunkingExperiment({ onRun }: ExperimentProps) {
   const result = calculateEmbeddingChunks(1800, 400, overlap)
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='把一篇 1800 Token 文档固定切成 400 Token 大小，只调整相邻块的重叠，观察召回连续性要付出的索引成本。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='chunk-overlap'>相邻块重叠</label><b>{overlap} Token</b></div><input id='chunk-overlap' aria-label='文档切块重叠大小' style={styles.range} type='range' min='0' max='300' step='50' value={overlap} onChange={(event) => { setOverlap(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />重新切块</button></div>} before={<><b>完全不重叠</b><ChunkReadout overlap={0} /></>} after={ran ? <><b>重叠 {overlap} Token</b><ChunkReadout overlap={overlap} /></> : <p>调整重叠大小，再观察块数和重复索引。</p>} conclusion={ran ? overlap === 0 ? '不重叠最省索引成本，但一句话落在边界时，前后信息可能被拆开。' : result.count >= 12 ? '重叠过大时，同一内容被反复索引，召回重复、存储和计算成本都会上升。' : '适度重叠能保留跨边界语义，但要用真实召回效果验证这部分额外成本。' : undefined} details={<><p>每块固定 400 Token，有效步长等于块大小减去重叠。最后不足一整块的内容也需要单独建立索引。</p><code style={styles.code}>count = 1 + ceil((totalTokens - chunkSize) / (chunkSize - overlap))</code></>} />
+}
+
+function VaeReadout({ factor }: { factor: number }) {
+  const result = calculateVaeCompression(512, 512, factor)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>像素空间</small><b>512 × 512 × 3</b></span><span style={styles.metric}><small>潜空间</small><b>{result.latentWidth} × {result.latentHeight} × 4</b></span><span style={styles.metric}><small>数值压缩</small><b>{result.ratio} 倍</b></span></div>
+}
+
+export function VaeCompressionExperiment({ onRun }: ExperimentProps) {
+  const [factor, setFactor] = useState(8)
+  const [ran, setRan] = useState(false)
+  const result = calculateVaeCompression(512, 512, factor)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='不要先背潜空间。固定一张 512×512 图片，只调 VAE 的边长压缩倍率，看看去噪网络实际处理多大的数据。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='vae-factor'>边长压缩倍率</label><b>{factor} 倍</b></div><input id='vae-factor' aria-label='VAE 边长压缩倍率' style={styles.range} type='range' min='2' max='16' step='2' value={factor} onChange={(event) => { setFactor(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />压进潜空间</button></div>} before={<><b>直接处理 RGB 像素</b><div style={styles.metricGrid}><span style={styles.metric}><small>图片形状</small><b>512 × 512 × 3</b></span><span style={styles.metric}><small>待处理数值</small><b>786,432</b></span><span style={styles.metric}><small>计算负担</small><b>100%</b></span></div></>} after={ran ? <><b>边长压缩 {factor} 倍后</b><VaeReadout factor={factor} /></> : <p>选择压缩倍率，再观察数据规模。</p>} conclusion={ran ? result.ratio >= 48 ? '边长只缩小 8 倍，去噪网络处理的数值量就少约 48 倍；潜空间扩散因此能显著降低生成成本。' : '压缩已经减少计算量，但保留的潜变量仍较多，细节与成本之间需要继续权衡。' : undefined} details={<><p>示例把 RGB 图片编码为 4 通道潜变量。这里比较数值总量，不代表真实速度一定严格按同比例提升。</p><code style={styles.code}>compression = (width * height * 3) / (latentWidth * latentHeight * 4)</code></>} />
+}
+
+function DiffusionReadout({ timestep }: { timestep: number }) {
+  const result = calculateDiffusionNoise(timestep)
+  return <><Bars items={[{ label: '原图信号', value: result.signal }, { label: '随机噪声', value: result.noise }]} /><div style={styles.metricGrid}><span style={styles.metric}><small>时间步</small><b>t = {result.timestep}</b></span><span style={styles.metric}><small>还能看见原图</small><b>{result.signal}%</b></span></div></>
+}
+
+export function DiffusionNoiseExperiment({ onRun }: ExperimentProps) {
+  const [timestep, setTimestep] = useState(700)
+  const [ran, setRan] = useState(false)
+  const result = calculateDiffusionNoise(timestep)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='训练时不是让模型凭空画图，而是先把真实图片逐步弄脏。只改变时间步，观察学习任务怎样变化。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='diffusion-timestep'>加噪时间步</label><b>t = {timestep}</b></div><input id='diffusion-timestep' aria-label='扩散加噪时间步' style={styles.range} type='range' min='0' max='1000' step='50' value={timestep} onChange={(event) => { setTimestep(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />加入这一档噪声</button></div>} before={<><b>原始图片：t = 0</b><DiffusionReadout timestep={0} /></>} after={ran ? <><b>加噪后的训练样本</b><DiffusionReadout timestep={timestep} /></> : <p>选择时间步，再观察信号与噪声。</p>} conclusion={ran ? result.signal < 30 ? '后期时间步几乎看不见原图，模型必须靠学到的数据规律猜回结构；推理就是从这个方向逐步去噪。' : '前期时间步仍保留较多原图，模型主要学习修复局部噪点和细节。' : undefined} details={<><p>这里用线性比例帮助建立直觉；真实扩散模型使用噪声调度计算信号系数，通常并不是线性变化。</p><code style={styles.code}>noisyImage = signalCoefficient * image + noiseCoefficient * randomNoise</code></>} />
+}
+
+function CfgReadout({ scale }: { scale: number }) {
+  const result = calculateCfgEffect(3, 1, scale)
+  const adherence = Math.min(100, Math.round(36 + scale * 8))
+  const naturalness = Math.max(18, Math.round(100 - Math.max(0, scale - 5) * 9))
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>条件差值放大</small><b>+{result.offset}</b></span><span style={styles.metric}><small>提示遵循</small><b>{adherence}%</b></span><span style={styles.metric}><small>自然度</small><b>{naturalness}%</b></span></div>
+}
+
+export function CfgGuidanceExperiment({ onRun }: ExperimentProps) {
+  const [scale, setScale] = useState(9)
+  const [ran, setRan] = useState(false)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='固定模型、提示词和随机种子，只调 CFG。它不是“画质按钮”，而是在放大有提示和无提示预测的差值。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='cfg-scale'>CFG 引导强度</label><b>{scale.toFixed(1)}</b></div><input id='cfg-scale' aria-label='CFG 引导强度' style={styles.range} type='range' min='0' max='15' step='0.5' value={scale} onChange={(event) => { setScale(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />应用提示引导</button></div>} before={<><b>温和引导：CFG 3</b><CfgReadout scale={3} /></>} after={ran ? <><b>你的设置：CFG {scale.toFixed(1)}</b><CfgReadout scale={scale} /></> : <p>调整 CFG，再观察遵循度与自然度。</p>} conclusion={ran ? scale > 8 ? 'CFG 太高会让提示特征被过度放大：更“听话”，却可能出现过饱和、轮廓发硬和伪影。' : scale < 3 ? 'CFG 太低时画面更自然，但提示词对结果的控制变弱。' : '中等 CFG 通常能在提示遵循和自然度之间取得更稳妥的平衡。' : undefined} details={<><p>遵循度和自然度是教学指标，不是通用质量分。真正效果受模型、采样器和提示词共同影响。</p><code style={styles.code}>guided = unconditioned + scale * (conditioned - unconditioned)</code></>} />
+}
+
+function SamplingReadout({ steps }: { steps: number }) {
+  const result = calculateSamplingTradeoff(steps, 200)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>采样步数</small><b>{result.steps} 步</b></span><span style={styles.metric}><small>单图延迟</small><b>{result.latency} 秒</b></span><span style={styles.metric}><small>教学质量指数</small><b>{result.quality}</b></span></div>
+}
+
+export function SamplingStepsExperiment({ onRun }: ExperimentProps) {
+  const [steps, setSteps] = useState(40)
+  const [ran, setRan] = useState(false)
+  const result = calculateSamplingTradeoff(steps, 200)
+  const baseline = calculateSamplingTradeoff(20, 200)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='固定其他设置，每一步耗时 200ms。只增加采样步数，看看等待时间和质量收益是不是一起线性增长。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='sampling-steps'>采样步数</label><b>{steps} 步</b></div><input id='sampling-steps' aria-label='图像采样步数' style={styles.range} type='range' min='5' max='60' step='5' value={steps} onChange={(event) => { setSteps(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />开始采样</button></div>} before={<><b>20 步基线</b><SamplingReadout steps={20} /></>} after={ran ? <><b>你的采样预算</b><SamplingReadout steps={steps} /></> : <p>调整步数，再比较延迟与质量。</p>} conclusion={ran ? steps > 30 ? `比 20 步多等 ${(result.latency - baseline.latency).toFixed(1)} 秒，但质量指数只增加 ${result.quality - baseline.quality}；采样步数越多，边际收益越小。` : '低步数能快速出候选图，适合探索阶段；确定方向后再增加步数做最终交付。' : undefined} details={<><p>质量指数使用饱和曲线演示边际收益，不对应具体模型跑分。真实最佳步数要按模型、采样器和业务标准实测。</p><code style={styles.code}>latency = steps * timePerStep; qualityGain gradually saturates</code></>} />
 }

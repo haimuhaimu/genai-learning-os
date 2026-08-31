@@ -110,3 +110,33 @@ test('文档切块计算包含尾块并反映重叠成本', async () => {
   assert.equal(shorter.count, 4)
   assert.ok(standard.indexedTokens > standard.totalTokens)
 })
+
+test('VAE 把 512 像素图压缩成更小的潜变量表示', async () => {
+  const { calculateVaeCompression } = await import('./conceptExperimentMath.ts')
+  const result = calculateVaeCompression(512, 512, 8)
+  assert.equal(result.latentWidth, 64)
+  assert.equal(result.latentHeight, 64)
+  assert.equal(result.ratio, 48)
+})
+
+test('扩散时间步从完整信号走向完整噪声', async () => {
+  const { calculateDiffusionNoise } = await import('./conceptExperimentMath.ts')
+  assert.deepEqual(calculateDiffusionNoise(0), { timestep: 0, signal: 100, noise: 0 })
+  assert.deepEqual(calculateDiffusionNoise(1000), { timestep: 1000, signal: 0, noise: 100 })
+})
+
+test('CFG 放大有条件预测与无条件预测的差值', async () => {
+  const { calculateCfgEffect } = await import('./conceptExperimentMath.ts')
+  const result = calculateCfgEffect(3, 1, 7.5)
+  assert.equal(result.offset, 15)
+  assert.equal(result.guided, 16)
+})
+
+test('增加采样步数会增加延迟且质量收益递减', async () => {
+  const { calculateSamplingTradeoff } = await import('./conceptExperimentMath.ts')
+  const fast = calculateSamplingTradeoff(20, 200)
+  const slow = calculateSamplingTradeoff(40, 200)
+  assert.equal(fast.latency, 4)
+  assert.equal(slow.latency, 8)
+  assert.ok(slow.quality - fast.quality < fast.quality)
+})

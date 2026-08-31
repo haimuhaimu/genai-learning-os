@@ -157,3 +157,33 @@ export function calculateEmbeddingChunks(totalTokens: number, chunkSize: number,
   const count = 1 + Math.ceil(Math.max(0, safeTotal - safeChunkSize) / step)
   return { totalTokens: safeTotal, chunkSize: safeChunkSize, overlap: safeOverlap, step, count, indexedTokens: safeTotal + Math.max(0, count - 1) * safeOverlap }
 }
+
+export function calculateVaeCompression(width: number, height: number, factor: number) {
+  const safeWidth = Math.max(1, Math.round(width))
+  const safeHeight = Math.max(1, Math.round(height))
+  const safeFactor = Math.max(1, Math.round(factor))
+  const latentWidth = Math.ceil(safeWidth / safeFactor)
+  const latentHeight = Math.ceil(safeHeight / safeFactor)
+  const imageValues = safeWidth * safeHeight * 3
+  const latentValues = latentWidth * latentHeight * 4
+  return { width: safeWidth, height: safeHeight, factor: safeFactor, latentWidth, latentHeight, imageValues, latentValues, ratio: Number((imageValues / latentValues).toFixed(1)) }
+}
+
+export function calculateDiffusionNoise(timestep: number) {
+  const safeTimestep = Math.min(1000, Math.max(0, Math.round(timestep)))
+  const signal = Math.round((1 - safeTimestep / 1000) * 100)
+  return { timestep: safeTimestep, signal, noise: 100 - signal }
+}
+
+export function calculateCfgEffect(conditioned: number, unconditioned: number, scale: number) {
+  const safeScale = Math.min(15, Math.max(0, scale))
+  const offset = Number((safeScale * (conditioned - unconditioned)).toFixed(1))
+  return { scale: safeScale, offset, guided: Number((unconditioned + offset).toFixed(1)) }
+}
+
+export function calculateSamplingTradeoff(steps: number, millisecondsPerStep: number) {
+  const safeSteps = Math.min(100, Math.max(1, Math.round(steps)))
+  const safeMilliseconds = Math.max(1, millisecondsPerStep)
+  const quality = Math.round(100 * (1 - Math.exp(-safeSteps / 14)))
+  return { steps: safeSteps, latency: Number((safeSteps * safeMilliseconds / 1000).toFixed(1)), quality }
+}

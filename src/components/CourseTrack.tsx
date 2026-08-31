@@ -3,6 +3,7 @@ import { AlertTriangle, Check, ChevronLeft, ChevronRight, CircleHelp, FlaskConic
 import type { Chapter } from '../courseData'
 import { markProgress } from '../progress'
 import DeepPracticePanel from './course/DeepPracticePanel'
+import { ContextWindowExperiment, TokenFormatExperiment } from './course/ConceptExperiments'
 import './CourseTrack.css'
 
 type Props = {
@@ -59,6 +60,8 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
             <div className='lesson-title'><FlaskConical size={18} /><span>核心概念</span></div>
             <p>{chapter.concept}</p>
           </section>
+          {tone === 'llm' && chapter.id === 'llm-token' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><TokenFormatExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
+          {tone === 'llm' && chapter.id === 'llm-context' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><ContextWindowExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
           <section className='lesson-card formula-card'>
             <div className='lesson-title'><Sigma size={18} /><span>最小必要公式</span></div>
             <code>{chapter.formula}</code>

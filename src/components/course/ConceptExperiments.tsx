@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { applyActivation, blendDistillationTargets, calculateMlpSize, compareScalingAllocation, crossEntropyLoss, simulateGradientDescent, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateKvCacheUsage, calculateMlpSize, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -82,4 +82,51 @@ export function ScalingAllocationExperiment({ onRun }: ExperimentProps) {
   const readout = (item: typeof result.balanced) => <div style={styles.metricGrid}><span style={styles.metric}><small>参数量</small><b>{item.parametersB}B</b></span><span style={styles.metric}><small>训练数据</small><b>{item.tokensB}B</b></span><span style={styles.metric}><small>FP16 权重显存</small><b>{item.weightMemoryGb} GB</b></span></div>
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='假设起点是 7B 参数和 140B Token。算力增加后，别急着把预算全塞进参数，先比较两种分法。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='compute-budget'>训练算力预算</label><b>{multiplier} 倍</b></div><input id='compute-budget' aria-label='训练算力预算倍率' style={styles.range} type='range' min='1' max='16' step='1' value={multiplier} onChange={(event) => { setMultiplier(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />比较预算分法</button></div>} before={<><b>只扩大参数</b>{readout(result.modelOnly)}</>} after={ran ? <><b>参数与数据一起扩大</b>{readout(result.balanced)}</> : <p>选择算力预算，再比较两种分法。</p>} conclusion={ran ? '在相同训练算力下，同时增加参数和数据，能避免模型变大却没吃够数据，也显著减轻推理显存压力。' : undefined} details={<><p>这是教学近似，不是跨架构定律。因为训练计算量近似与参数量 N 和数据量 D 的乘积成正比，两者一起扩展时，各自约按算力平方根增长。</p><code style={styles.code}>compute ≈ 6 * parameters * tokens</code></>} />
+}
+
+const tokenSamples = [
+  { id: 'plain', label: '自然语言', text: 'status shipped' },
+  { id: 'json', label: 'JSON', text: '{"status":"shipped"}' },
+  { id: 'code', label: '代码', text: 'const status = "shipped";' },
+  { id: 'emoji', label: '表情', text: '状态：已发布 🚀✅' },
+]
+
+function TokenReadout({ text }: { text: string }) {
+  const result = estimateTokenCount(text)
+  return <><code style={styles.code}>{text}</code><div style={styles.metricGrid}><span style={styles.metric}><small>字符数</small><b>{result.characters}</b></span><span style={styles.metric}><small>估算 Token</small><b>{result.estimatedTokens}</b></span><span style={styles.metric}><small>字符 / Token</small><b>{(result.characters / result.estimatedTokens).toFixed(1)}</b></span></div></>
+}
+
+export function TokenFormatExperiment({ onRun }: ExperimentProps) {
+  const [sampleId, setSampleId] = useState('json')
+  const [ran, setRan] = useState(false)
+  const selected = tokenSamples.find((sample) => sample.id === sampleId) ?? tokenSamples[0]
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='模型按 Token 处理和计费，不按你看到的字符数。保持信息含义接近，只改变表达格式。' control={<div style={styles.control}><div style={styles.choiceRow}>{tokenSamples.slice(1).map((sample) => <button key={sample.id} type='button' aria-pressed={sampleId === sample.id} style={{ ...styles.choice, ...(sampleId === sample.id ? styles.activeChoice : {}) }} onClick={() => { setSampleId(sample.id); setRan(false) }}>{sample.label}</button>)}</div><button type='button' style={styles.run} onClick={run}><Play size={15} />重新分词</button></div>} before={<><b>自然语言基线</b><TokenReadout text={tokenSamples[0].text} /></>} after={ran ? <><b>{selected.label} 表达</b><TokenReadout text={selected.text} /></> : <p>选择一种表达格式，再观察 Token 账单。</p>} conclusion={ran ? '信息意思接近，不代表 Token 数相同。结构符号、代码和罕见字符都可能改变上下文占用与成本。' : undefined} details={<><p>这里使用可解释的教学估算，不代表任何商业模型的真实分词器。生产评估必须调用目标模型对应的 tokenizer。</p><code style={styles.code}>cost and context usage depend on token count</code></>} />
+}
+
+function KvReadout({ contextTokens }: { contextTokens: number }) {
+  const result = calculateKvCacheUsage(contextTokens)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>上下文</small><b>{Math.round(result.contextTokens / 1024)}K</b></span><span style={styles.metric}><small>KV Cache</small><b>{result.kvGb} GB</b></span><span style={styles.metric}><small>10 GB 预算</small><b style={{ color: result.oomRisk ? '#9e3f43' : '#2d654f' }}>{result.oomRisk ? `超出 ${Math.abs(result.remainingGb)} GB` : `剩余 ${result.remainingGb} GB`}</b></span></div>
+}
+
+export function ContextWindowExperiment({ onRun }: ExperimentProps) {
+  const [contextTokens, setContextTokens] = useState(65536)
+  const [ran, setRan] = useState(false)
+  const result = calculateKvCacheUsage(contextTokens)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='上下文越长，模型要保留的历史状态越多。固定模型和并发，只扩大窗口，观察显存怎样增长。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='context-window'>上下文长度</label><b>{Math.round(contextTokens / 1024)}K Token</b></div><input id='context-window' aria-label='上下文长度' style={styles.range} type='range' min='4096' max='131072' step='4096' value={contextTokens} onChange={(event) => { setContextTokens(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />计算显存账单</button></div>} before={<><b>短上下文基线</b><KvReadout contextTokens={4096} /></>} after={ran ? <><b>你的窗口配置</b><KvReadout contextTokens={contextTokens} /></> : <p>拖动窗口，再计算 KV Cache。</p>} conclusion={ran ? result.oomRisk ? '窗口变长不会免费获得更好答案。KV Cache 已超过预算，并发量会下降或直接显存溢出。' : '当前窗口仍在预算内，但长度每翻倍，单会话 KV Cache 也近似翻倍。' : undefined} details={<><p>示例固定 32 层、8 个 KV Head、每个 Head 128 维、FP16，并只计算单条请求的 K/V 存储。</p><code style={styles.code}>bytes = 2 * layers * kvHeads * headDim * tokens * 2</code></>} />
+}
+
+function MoeReadout({ concentration }: { concentration: number }) {
+  const result = simulateMoeRouting(concentration)
+  const items = result.loadPercentages.map((value, index) => ({ label: `专家 ${index + 1}`, value }))
+  return <><Bars items={items} /><div style={styles.metricGrid}><span style={styles.metric}><small>单专家容量</small><b>{result.capacityPerExpert} 次</b></span><span style={styles.metric}><small>溢出路由</small><b>{result.overflowRoutes}</b></span><span style={styles.metric}><small>丢弃 Token</small><b style={{ color: result.droppedTokens ? '#9e3f43' : '#2d654f' }}>{result.droppedTokens}</b></span></div></>
+}
+
+export function MoeRoutingExperiment({ onRun }: ExperimentProps) {
+  const [concentration, setConcentration] = useState(0.8)
+  const [ran, setRan] = useState(false)
+  const result = simulateMoeRouting(concentration)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='MoE 像专家团队。总人数再多，如果路由总找同一个人，热门专家仍会排队并丢任务。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='routing-concentration'>路由偏科程度</label><b>{Math.round(concentration * 100)}%</b></div><input id='routing-concentration' aria-label='MoE 路由偏科程度' style={styles.range} type='range' min='0' max='1' step='0.1' value={concentration} onChange={(event) => { setConcentration(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />分配 128 个 Token</button></div>} before={<><b>均衡路由</b><MoeReadout concentration={0} /></>} after={ran ? <><b>你的路由分布</b><MoeReadout concentration={concentration} /></> : <p>调整偏科程度，再观察专家负载。</p>} conclusion={ran ? result.droppedTokens > 0 ? '路由过度集中时，热门专家超过容量，多余任务会溢出，部分 Token 可能被丢弃。' : '负载仍在容量内。均衡路由能提高吞吐，但也要保留专家分工。' : undefined} details={<><p>示例有 8 个专家、Top-2 路由和 128 个 Token，因此共有 256 次专家分配。每位专家最多处理 40 次。</p><code style={styles.code}>overflow = sum(max(0, expertLoad - capacity))</code></>} />
 }

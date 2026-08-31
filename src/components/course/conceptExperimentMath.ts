@@ -68,3 +68,45 @@ export function compareScalingAllocation(computeMultiplier: number) {
     modelOnly: { parametersB: modelOnlyParametersB, tokensB: 140, weightMemoryGb: Number((modelOnlyParametersB * 2).toFixed(1)) },
   }
 }
+
+export function estimateTokenCount(text: string) {
+  const characters = [...text]
+  const cjkCount = characters.filter((character) => /\p{Script=Han}/u.test(character)).length
+  const emojiCount = characters.filter((character) => /\p{Extended_Pictographic}/u.test(character)).length
+  const words = text.match(/[A-Za-z0-9_]+/g) ?? []
+  const punctuationCount = characters.filter((character) => /[{}[\]":,，。！？]/u.test(character)).length
+  const estimatedTokens = Math.max(1, Math.ceil(cjkCount / 1.5) + emojiCount * 2 + words.reduce((sum, word) => sum + Math.ceil(word.length / 4), 0) + punctuationCount)
+  return { characters: characters.length, estimatedTokens }
+}
+
+export function calculateKvCacheUsage(contextTokens: number) {
+  const safeTokens = Math.min(131072, Math.max(4096, contextTokens))
+  const bytes = 2 * 32 * 8 * 128 * safeTokens * 2
+  const kvGb = Number((bytes / 1024 ** 3).toFixed(1))
+  const availableGb = 10
+  return { contextTokens: safeTokens, kvGb, availableGb, remainingGb: Number((availableGb - kvGb).toFixed(1)), oomRisk: kvGb > availableGb }
+}
+
+export function simulateMoeRouting(concentration: number) {
+  const safeConcentration = Math.min(1, Math.max(0, concentration))
+  const experts = 8
+  const totalAssignments = 256
+  const capacityPerExpert = 40
+  const dominantShare = 1 / experts + safeConcentration * 0.55
+  const otherShare = (1 - dominantShare) / (experts - 1)
+  const rawLoads = Array.from({ length: experts }, (_, index) => totalAssignments * (index === 0 ? dominantShare : otherShare))
+  const loads = rawLoads.map(Math.floor)
+  let remainder = totalAssignments - loads.reduce((sum, load) => sum + load, 0)
+  for (let index = 0; remainder > 0; index = (index + 1) % experts) {
+    loads[index] += 1
+    remainder -= 1
+  }
+  const overflowRoutes = loads.reduce((sum, load) => sum + Math.max(0, load - capacityPerExpert), 0)
+  return {
+    loads,
+    loadPercentages: roundPercentages(loads.map((load) => load / totalAssignments)),
+    capacityPerExpert,
+    overflowRoutes,
+    droppedTokens: Math.ceil(overflowRoutes / 2),
+  }
+}

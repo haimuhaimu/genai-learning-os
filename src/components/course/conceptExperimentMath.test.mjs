@@ -53,3 +53,26 @@ test('固定算力下平衡扩展比只扩参数需要更少推理显存', async
   assert.equal(result.balanced.tokensB, 280)
   assert.ok(result.balanced.weightMemoryGb < result.modelOnly.weightMemoryGb)
 })
+
+test('结构符号会增加同一字段的教学估算 token 数', async () => {
+  const { estimateTokenCount } = await import('./conceptExperimentMath.ts')
+  assert.ok(estimateTokenCount('{"status":"shipped"}').estimatedTokens > estimateTokenCount('status shipped').estimatedTokens)
+})
+
+test('上下文增长会线性推高 KV Cache 并触发显存风险', async () => {
+  const { calculateKvCacheUsage } = await import('./conceptExperimentMath.ts')
+  const short = calculateKvCacheUsage(4096)
+  const long = calculateKvCacheUsage(131072)
+  assert.equal(long.kvGb, short.kvGb * 32)
+  assert.equal(short.oomRisk, false)
+  assert.equal(long.oomRisk, true)
+})
+
+test('MoE 路由偏科会产生专家溢出和丢 token', async () => {
+  const { simulateMoeRouting } = await import('./conceptExperimentMath.ts')
+  const balanced = simulateMoeRouting(0)
+  const collapsed = simulateMoeRouting(0.8)
+  assert.equal(balanced.loads.reduce((sum, load) => sum + load, 0), 256)
+  assert.equal(balanced.droppedTokens, 0)
+  assert.ok(collapsed.droppedTokens > 0)
+})

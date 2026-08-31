@@ -5,11 +5,11 @@ import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts
 
 type ExperimentProps = { onRun?: () => void }
 
-function Bars({ items }: { items: LabeledValue[] }) {
+export function Bars({ items }: { items: LabeledValue[] }) {
   return <div style={styles.bars}>{items.map((item) => <div key={item.label} style={styles.barRow}><b>{item.label}</b><i style={styles.barTrack}><span style={{ ...styles.barFill, width: `${item.value}%` }} /></i><strong>{item.value}%</strong></div>)}</div>
 }
 
-function ExperimentFrame({ intro, control, before, after, conclusion, details }: { intro: string; control: ReactNode; before: ReactNode; after: ReactNode; conclusion?: string; details: ReactNode }) {
+export function ExperimentFrame({ intro, control, before, after, conclusion, details }: { intro: string; control: ReactNode; before: ReactNode; after: ReactNode; conclusion?: string; details: ReactNode }) {
   return <div style={styles.shell}><p style={styles.intro}>{intro}</p>{control}<div style={styles.compare}><section style={styles.compareCard}><small style={styles.label}>操作前</small>{before}</section><ArrowRight aria-hidden='true' style={styles.arrow} /><section style={{ ...styles.compareCard, ...styles.afterCard }}><small style={styles.label}>操作后</small>{after}</section></div>{conclusion ? <p style={styles.result}><b>一句话带走：</b><span>{conclusion}</span></p> : null}<details style={styles.details}><summary style={styles.summary}>为什么会这样？查看实现与数学</summary>{details}</details></div>
 }
 

@@ -1,0 +1,27 @@
+import type { CSSProperties } from 'react'
+
+export const conceptExperimentStyles = {
+  shell: { display: 'grid', gap: 14, marginTop: 12, padding: 16, border: '1px solid #d9dfea', borderRadius: 12, background: '#f8f9fc' },
+  intro: { margin: 0, color: '#596477', lineHeight: 1.65 },
+  control: { display: 'grid', gap: 7, padding: 12, border: '1px solid #dfe4ea', borderRadius: 10, background: '#fff' },
+  controlTop: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
+  range: { width: '100%', accentColor: '#5261bd' },
+  run: { display: 'inline-flex', width: 'fit-content', alignItems: 'center', gap: 7, padding: '9px 13px', border: 0, borderRadius: 8, color: '#fff', background: '#4655b5', fontWeight: 800, cursor: 'pointer' },
+  compare: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'stretch' },
+  compareCard: { flex: '1 1 210px', minWidth: 0, padding: 13, border: '1px solid #dfe4ea', borderRadius: 10, background: '#fff' },
+  afterCard: { borderColor: '#a9cdbd', background: '#f2f8f5' },
+  arrow: { alignSelf: 'center', flex: '0 0 auto', color: '#818b9b' },
+  label: { display: 'block', marginBottom: 10, color: '#737e90', fontSize: 11, fontWeight: 800 },
+  bars: { display: 'grid', gap: 8 },
+  barRow: { display: 'grid', gridTemplateColumns: '52px minmax(60px,1fr) 38px', gap: 7, alignItems: 'center', fontSize: 11 },
+  barTrack: { display: 'block', height: 9, overflow: 'hidden', borderRadius: 99, background: '#e7eaf0' },
+  barFill: { display: 'block', height: '100%', borderRadius: 99, background: '#5866bd', transition: 'width .3s ease' },
+  result: { display: 'flex', gap: 8, alignItems: 'flex-start', margin: 0, padding: 12, borderRadius: 9, color: '#2d654f', background: '#e7f4ed', lineHeight: 1.6 },
+  details: { color: '#596477', fontSize: 12, lineHeight: 1.7 },
+  summary: { cursor: 'pointer', color: '#46536a', fontWeight: 800 },
+  code: { display: 'block', marginTop: 9, padding: 11, overflow: 'auto', borderRadius: 8, color: '#34405e', background: '#eceff5', whiteSpace: 'pre-wrap' },
+  steps: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  step: { minWidth: 61, padding: 8, borderRadius: 7, background: '#eef0f5', textAlign: 'center' },
+  stepValue: { display: 'block', marginTop: 4, fontSize: 14 },
+  teacher: { margin: '0 0 10px', color: '#647084', fontSize: 11 },
+} satisfies Record<string, CSSProperties>

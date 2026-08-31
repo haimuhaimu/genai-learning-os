@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateCfgEffect, calculateDenoiseRetention, calculateDiffusionNoise, calculateEffectiveImageCost, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, calculateNegativeSuppression, calculatePromptTruncation, calculateSamplingTradeoff, calculateVaeCompression, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateApiSamplingBudget, calculateAttentionDilution, calculateCfgEffect, calculateDenoiseRetention, calculateDiffusionNoise, calculateEffectiveImageCost, calculateEmbeddingChunks, calculateKvCacheUsage, calculateMlpSize, calculateNegativeSuppression, calculatePromptTruncation, calculateReplayRetention, calculateSamplingTradeoff, calculateVaeCompression, compareCompressionOrder, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -289,4 +289,43 @@ export function EffectiveImageCostExperiment({ onRun }: ExperimentProps) {
   const result = calculateEffectiveImageCost(successRate)
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='单次生成只要 ¥0.16，看起来很便宜。但交付成本取决于多少张候选里才有一张真正可用。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='image-success-rate'>有效图片成功率</label><b>{Math.round(successRate * 100)}%</b></div><input id='image-success-rate' aria-label='有效图片成功率' style={styles.range} type='range' min='0.1' max='0.9' step='0.1' value={successRate} onChange={(event) => { setSuccessRate(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />计算真实交付成本</button></div>} before={<><b>低成功率：20%</b><CostReadout successRate={0.2} /></>} after={ran ? <><b>你的生产成功率</b><CostReadout successRate={successRate} /></> : <p>调整成功率，再计算一张有效图的成本。</p>} conclusion={ran ? result.totalUnitCost < 0.4 ? '成功率提升后，废片和重试一起减少。生产优化不能只盯单次推理价格，更要提升首次可用率。' : '大量废片把便宜的单次生成放大成昂贵的交付成本；提示、模型和审核链路都需要优化。' : undefined} details={<><p>教学假设每次生成 ¥0.16，每张最终有效图另有 ¥0.12 审核成本，暂不计人工返工和后处理。</p><code style={styles.code}>effectiveCost = generationCost / successRate + auditCost</code></>} />
+}
+
+function ApiBudgetReadout({ cacheRate }: { cacheRate: number }) {
+  const result = calculateApiSamplingBudget(1000, 1, cacheRate)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>付费教师调用</small><b>{result.paidCalls.toLocaleString()}</b></span><span style={styles.metric}><small>可处理请求</small><b>{result.processedRequests.toLocaleString()}</b></span><span style={styles.metric}><small>缓存命中</small><b>{result.cacheHits.toLocaleString()}</b></span></div>
+}
+
+export function ApiSamplingBudgetExperiment({ onRun }: ExperimentProps) {
+  const [cacheRate, setCacheRate] = useState(0.8)
+  const [ran, setRan] = useState(false)
+  const result = calculateApiSamplingBudget(1000, 1, cacheRate)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='假设教师 API 每次调用 ¥1、总预算 ¥1000。只调整可复用请求的缓存率，看看同样预算能覆盖多少数据。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='api-cache-rate'>缓存复用率</label><b>{Math.round(cacheRate * 100)}%</b></div><input id='api-cache-rate' aria-label='教师 API 缓存复用率' style={styles.range} type='range' min='0' max='0.8' step='0.1' value={cacheRate} onChange={(event) => { setCacheRate(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />花掉这笔预算</button></div>} before={<><b>每条请求都重新付费</b><ApiBudgetReadout cacheRate={0} /></>} after={ran ? <><b>复用相同教师输出</b><ApiBudgetReadout cacheRate={cacheRate} /></> : <p>调整缓存率，再观察预算覆盖量。</p>} conclusion={ran ? result.cacheHits > 0 ? `缓存让 ${result.cacheHits.toLocaleString()} 条重复请求不必再次调用教师。同样预算覆盖更多数据，但新问题的教师调用量并没有凭空增加。` : '没有缓存时，重复请求也会再次付费。先去重并版本化缓存，再决定是否扩大采样。' : undefined} details={<><p>这是预算直觉实验。真实成本还包括 Token 长度、失败重试、过滤、人审以及教师版本变化导致的缓存失效。</p><code style={styles.code}>processedRequests = paidCalls / (1 - cacheRate)</code></>} />
+}
+
+function ReplayReadout({ replayRate }: { replayRate: number }) {
+  const result = calculateReplayRetention(replayRate)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>医疗专用能力</small><b>{result.specialistScore} 分</b></span><span style={styles.metric}><small>通用能力</small><b>{result.generalScore} 分</b></span><span style={styles.metric}><small>安全拒答</small><b>{result.safetyScore} 分</b></span></div>
+}
+
+export function ReplayRetentionExperiment({ onRun }: ExperimentProps) {
+  const [replayRate, setReplayRate] = useState(0.15)
+  const [ran, setRan] = useState(false)
+  const result = calculateReplayRetention(replayRate)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='把学生训练成医疗专用助手。固定训练量，只调整旧通用数据的 Replay 比例，观察“新本事”和“老能力”怎样交换。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='replay-rate'>通用数据 Replay</label><b>{Math.round(replayRate * 100)}%</b></div><input id='replay-rate' aria-label='通用数据回放比例' style={styles.range} type='range' min='0' max='0.3' step='0.05' value={replayRate} onChange={(event) => { setReplayRate(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />重新训练学生</button></div>} before={<><b>只练医疗任务：Replay 0%</b><ReplayReadout replayRate={0} /></>} after={ran ? <><b>加入 {Math.round(replayRate * 100)}% 旧数据</b><ReplayReadout replayRate={replayRate} /></> : <p>调整 Replay，再比较三种能力。</p>} conclusion={ran ? replayRate >= 0.1 && replayRate <= 0.2 ? '少量旧数据像定期复习：专用能力只让渡一点，通用和安全能力却大幅恢复。' : result.specialistScore < 94 ? 'Replay 过多时，老能力保住了，但有限训练预算被分走，专用能力开始下降。' : 'Replay 太少，学生学会新任务的同时仍可能忘掉常识和安全边界。' : undefined} details={<><p>分数是展示灾难性遗忘方向的教学模拟。生产中必须用目标域、通用、安全和拒答等独立评测集验证。</p><code style={styles.code}>trainingMix = specialistData + replayData</code></>} />
+}
+
+function CompressionOrderReadout({ quantizeFirst }: { quantizeFirst: boolean }) {
+  const result = compareCompressionOrder(quantizeFirst)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>执行顺序</small><b>{result.order}</b></span><span style={styles.metric}><small>质量保留</small><b>{result.qualityRetention}%</b></span><span style={styles.metric}><small>返工轮次</small><b>{result.reworkRounds}</b></span></div>
+}
+
+export function CompressionOrderExperiment({ onRun }: ExperimentProps) {
+  const [quantizeFirst, setQuantizeFirst] = useState(true)
+  const [ran, setRan] = useState(false)
+  const result = compareCompressionOrder(quantizeFirst)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='蒸馏和量化都能压缩模型，但顺序不能随便换。保持模型与目标一致，只选择谁先做。' control={<div style={styles.control}><div style={styles.choiceRow}><button type='button' aria-pressed={!quantizeFirst} style={{ ...styles.choice, ...(!quantizeFirst ? styles.activeChoice : {}) }} onClick={() => { setQuantizeFirst(false); setRan(false) }}>先蒸馏，再量化</button><button type='button' aria-pressed={quantizeFirst} style={{ ...styles.choice, ...(quantizeFirst ? styles.activeChoice : {}) }} onClick={() => { setQuantizeFirst(true); setRan(false) }}>先量化，再蒸馏</button></div><button type='button' style={styles.run} onClick={run}><Play size={15} />执行压缩流程</button></div>} before={<><b>推荐基线</b><CompressionOrderReadout quantizeFirst={false} /></>} after={ran ? <><b>你的执行顺序</b><CompressionOrderReadout quantizeFirst={quantizeFirst} /></> : <p>选择顺序，再观察质量和返工。</p>} conclusion={ran ? result.qualityRetention < 90 ? '先量化会先损失教师信号和训练精度，再做蒸馏更难补回来；速度相同，质量和返工却更差。' : '先完成能力迁移，再量化部署权重，通常更容易分别定位质量损失并回滚。' : undefined} details={<><p>数值是教学对比，不是跨模型保证。生产流程仍需为每一步保留独立基线、校准集和回归结果。</p><code style={styles.code}>recommended stack: distill → quantize → speculative decoding</code></>} />
 }

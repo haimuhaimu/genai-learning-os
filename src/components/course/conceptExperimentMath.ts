@@ -210,3 +210,28 @@ export function calculateNegativeSuppression(count: number) {
   const safeCount = Math.min(10, Math.max(0, Math.round(count)))
   return { count: safeCount, errorProbability: Math.max(1, Math.round(25 * Math.exp(-safeCount * 0.4))) }
 }
+
+export function calculateApiSamplingBudget(budget: number, costPerRequest: number, cacheRate: number) {
+  const safeBudget = Math.max(1, budget)
+  const safeCost = Math.max(0.01, costPerRequest)
+  const safeCacheRate = Math.min(0.9, Math.max(0, cacheRate))
+  const paidCalls = Math.floor(safeBudget / safeCost)
+  const processedRequests = Math.floor(paidCalls / (1 - safeCacheRate))
+  return { budget: safeBudget, cacheRate: safeCacheRate, paidCalls, processedRequests, cacheHits: processedRequests - paidCalls }
+}
+
+export function calculateReplayRetention(replayRate: number) {
+  const safeRate = Math.min(0.3, Math.max(0, replayRate))
+  return {
+    replayRate: safeRate,
+    specialistScore: Math.round(98 - safeRate * 20),
+    generalScore: Math.min(95, Math.round(20 + safeRate * 400)),
+    safetyScore: Math.min(95, Math.round(30 + safeRate * 350)),
+  }
+}
+
+export function compareCompressionOrder(quantizeFirst: boolean) {
+  return quantizeFirst
+    ? { order: '先量化 → 再蒸馏', qualityRetention: 85, speedup: 4, reworkRounds: 3 }
+    : { order: '先蒸馏 → 再量化', qualityRetention: 97, speedup: 4, reworkRounds: 1 }
+}

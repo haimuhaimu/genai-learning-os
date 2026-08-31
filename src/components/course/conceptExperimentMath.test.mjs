@@ -170,3 +170,29 @@ test('增加负向提示会降低但不能归零错误特征概率', async () =>
   assert.ok(calculateNegativeSuppression(5).errorProbability < 5)
   assert.ok(calculateNegativeSuppression(10).errorProbability > 0)
 })
+
+test('缓存能扩大预算可处理请求但不会增加付费教师调用', async () => {
+  const { calculateApiSamplingBudget } = await import('./conceptExperimentMath.ts')
+  const baseline = calculateApiSamplingBudget(1000, 1, 0)
+  const cached = calculateApiSamplingBudget(1000, 1, 0.8)
+  assert.equal(baseline.processedRequests, 1000)
+  assert.equal(cached.paidCalls, 1000)
+  assert.equal(cached.processedRequests, 5000)
+})
+
+test('少量 Replay 能保住通用能力且略微让渡专用分数', async () => {
+  const { calculateReplayRetention } = await import('./conceptExperimentMath.ts')
+  const noReplay = calculateReplayRetention(0)
+  const balanced = calculateReplayRetention(0.15)
+  assert.equal(noReplay.generalScore, 20)
+  assert.equal(balanced.generalScore, 80)
+  assert.equal(balanced.specialistScore, 95)
+})
+
+test('先蒸馏再量化比反向顺序保留更多质量', async () => {
+  const { compareCompressionOrder } = await import('./conceptExperimentMath.ts')
+  const recommended = compareCompressionOrder(false)
+  const reversed = compareCompressionOrder(true)
+  assert.ok(recommended.qualityRetention > reversed.qualityRetention)
+  assert.ok(recommended.reworkRounds < reversed.reworkRounds)
+})

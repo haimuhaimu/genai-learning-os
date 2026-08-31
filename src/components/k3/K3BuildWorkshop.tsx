@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, Check, Clipboard, Download, Lightbulb, LockKeyhole, RotateCcw } from 'lucide-react';
+import { ArrowRight, Check, Clipboard, Download, FlaskConical, LockKeyhole } from 'lucide-react';
 import { markProgress, type ProgressMap } from '../../progress';
-import { checkK3Answer, K3_LEARNING_CARDS, K3_STEP_IDS, type K3StepId } from './k3BuildLearning';
+import K3ExperimentStage from './K3ExperimentStage';
+import { K3_EXPERIMENTS, K3_STEP_IDS, type K3StepId } from './k3BuildLearning';
+import { K3_INTERACTION_CSS, workshopStyles as styles } from './k3ExperimentStyles.mts';
 
 const progressKey = (id: K3StepId): string => `k3:concept:${id}`;
 
@@ -12,10 +14,10 @@ export default function K3BuildWorkshop({
   progress: ProgressMap;
   onProgress: (next: ProgressMap) => void;
 }) {
-  const [answers, setAnswers] = useState<Partial<Record<K3StepId, string>>>({});
   const [activeStep, setActiveStep] = useState<K3StepId>(() =>
     K3_STEP_IDS.find((id) => (progress[progressKey(id)] ?? 0) < 4) ?? 'evaluate',
   );
+  const [operated, setOperated] = useState<Partial<Record<K3StepId, boolean>>>({});
   const [notice, setNotice] = useState('');
   const completed = useMemo(
     () => K3_STEP_IDS.filter((id) => (progress[progressKey(id)] ?? 0) >= 4).length,
@@ -27,14 +29,20 @@ export default function K3BuildWorkshop({
     nextProgress = markProgress(`k3:build:${id}`, 4);
     onProgress(nextProgress);
     const nextIndex = K3_STEP_IDS.indexOf(id) + 1;
-    if (nextIndex < K3_STEP_IDS.length) setActiveStep(K3_STEP_IDS[nextIndex]);
-    setNotice(`${K3_LEARNING_CARDS.find((card) => card.id === id)?.learned} 下一关已解锁。`);
+    const experiment = K3_EXPERIMENTS.find((item) => item.id === id);
+    if (nextIndex < K3_STEP_IDS.length) {
+      setActiveStep(K3_STEP_IDS[nextIndex]);
+      setNotice(`已完成「${experiment?.title}」，下一关已解锁。`);
+    } else {
+      setNotice('六关已完成。你已经亲手走过一个模型从文字到 K3 的完整路径。');
+    }
   };
-  const summary = K3_LEARNING_CARDS.map((card) => card.learned).join('\n');
+
+  const summary = K3_EXPERIMENTS.map((item, index) => `${index + 1}. ${item.title}：${item.conclusion}`).join('\n');
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(summary);
-      setNotice('六条学习结论已复制。');
+      setNotice('六条实验结论已复制。');
     } catch {
       setNotice('复制失败，请使用下载总结。');
     }
@@ -43,46 +51,59 @@ export default function K3BuildWorkshop({
     const url = URL.createObjectURL(new Blob([summary], { type: 'text/plain;charset=utf-8' }));
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = 'k3-learning-summary.txt';
+    anchor.download = 'k3-karpathy-lab-summary.txt';
     anchor.click();
     URL.revokeObjectURL(url);
   };
 
-  return <div className="k3-workshop">
-    <div style={{ padding: 18, border: '1px solid #ffffff30', borderRadius: 14, marginBottom: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Lightbulb size={21} /><div><h3 style={{ margin: 0 }}>这一轮不搭环境，只学会六个判断</h3><p style={{ margin: '5px 0 0', color: '#c5d0e0' }}>每关只回答一个问题，然后看现象、解释和你真正掌握的能力。全程约 18 分钟。</p></div></div>
+  return <div className="k3-workshop" style={styles.root}>
+    <style>{K3_INTERACTION_CSS}</style>
+    <div style={styles.intro}>
+      <FlaskConical aria-hidden="true" style={styles.introIcon} />
+      <div><h3 style={styles.introTitle}>别先背术语，先把现象做出来</h3><p style={styles.introText}>六个小实验，每关只动一个关键开关。先看前后变化，再打开解释。</p></div>
+      <strong style={styles.introProgress}>{completed}/6</strong>
     </div>
-    {notice ? <p role="status" style={{ color: '#dbe6ff' }}>{notice}</p> : null}
+    {notice ? <p style={styles.notice} role="status">{notice}</p> : null}
     <div className="k3-steps">
-      {K3_LEARNING_CARDS.map((card, index) => {
-        const done = (progress[progressKey(card.id)] ?? 0) >= 4;
-        const unlocked = index === 0 || (progress[progressKey(K3_LEARNING_CARDS[index - 1].id)] ?? 0) >= 4;
-        const open = unlocked && activeStep === card.id;
-        const answer = answers[card.id];
-        const correct = answer ? checkK3Answer(card.id, answer) : false;
-        return <article key={card.id} style={{ display: 'block', padding: '20px 0', opacity: unlocked ? 1 : 0.48 }}>
-          <header style={{ display: 'grid', gridTemplateColumns: '36px 1fr auto', alignItems: 'center', gap: 12 }}>
-            <button type="button" disabled={!unlocked} aria-expanded={open} aria-label={card.title} onClick={() => setActiveStep(card.id)}>{done ? <Check size={17} /> : unlocked ? index + 1 : <LockKeyhole size={15} />}</button>
-            <div><h3>{card.title}</h3><p>{done ? card.learned : `学完后：${card.learned}`}</p></div>
-            <span>{done ? '已学会' : unlocked ? '3 分钟' : '未解锁'}</span>
+      {K3_EXPERIMENTS.map((experiment, index) => {
+        const done = (progress[progressKey(experiment.id)] ?? 0) >= 4;
+        const unlocked = index === 0 || (progress[progressKey(K3_EXPERIMENTS[index - 1].id)] ?? 0) >= 4;
+        const open = unlocked && activeStep === experiment.id;
+        return <article key={experiment.id} style={styles.step}>
+          <header style={styles.stepHeader}>
+            <button
+              className="k3-step-button"
+              type="button"
+              disabled={!unlocked}
+              aria-expanded={open}
+              aria-controls={`k3-experiment-${experiment.id}`}
+              aria-label={`第 ${index + 1} 关：${experiment.title}`}
+              style={{ ...styles.stepButton, ...(open ? styles.activeStepButton : null), cursor: unlocked ? 'pointer' : 'not-allowed' }}
+              onClick={() => setActiveStep(experiment.id)}
+            >
+              {done ? <Check size={17} /> : unlocked ? index + 1 : <LockKeyhole size={15} />}
+            </button>
+            <div><small style={styles.stepLabel}>实验 {index + 1}</small><h3 style={styles.stepTitle}>{experiment.title}</h3><p style={styles.stepLead}>{experiment.lead}</p></div>
+            <span style={styles.stepStatus}>{done ? '已完成' : unlocked ? '可操作' : '未解锁'}</span>
           </header>
-          {open ? <div style={{ margin: '18px 0 0 48px' }}>
-            <p style={{ fontSize: 18, color: '#f7f9fd', fontWeight: 700 }}>{card.question}</p>
-            <div style={{ display: 'grid', gap: 8 }}>
-              {card.options.map((option) => <button key={option.id} type="button" onClick={() => setAnswers({ ...answers, [card.id]: option.id })} style={{ padding: '13px 15px', textAlign: 'left', borderRadius: 9, border: `1px solid ${answer === option.id ? '#79a8ff' : '#ffffff30'}`, background: answer === option.id ? '#316bd433' : '#ffffff08', color: '#f7f9fd' }}>{option.label}</button>)}
+          {open ? <div id={`k3-experiment-${experiment.id}`} style={styles.experiment}>
+            <K3ExperimentStage id={experiment.id} onRun={() => setOperated((value) => ({ ...value, [experiment.id]: true }))} />
+            <div style={styles.conclusion}><Check size={18} style={styles.conclusionIcon} /><p style={styles.conclusionText}><b style={styles.conclusionLabel}>一句话带走</b>{experiment.conclusion}</p></div>
+            <details style={styles.details}><summary style={styles.summaryToggle}>为什么会这样？查看解释、代码与数学</summary><p style={styles.explanation}>{experiment.explanation}</p><pre style={styles.code}><code>{experiment.details}</code></pre></details>
+            <div className="k3-actions" style={styles.actions}>
+              <button type="button" disabled={!operated[experiment.id]} onClick={() => finish(experiment.id)}>
+                {done ? '完成复习' : index === K3_EXPERIMENTS.length - 1 ? '完成六关' : '完成这关，继续'} <ArrowRight size={16} />
+              </button>
+              {!operated[experiment.id] ? <small style={styles.actionHint}>先完成上面的核心操作</small> : null}
             </div>
-            {answer ? <div style={{ marginTop: 16, padding: 18, borderRadius: 12, background: correct ? '#2b795733' : '#a96b2033', border: `1px solid ${correct ? '#68d5a3' : '#efb36a'}` }}>
-              <b>{correct ? '判断正确' : '这个选项很常见，但需要修正'}</b>
-              <p>{card.observation}</p>
-              <p><b>为什么：</b>{card.explanation}</p>
-              <p><b>K3 里的证据：</b>{card.evidence}</p>
-              <p style={{ color: '#dbe6ff' }}><b>这一关学会：</b>{card.learned}</p>
-              <div className="k3-actions"><button type="button" onClick={() => finish(card.id)}>{done ? '复习完成' : index === K3_LEARNING_CARDS.length - 1 ? '完成学习' : '我明白了，下一关'} <ArrowRight size={16} /></button><button type="button" className="secondary" onClick={() => setAnswers({ ...answers, [card.id]: undefined })}><RotateCcw size={15} />重新选择</button></div>
-            </div> : null}
           </div> : null}
         </article>;
       })}
     </div>
-    {completed === K3_STEP_IDS.length ? <section aria-label="K3 学习总结" style={{ marginTop: 28, padding: 24, border: '1px solid #ffffff38', borderRadius: 14 }}><h3>你学会的不是六个按钮，而是六个判断</h3>{K3_LEARNING_CARDS.map((card) => <p key={card.id}><Check size={15} /> {card.learned}</p>)}<div className="k3-actions"><button type="button" onClick={copy}><Clipboard size={16} />复制总结</button><button type="button" className="secondary" onClick={download}><Download size={16} />下载总结</button></div></section> : null}
+    {completed === K3_STEP_IDS.length ? <section style={styles.summary} aria-label="K3 实验总结">
+      <span style={styles.summaryLabel}>实验记录 / 6 OF 6</span><h3 style={styles.summaryTitle}>你不是“听懂”了，而是亲手看见了</h3>
+      {K3_EXPERIMENTS.map((item) => <p key={item.id} style={styles.summaryItem}><Check size={15} style={styles.summaryIcon} /> <b>{item.title}</b>：{item.conclusion}</p>)}
+      <div className="k3-actions"><button type="button" onClick={copy}><Clipboard size={16} />复制总结</button><button type="button" className="secondary" onClick={download}><Download size={16} />下载总结</button></div>
+    </section> : null}
   </div>;
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { applyK3Guide, checkK3Answer, emptyK3Draft, estimateWeightMemory, sanitizeK3Draft, validateK3Step } from './k3BuildLearning.ts'
+import { answerWithContext, applyK3Guide, buildChatMessages, emptyK3Draft, estimateWeightMemory, K3_EXPERIMENTS, predictNextToken, routeK3Token, sanitizeK3Draft, tokenizeForLearning, trainingPrediction, validateK3Step } from './k3BuildLearning.ts'
 
 test('K3 任务定义必须包含输入输出与两条失败标准', () => {
   const draft = emptyK3Draft()
@@ -51,13 +51,37 @@ test('引导模式能为非技术用户生成可直接继续的步骤', () => {
   assert.equal(draft.evaluate.samples.split('\n').length, 10)
 })
 
-test('六关问题都有唯一正确答案', () => {
-  const answers = {
-    goal: 'goal', runtime: 'runner', model: 'no',
-    infer: 'metric', api: 'contract', evaluate: 'compare'
-  }
-  for (const [id, answer] of Object.entries(answers)) {
-    assert.equal(checkK3Answer(id, answer), true)
-    assert.equal(checkK3Answer(id, 'wrong'), false)
-  }
+test('六关实验保持旧 id，并按指定主题排列', () => {
+  assert.deepEqual(K3_EXPERIMENTS.map(({ id }) => id), ['goal', 'runtime', 'model', 'infer', 'api', 'evaluate'])
+  assert.deepEqual(K3_EXPERIMENTS.map(({ title }) => title), ['Token 化', '预测下一个 Token', '训练前后对比', '上下文影响', '续写变聊天', '回看 K3'])
+  assert.ok(K3_EXPERIMENTS.every(({ conclusion, details }) => conclusion.length > 10 && details.length > 10))
+})
+
+test('Token 化与下一个 Token 预测给出稳定、可观察的结果', () => {
+  assert.deepEqual(tokenizeForLearning('AI 很有趣！'), ['AI', '很', '有', '趣', '！'])
+  const candidates = predictNextToken('今天的天气很')
+  assert.equal(candidates[0].token, '好')
+  assert.equal(candidates.reduce((sum, item) => sum + item.score, 0), 100)
+})
+
+test('训练轮次会提高正确答案的分数', () => {
+  const before = trainingPrediction(0)
+  const after = trainingPrediction(10)
+  assert.ok(after[0].score > before[0].score)
+  assert.equal(after.reduce((sum, item) => sum + item.score, 0), 100)
+})
+
+test('上下文和消息角色会改变展示结果', () => {
+  assert.notEqual(answerWithContext(false), answerWithContext(true))
+  const brief = buildChatMessages('brief')
+  const friendly = buildChatMessages('friendly')
+  assert.deepEqual(brief.map(({ role }) => role), ['system', 'user', 'assistant'])
+  assert.notEqual(brief[2].content, friendly[2].content)
+})
+
+test('K3 路由每次只选择 896 位专家中的 16 位', () => {
+  const experts = routeK3Token('代码', 1)
+  assert.equal(experts.length, 16)
+  assert.equal(new Set(experts).size, 16)
+  assert.ok(experts.every((id) => id >= 1 && id <= 896))
 })

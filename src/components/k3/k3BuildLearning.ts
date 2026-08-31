@@ -211,110 +211,142 @@ export function validateK3Step(id: K3StepId, draft: K3Draft): string[] {
   return errors;
 }
 
-export interface K3LearningCard {
+export interface K3Experiment {
   id: K3StepId;
   title: string;
-  question: string;
-  options: { id: string; label: string }[];
-  answer: string;
-  observation: string;
+  lead: string;
+  action: string;
+  conclusion: string;
   explanation: string;
-  learned: string;
-  evidence: string;
+  details: string;
 }
 
-export const K3_LEARNING_CARDS: K3LearningCard[] = [
+export const K3_EXPERIMENTS: K3Experiment[] = [
   {
     id: 'goal',
-    title: '先定义问题，不急着选模型',
-    question: '如果想用大模型总结运营周报，第一件事应该做什么？',
-    options: [
-      { id: 'largest', label: '下载参数最大的模型' },
-      { id: 'goal', label: '写清输入、输出和失败标准' },
-      { id: 'code', label: '先学会写 Python' },
-    ],
-    answer: 'goal',
-    observation: '模型大小不能替代任务定义。同一个模型，在目标模糊时也会输出一堆看似正确的废话。',
-    explanation: '搭模型不是先选技术，而是先定义它要解决的问题，以及什么结果算失败。',
-    learned: '我能先写清任务，再判断是否需要大模型。',
-    evidence: 'K3 很强，但仍需要明确的任务和评测目标。',
+    title: 'Token 化',
+    lead: '先输入一句话，亲手把它拆成模型能接收的小块。',
+    action: '切成 Token',
+    conclusion: '模型先看到的不是整句话，而是一串可以编号的小块。',
+    explanation: '你改一个字，切分结果就可能变化。真实模型使用更大的词表；这里用简化切分，只展示过程。',
+    details: `const tokens = text.match(/[A-Za-z]+|\\d+|[\\u3400-\\u9fff]|[^\\s]/gu)\n// “AI 很有趣！” → [“AI”, “很”, “有”, “趣”, “！”]`,
   },
   {
     id: 'runtime',
-    title: '分清模型和运行工具',
-    question: '模型权重和 Ollama、vLLM 这类工具是什么关系？',
-    options: [
-      { id: 'same', label: '它们是同一个东西' },
-      { id: 'runner', label: '权重是能力数据，工具负责加载和运行' },
-      { id: 'cloud', label: '只有云端模型才需要运行工具' },
-    ],
-    answer: 'runner',
-    observation: '同一份模型权重可以被不同推理工具加载，工具会影响安装难度、速度和并发能力。',
-    explanation: '可以把权重理解成大脑里的知识，把推理工具理解成让大脑运转起来的身体。',
-    learned: '我能区分模型权重、推理框架和运行环境。',
-    evidence: '个人体验适合 Ollama，服务部署通常考虑 vLLM 等工具。',
+    title: '预测下一个 Token',
+    lead: '给模型一句没说完的话，看它怎样给几个下一步排队。',
+    action: '预测下一块',
+    conclusion: '一次生成只选下一块，完整回答是这个动作不断重复。',
+    explanation: '条越长，表示这一块此刻更可能被选中；它不是在资料库里复制整句答案。',
+    details: `candidates = score(context, vocabulary)\nnextToken = candidates.sort(byScore)[0]\n// 教学分数相加为 100%，不代表 K3 的真实输出。`,
   },
   {
     id: 'model',
-    title: '用参数量估算设备压力',
-    question: '一台只有 8 GiB 可用内存的电脑，适合直接运行 7B、16-bit 模型吗？',
-    options: [
-      { id: 'yes', label: '适合，7B 小于 8 GiB' },
-      { id: 'no', label: '不适合，权重已约 14 GiB' },
-      { id: 'context', label: '只和上下文长度有关' },
-    ],
-    answer: 'no',
-    observation: '7B × 16 bit ÷ 8，权重就约 14 GB，还没有计算运行时开销。换成 4-bit 后约 3.5 GB。',
-    explanation: '参数量决定要存多少数字，量化位宽决定每个数字占多少空间。',
-    learned: '我能用“参数量 × 位宽 ÷ 8”粗估模型能否装下。',
-    evidence: 'K3 有 2.8T 总参数，即使低比特量化也不是个人电脑规模。',
+    title: '训练前后对比',
+    lead: '让一个只会乱猜的小模型看几轮正确答案，观察它的选择怎样移动。',
+    action: '训练 10 轮',
+    conclusion: '训练就是反复看答案，再把下次猜对的机会往上推。',
+    explanation: '每轮都会把“5”的位置抬高、其他答案压低；真实训练规模更大，但反馈方向相同。',
+    details: `guess = model("2 + 3 =")\nloss = distance(guess, "5")\nmodel.adjust(loss)\n// 重复后，“5”的分数逐步升高。`,
   },
   {
     id: 'infer',
-    title: '看懂一次推理发生了什么',
-    question: '模型回答很慢时，最先应该记录哪组信息？',
-    options: [
-      { id: 'color', label: '页面颜色和按钮数量' },
-      { id: 'metric', label: '输入长度、生成速度和峰值内存' },
-      { id: 'name', label: '模型名称是否好记' },
-    ],
-    answer: 'metric',
-    observation: '模型逐个生成 token。输入越长、输出越多、模型越大，等待和资源占用通常越高。',
-    explanation: '推理不是一次性吐出答案，而是把上下文读入后，一个 token 接一个 token 地生成。',
-    learned: '我能用输入长度、生成速度和内存解释一次推理。',
-    evidence: 'K3 支持 1M 上下文，但支持很长不等于使用成本为零。',
+    title: '上下文影响',
+    lead: '同一个问题，只加一小段上文，看看回答会不会改变。',
+    action: '加入上文',
+    conclusion: '模型此刻能看到的上文，会直接改变它接下来怎么答。',
+    explanation: '模型没有自动知道你的私事；把相关信息放进上下文，它才有材料继续预测。',
+    details: `answer = generate(context + question)\n// 无上文：我不知道。\n// 有上文：钥匙在蓝色抽屉。`,
   },
   {
     id: 'api',
-    title: '理解模型如何变成产品能力',
-    question: '为什么跑通模型后，还需要封装 API？',
-    options: [
-      { id: 'pretty', label: '只是为了界面更好看' },
-      { id: 'contract', label: '让其他产品按固定格式稳定调用' },
-      { id: 'smart', label: 'API 会自动让模型更聪明' },
-    ],
-    answer: 'contract',
-    observation: 'API 约定输入、输出、超时和错误，让网页、机器人或工作流不需要理解模型内部细节。',
-    explanation: '模型是能力，API 是产品与这项能力之间的合同。',
-    learned: '我能解释模型、API 和上层产品之间的关系。',
-    evidence: '真正可用的模型服务还要处理并发、超时、鉴权和错误。',
+    title: '续写变聊天',
+    lead: '把一段普通续写，装进“谁说了什么”的消息结构里。',
+    action: '组装聊天消息',
+    conclusion: '聊天模型仍在续写，只是消息角色让它知道该用什么身份接话。',
+    explanation: '产品把系统要求、用户输入和助手位置排好，模型就在“助手”后面继续生成。',
+    details: `messages = [\n  { role: "system", content: "回答简洁" },\n  { role: "user", content: "推荐周末活动" }\n]\n// 下一段从 assistant 角色开始续写。`,
   },
   {
     id: 'evaluate',
-    title: '不用“感觉不错”判断模型',
-    question: '固定保留 10 条测试问题，最重要的作用是什么？',
-    options: [
-      { id: 'demo', label: '让演示页面看起来更丰富' },
-      { id: 'compare', label: '更换模型或提示词后可以稳定比较' },
-      { id: 'train', label: '让模型自动完成训练' },
-    ],
-    answer: 'compare',
-    observation: '固定样本能让前后结果可比较，避免只挑表现好的案例，也能暴露格式、事实和拒答问题。',
-    explanation: '评测集像一把固定的尺子。没有它，每次优化都只能凭感觉。',
-    learned: '我能用固定样本比较模型版本，而不是只看一次答案。',
-    evidence: '模型规模不是唯一指标，任务质量必须通过具体样本验证。',
+    title: '回看 K3',
+    lead: '把一个 Token 送进 K3 的“专家团队”，看它如何只叫一小组人上场。',
+    action: '让 K3 分工',
+    conclusion: 'K3 很大，但处理每个 Token 时只激活一部分专家。',
+    explanation: 'K3 有 896 个路由专家，每个 Token 选择 16 个，另有 2 个共享专家一直参与；这就是稀疏工作。',
+    details: `active = route(token, experts=896, topK=16)\nshared = 2\n// K3：2.8T 总参数，约 104B 激活参数，1M 上下文。`,
   },
 ];
 
-export const checkK3Answer = (id: K3StepId, answer: string): boolean =>
-  K3_LEARNING_CARDS.find((card) => card.id === id)?.answer === answer;
+export function tokenizeForLearning(input: string): string[] {
+  return input.trim().match(/[A-Za-z]+(?:'[A-Za-z]+)?|\d+|[\u3400-\u9fff]|[^\s]/gu) ?? [];
+}
+
+export interface TokenCandidate {
+  token: string;
+  score: number;
+}
+
+export function predictNextToken(context: string): TokenCandidate[] {
+  if (context.includes('天气')) {
+    return [
+      { token: '好', score: 46 },
+      { token: '冷', score: 26 },
+      { token: '热', score: 18 },
+      { token: '？', score: 10 },
+    ];
+  }
+  return [
+    { token: '学习', score: 42 },
+    { token: '工作', score: 28 },
+    { token: '帮忙', score: 19 },
+    { token: '思考', score: 11 },
+  ];
+}
+
+const asPercentages = (scores: number[]): number[] => {
+  const total = scores.reduce((sum, score) => sum + score, 0);
+  const values = scores.map((score) => Math.round((score / total) * 100));
+  values[0] += 100 - values.reduce((sum, value) => sum + value, 0);
+  return values;
+};
+
+export function trainingPrediction(rounds: number): TokenCandidate[] {
+  const safeRounds = Math.max(0, Math.min(30, Math.floor(rounds)));
+  const scores = asPercentages([
+    12 + safeRounds * 2.6,
+    Math.max(4, 34 - safeRounds * 0.7),
+    Math.max(3, 30 - safeRounds * 0.6),
+    Math.max(2, 24 - safeRounds * 0.5),
+  ]);
+  return ['5', '4', '6', '8'].map((token, index) => ({ token, score: scores[index] }));
+}
+
+export function answerWithContext(hasContext: boolean): string {
+  return hasContext ? '钥匙在蓝色抽屉。' : '我不知道钥匙放在哪里。';
+}
+
+export type ChatTone = 'brief' | 'friendly';
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export function buildChatMessages(tone: ChatTone): ChatMessage[] {
+  return [
+    { role: 'system', content: tone === 'brief' ? '回答简洁，只给一个建议。' : '像朋友一样温和回答，并说明理由。' },
+    { role: 'user', content: '推荐一个周末活动。' },
+    { role: 'assistant', content: tone === 'brief' ? '去附近公园散步。' : '去附近公园散步吧，能换换环境，也不需要复杂准备。' },
+  ];
+}
+
+export function routeK3Token(token: string, turn = 0): number[] {
+  const seed = Array.from(token).reduce((sum, character) => sum + (character.codePointAt(0) ?? 0), turn * 97);
+  const experts = new Set<number>();
+  let cursor = seed % 896;
+  while (experts.size < 16) {
+    experts.add(cursor + 1);
+    cursor = (cursor + 53 + experts.size * 17) % 896;
+  }
+  return [...experts];
+}

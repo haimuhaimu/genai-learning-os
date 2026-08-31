@@ -312,8 +312,8 @@ export default function K3BuildLabPage({
         <header>
           <span>04</span>
           <div>
-            <h2>六关看懂模型是怎么搭起来的</h2>
-            <p>每关先做一个判断，再用现象和 K3 参数讲清背后的知识。</p>
+            <h2>六关亲手做出大模型的工作过程</h2>
+            <p>不背公式：每关做一个操作，对照前后现象，再用一句人话带走结论。</p>
           </div>
           <strong>{completed}/6</strong>
         </header>

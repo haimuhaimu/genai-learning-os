@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ArrowRight, Play, RotateCcw } from 'lucide-react'
-import { applyActivation, blendDistillationTargets, calculateKvCacheUsage, calculateMlpSize, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
+import { applyActivation, blendDistillationTargets, calculateAttentionDilution, calculateKvCacheUsage, calculateMlpSize, compareKLDirections, compareScalingAllocation, crossEntropyLoss, estimateTokenCount, simulateGradientDescent, simulateMoeRouting, simulateResidualSignal, softmaxAtTemperature, type ActivationName, type LabeledValue } from './conceptExperimentMath'
 import { conceptExperimentStyles as styles } from './conceptExperimentStyles.mts'
 
 type ExperimentProps = { onRun?: () => void }
@@ -129,4 +129,44 @@ export function MoeRoutingExperiment({ onRun }: ExperimentProps) {
   const result = simulateMoeRouting(concentration)
   const run = () => { setRan(true); onRun?.() }
   return <ExperimentFrame intro='MoE 像专家团队。总人数再多，如果路由总找同一个人，热门专家仍会排队并丢任务。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='routing-concentration'>路由偏科程度</label><b>{Math.round(concentration * 100)}%</b></div><input id='routing-concentration' aria-label='MoE 路由偏科程度' style={styles.range} type='range' min='0' max='1' step='0.1' value={concentration} onChange={(event) => { setConcentration(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />分配 128 个 Token</button></div>} before={<><b>均衡路由</b><MoeReadout concentration={0} /></>} after={ran ? <><b>你的路由分布</b><MoeReadout concentration={concentration} /></> : <p>调整偏科程度，再观察专家负载。</p>} conclusion={ran ? result.droppedTokens > 0 ? '路由过度集中时，热门专家超过容量，多余任务会溢出，部分 Token 可能被丢弃。' : '负载仍在容量内。均衡路由能提高吞吐，但也要保留专家分工。' : undefined} details={<><p>示例有 8 个专家、Top-2 路由和 128 个 Token，因此共有 256 次专家分配。每位专家最多处理 40 次。</p><code style={styles.code}>overflow = sum(max(0, expertLoad - capacity))</code></>} />
+}
+
+function AttentionReadout({ noiseItems }: { noiseItems: number }) {
+  const result = calculateAttentionDilution(noiseItems)
+  return <><Bars items={[{ label: '关键证据', value: result.relevant }, { label: '噪声合计', value: result.noise }]} /><div style={styles.metricGrid}><span style={styles.metric}><small>噪声条数</small><b>{result.noiseItems}</b></span><span style={styles.metric}><small>关键证据权重</small><b>{result.relevant}%</b></span></div></>
+}
+
+export function AttentionDilutionExperiment({ onRun }: ExperimentProps) {
+  const [noiseItems, setNoiseItems] = useState(8)
+  const [ran, setRan] = useState(false)
+  const result = calculateAttentionDilution(noiseItems)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='关键证据的匹配分数不变，只把更多无关内容塞进上下文，看看它还能拿到多少注意力。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='attention-noise'>无关证据数量</label><b>{noiseItems} 条</b></div><input id='attention-noise' aria-label='无关证据数量' style={styles.range} type='range' min='1' max='12' step='1' value={noiseItems} onChange={(event) => { setNoiseItems(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />加入上下文</button></div>} before={<><b>只有 1 条噪声</b><AttentionReadout noiseItems={1} /></>} after={ran ? <><b>加入 {noiseItems} 条噪声</b><AttentionReadout noiseItems={noiseItems} /></> : <p>增加无关证据，再观察权重变化。</p>} conclusion={ran ? result.relevant < 50 ? '关键证据没有变差，但竞争者变多后，它得到的注意力已不足一半。更长的上下文不等于更可靠。' : '噪声较少时，关键证据仍占主要权重。RAG 应先提高相关性，再增加召回量。' : undefined} details={<><p>这是单层、单查询的教学模拟。关键证据分数固定为 3，每条噪声分数固定为 1，再一起经过 Softmax。</p><code style={styles.code}>keyWeight = exp(3) / (exp(3) + noiseCount * exp(1))</code></>} />
+}
+
+function KLReadout({ concentration }: { concentration: number }) {
+  const result = compareKLDirections(concentration)
+  const labels = ['主要答案', '次优答案', '少数答案']
+  return <><Bars items={result.student.map((value, index) => ({ label: labels[index], value }))} /><div style={styles.metricGrid}><span style={styles.metric}><small>正向 KL</small><b>{result.forward}</b></span><span style={styles.metric}><small>反向 KL</small><b>{result.reverse}</b></span></div></>
+}
+
+export function KLDivergenceExperiment({ onRun }: ExperimentProps) {
+  const [concentration, setConcentration] = useState(0.8)
+  const [ran, setRan] = useState(false)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='教师保留多个合理答案。只让学生越来越相信第一名，观察两个 KL 方向为何给出不同惩罚。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='kl-concentration'>学生答案集中度</label><b>{Math.round(concentration * 100)}%</b></div><input id='kl-concentration' aria-label='学生答案集中度' style={styles.range} type='range' min='0' max='1' step='0.1' value={concentration} onChange={(event) => { setConcentration(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />比较两个方向</button></div>} before={<><b>教师分布</b><Bars items={[{ label: '主要答案', value: 70 }, { label: '次优答案', value: 20 }, { label: '少数答案', value: 10 }]} /></>} after={ran ? <><b>学生分布</b><KLReadout concentration={concentration} /></> : <p>让学生分布变窄，再比较 KL。</p>} conclusion={ran ? concentration > 0.5 ? '学生只追第一名时，会丢掉教师保留的其他合理答案。KL 的方向决定系统更怕漏答案，还是更怕出现低概率答案。' : '学生仍覆盖教师的主要分布，两种方向的惩罚都较小。' : undefined} details={<><p>正向 KL 用教师分布作为参考，更重视覆盖教师认可的答案；反向 KL 用学生分布作为参考，更容易集中到高概率模式。</p><code style={styles.code}>forward = KL(teacher || student)
+reverse = KL(student || teacher)</code></>} />
+}
+
+function ResidualReadout({ layers }: { layers: number }) {
+  const result = simulateResidualSignal(layers)
+  return <div style={styles.metricGrid}><span style={styles.metric}><small>网络深度</small><b>{result.layers} 层</b></span><span style={styles.metric}><small>无残差信号</small><b>{result.withoutResidual}%</b></span><span style={styles.metric}><small>有残差信号</small><b>{result.withResidual}%</b></span></div>
+}
+
+export function ResidualPathExperiment({ onRun }: ExperimentProps) {
+  const [layers, setLayers] = useState(32)
+  const [ran, setRan] = useState(false)
+  const result = simulateResidualSignal(layers)
+  const run = () => { setRan(true); onRun?.() }
+  return <ExperimentFrame intro='把信息连续传过很多层。每层都会有少量损耗，只改变网络深度，观察残差通道能保留多少原始信号。' control={<div style={styles.control}><div style={styles.controlTop}><label htmlFor='transformer-layers'>Transformer 深度</label><b>{layers} 层</b></div><input id='transformer-layers' aria-label='Transformer 网络深度' style={styles.range} type='range' min='2' max='48' step='2' value={layers} onChange={(event) => { setLayers(Number(event.target.value)); setRan(false) }} /><button type='button' style={styles.run} onClick={run}><Play size={15} />让信号穿过网络</button></div>} before={<><b>浅层基线</b><ResidualReadout layers={4} /></>} after={ran ? <><b>你的深度配置</b><ResidualReadout layers={layers} /></> : <p>增加网络深度，再观察信号。</p>} conclusion={ran ? result.withoutResidual < 20 ? '网络变深后，普通路径里的信号快速衰减；残差连接提供捷径，让深层网络仍能保留和更新信息。' : '浅层网络的信号损耗还不明显，继续加深后残差连接的重要性会快速上升。' : undefined} details={<><p>这是展示累积效应的教学模型，不代表真实梯度数值。示例假设普通路径每层保留 93%，残差路径每层保留 99.5%。</p><code style={styles.code}>remainingSignal = retentionPerLayer ^ layerCount</code></>} />
 }

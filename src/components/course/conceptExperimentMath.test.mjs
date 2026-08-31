@@ -76,3 +76,28 @@ test('MoE 路由偏科会产生专家溢出和丢 token', async () => {
   assert.equal(balanced.droppedTokens, 0)
   assert.ok(collapsed.droppedTokens > 0)
 })
+
+test('增加噪声证据会稀释关键证据的注意力', async () => {
+  const { calculateAttentionDilution } = await import('./conceptExperimentMath.ts')
+  const clean = calculateAttentionDilution(1)
+  const noisy = calculateAttentionDilution(12)
+  assert.equal(clean.relevant + clean.noise, 100)
+  assert.ok(noisy.relevant < clean.relevant)
+})
+
+test('学生分布收窄时正反向 KL 呈现不同惩罚', async () => {
+  const { compareKLDirections } = await import('./conceptExperimentMath.ts')
+  const aligned = compareKLDirections(0)
+  const collapsed = compareKLDirections(1)
+  assert.equal(aligned.forward, 0)
+  assert.equal(aligned.reverse, 0)
+  assert.ok(collapsed.forward > collapsed.reverse)
+})
+
+test('网络加深时残差连接保留更多教学信号', async () => {
+  const { simulateResidualSignal } = await import('./conceptExperimentMath.ts')
+  const shallow = simulateResidualSignal(4)
+  const deep = simulateResidualSignal(48)
+  assert.ok(deep.withResidual > deep.withoutResidual)
+  assert.ok(deep.withoutResidual < shallow.withoutResidual)
+})

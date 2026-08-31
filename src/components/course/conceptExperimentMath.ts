@@ -110,3 +110,41 @@ export function simulateMoeRouting(concentration: number) {
     droppedTokens: Math.ceil(overflowRoutes / 2),
   }
 }
+
+export function calculateAttentionDilution(noiseItems: number) {
+  const safeNoiseItems = Math.min(12, Math.max(1, Math.round(noiseItems)))
+  const relevantScore = Math.exp(3)
+  const noiseScore = Math.exp(1)
+  const relevantWeight = relevantScore / (relevantScore + safeNoiseItems * noiseScore)
+  const [relevant, noise] = roundPercentages([relevantWeight, 1 - relevantWeight])
+  return { noiseItems: safeNoiseItems, relevant, noise }
+}
+
+function klDivergence(reference: number[], approximation: number[]) {
+  return reference.reduce((sum, probability, index) => sum + probability * Math.log(probability / Math.max(0.0001, approximation[index])), 0)
+}
+
+export function compareKLDirections(concentration: number) {
+  const safeConcentration = Math.min(1, Math.max(0, concentration))
+  const teacher = [0.7, 0.2, 0.1]
+  const primary = 0.7 + 0.28 * safeConcentration
+  const remainder = 1 - primary
+  const student = [primary, remainder * 2 / 3, remainder / 3]
+  const forward = Number(klDivergence(teacher, student).toFixed(3))
+  const reverse = Number(klDivergence(student, teacher).toFixed(3))
+  return {
+    teacher: roundPercentages(teacher),
+    student: roundPercentages(student),
+    forward: forward === 0 ? 0 : forward,
+    reverse: reverse === 0 ? 0 : reverse,
+  }
+}
+
+export function simulateResidualSignal(layers: number) {
+  const safeLayers = Math.min(48, Math.max(2, Math.round(layers)))
+  return {
+    layers: safeLayers,
+    withoutResidual: Math.round(100 * 0.93 ** safeLayers),
+    withResidual: Math.round(100 * 0.995 ** safeLayers),
+  }
+}

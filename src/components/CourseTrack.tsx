@@ -3,25 +3,40 @@ import { AlertTriangle, Check, ChevronLeft, ChevronRight, CircleHelp, FlaskConic
 import type { Chapter } from '../courseData'
 import { markProgress } from '../progress'
 import DeepPracticePanel from './course/DeepPracticePanel'
-import { ContextWindowExperiment, TokenFormatExperiment } from './course/ConceptExperiments'
+import { AttentionDilutionExperiment, ContextWindowExperiment, TokenFormatExperiment } from './course/ConceptExperiments'
 import './CourseTrack.css'
 
 type Props = {
   chapters: Chapter[]
   tone: 'llm' | 'image'
+  initialChapter?: string
   onOpenLab: () => void
 }
 
-export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
-  const [active, setActive] = useState(0)
+export default function CourseTrack({ chapters, tone, initialChapter, onOpenLab }: Props) {
+  const initialIndex = Math.max(0, chapters.findIndex((item) => item.id === initialChapter))
+  const [active, setActive] = useState(initialIndex)
   const [answer, setAnswer] = useState<boolean | null>(null)
   const chapter = chapters[active]
+
+  useEffect(() => {
+    const requested = chapters.findIndex((item) => item.id === initialChapter)
+    if (requested >= 0) setActive(requested)
+  }, [chapters, initialChapter])
 
   useEffect(() => {
     setAnswer(null)
     markProgress(chapter.id, 1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [chapter.id])
+
+  const goChapter = (next: number) => {
+    const safeIndex = Math.max(0, Math.min(chapters.length - 1, next))
+    setActive(safeIndex)
+    const url = new URL(window.location.href)
+    url.searchParams.set('chapter', chapters[safeIndex].id)
+    window.history.replaceState({}, '', url)
+  }
 
   return (
     <section className={`course-shell ${tone}`} aria-label={`${tone === 'llm' ? '大语言模型（LLM）' : '图像生成'}课程`}>
@@ -33,7 +48,7 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
         </div>
         <div className='rail-list'>
           {chapters.map((item, index) => (
-            <button key={item.id} className={index === active ? 'active' : ''} onClick={() => setActive(index)}>
+            <button key={item.id} className={index === active ? 'active' : ''} onClick={() => goChapter(index)}>
               <span>{item.no}</span>
               <div><strong>{item.title}</strong><small>{index < active ? '已浏览' : index === active ? '正在学习' : '待学习'}</small></div>
               {index < active && <Check size={15} />}
@@ -61,6 +76,7 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
             <p>{chapter.concept}</p>
           </section>
           {tone === 'llm' && chapter.id === 'llm-token' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><TokenFormatExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
+          {tone === 'llm' && chapter.id === 'llm-attention' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><AttentionDilutionExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
           {tone === 'llm' && chapter.id === 'llm-context' ? <section className='lesson-card experiment-card' style={{ gridColumn: '1 / -1' }}><div className='lesson-title'><FlaskConical size={18} /><span>先做实验，再解释</span></div><ContextWindowExperiment onRun={() => markProgress(chapter.id, 3)} /></section> : null}
           <section className='lesson-card formula-card'>
             <div className='lesson-title'><Sigma size={18} /><span>最小必要公式</span></div>
@@ -98,9 +114,9 @@ export default function CourseTrack({ chapters, tone, onOpenLab }: Props) {
         <DeepPracticePanel key={chapter.id} chapter={chapter} />
 
         <div className='chapter-footer'>
-          <button disabled={active === 0} onClick={() => setActive((value) => value - 1)}><ChevronLeft size={17} />上一章</button>
+          <button disabled={active === 0} onClick={() => goChapter(active - 1)}><ChevronLeft size={17} />上一章</button>
           <button className='lab-jump' onClick={onOpenLab}>去互动实验室 <FlaskConical size={17} /></button>
-          <button disabled={active === chapters.length - 1} onClick={() => setActive((value) => value + 1)}>下一章<ChevronRight size={17} /></button>
+          <button disabled={active === chapters.length - 1} onClick={() => goChapter(active + 1)}>下一章<ChevronRight size={17} /></button>
         </div>
       </article>
     </section>

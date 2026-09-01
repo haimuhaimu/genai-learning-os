@@ -169,7 +169,8 @@ export function progressPercent(progress: ProgressMap, ids: string[]) {
   return Math.round(ids.reduce((sum, id) => sum + (progress[id] ?? 0), 0) / (ids.length * 4) * 100)
 }
 
-export type LearningCapability = { id: string; label: string; score: number; description: string; route: string }
+export type LearningCapabilityId = 'mechanism' | 'experiment' | 'judgment' | 'engineering' | 'breadth'
+export type LearningCapability = { id: LearningCapabilityId; label: string; score: number; description: string; route: string }
 
 export function calculateLearningCapabilities(progress: ProgressMap): LearningCapability[] {
   const entries = Object.entries(progress).filter(([, stage]) => stage > 0)

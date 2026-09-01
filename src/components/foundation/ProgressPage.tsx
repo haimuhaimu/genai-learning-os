@@ -11,7 +11,7 @@ import {
   chapterProgressKey,
 } from '../../agentBookData'
 import { PERSONA_CHANGE_EVENT, readPersona, type PersonaId } from '../../learningPath'
-import { calculateLearningCapabilities, clearProgress, progressPercent, readProgress, stageLabels, type LearningStage, type ProgressMap } from '../../progress'
+import { clearProgress, progressPercent, readProgress, stageLabels, type LearningStage, type ProgressMap } from '../../progress'
 import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
 import { clearPaperLessonProgress, getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
 import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
@@ -19,6 +19,7 @@ import NextStepCard from './NextStepCard'
 import ProgressTransfer from './ProgressTransfer'
 import StrategyEvidenceSection from './StrategyEvidenceSection'
 import CapabilityEvidenceMatrix from './CapabilityEvidenceMatrix'
+import CapabilityProfile from './CapabilityProfile'
 
 type Go = (page: string, options?: Record<string, string>) => void
 
@@ -46,8 +47,6 @@ export default function ProgressPage({ go }: { go: Go }) {
   }, [])
 
   const foundationTotal = progressPercent(progress, foundationNodes.map((node) => node.id))
-  const capabilities = calculateLearningCapabilities(progress)
-  const weakestCapability = [...capabilities].sort((left, right) => left.score - right.score)[0]
   const weak = foundationNodes.filter((node) => (progress[node.id] ?? 0) > 0 && (progress[node.id] ?? 0) < 3)
   const phases = (Object.keys(phaseNames) as FoundationNode['phase'][]).map((phase) => {
     const nodes = foundationNodes.filter((node) => node.phase === phase)
@@ -100,10 +99,7 @@ export default function ProgressPage({ go }: { go: Go }) {
       </header>
 
       <NextStepCard progress={progress} persona={persona} go={go} compact />
-      <section aria-labelledby='capability-profile-title' style={{ margin: '18px 0', padding: '24px', border: '1px solid rgba(72, 99, 160, .18)', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(241,246,255,.96), rgba(255,255,255,.98))' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'end', flexWrap: 'wrap', marginBottom: '18px' }}><div><span style={{ color: '#5169a8', fontSize: '12px', fontWeight: 800, letterSpacing: '.08em' }}>GENAI TALENT PROFILE</span><h2 id='capability-profile-title' style={{ margin: '6px 0' }}>我的能力画像</h2><p style={{ margin: 0, color: '#5c6477' }}>把分散在各门课程里的学习记录，汇总成当前真正形成的能力。</p></div><button type='button' onClick={() => go(weakestCapability.route)} style={{ border: 0, borderRadius: '12px', padding: '10px 14px', background: '#2f5bd3', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>补齐：{weakestCapability.label}<ArrowRight size={16} /></button></header>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>{capabilities.map((capability) => <button key={capability.id} type='button' onClick={() => go(capability.route)} style={{ border: '1px solid rgba(72, 99, 160, .16)', borderRadius: '16px', padding: '16px', background: '#fff', textAlign: 'left', cursor: 'pointer' }}><span style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'baseline' }}><b>{capability.label}</b><strong style={{ color: '#2f5bd3', fontSize: '22px' }}>{capability.score}</strong></span><i aria-hidden='true' style={{ display: 'block', height: '7px', margin: '12px 0', borderRadius: '99px', background: '#e9edf6', overflow: 'hidden' }}><em style={{ display: 'block', width: `${capability.score}%`, height: '100%', borderRadius: 'inherit', background: 'linear-gradient(90deg, #315fd8, #7b5fd6)' }} /></i><small style={{ color: '#687084', lineHeight: 1.5 }}>{capability.description}</small></button>)}</div>
-      </section>
+      <CapabilityProfile progress={progress} go={go} />
       <StrategyEvidenceSection go={go} />
       <CapabilityEvidenceMatrix go={go} />
 

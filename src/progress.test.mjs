@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { clearProgress, markProgress } from './progress.ts'
+import { calculateLearningCapabilities, clearProgress, markProgress } from './progress.ts'
 
 const progressKey = 'genai-learning-progress-v1'
 
@@ -106,4 +106,24 @@ test('相同或更低阶段不会重复写入或发送变化事件', () => {
   } finally {
     mocks.restore()
   }
+})
+
+test('能力画像把实验、评审、工程与路线广度聚合为可解释分数', () => {
+  const capabilities = calculateLearningCapabilities({
+    softmax: 3,
+    'llm-token': 4,
+    'img-space': 2,
+    'agent-book:ch1': 4,
+    'agent-book:kv-cache': 3,
+  })
+  const scores = Object.fromEntries(capabilities.map((item) => [item.id, item.score]))
+  assert.equal(scores.mechanism, 80)
+  assert.equal(scores.experiment, 80)
+  assert.equal(scores.judgment, 40)
+  assert.equal(scores.engineering, 88)
+  assert.equal(scores.breadth, 80)
+})
+
+test('空进度生成零分能力画像而不是报错', () => {
+  assert.deepEqual(calculateLearningCapabilities({}).map((item) => item.score), [0, 0, 0, 0, 0])
 })

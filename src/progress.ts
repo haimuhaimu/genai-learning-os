@@ -168,3 +168,21 @@ export function progressPercent(progress: ProgressMap, ids: string[]) {
   if (!ids.length) return 0
   return Math.round(ids.reduce((sum, id) => sum + (progress[id] ?? 0), 0) / (ids.length * 4) * 100)
 }
+
+export type LearningCapability = { id: string; label: string; score: number; description: string; route: string }
+
+export function calculateLearningCapabilities(progress: ProgressMap): LearningCapability[] {
+  const entries = Object.entries(progress).filter(([, stage]) => stage > 0)
+  const average = (items: [string, LearningStage][]) => items.length ? Math.round(items.reduce((sum, [, stage]) => sum + stage, 0) / (items.length * 4) * 100) : 0
+  const agentEntries = entries.filter(([id]) => id.includes('agent') || id.includes('harness') || id.includes('kv-cache') || id.includes('pass-at-k'))
+  const advanced = entries.filter(([, stage]) => stage >= 3)
+  const reviewed = entries.filter(([, stage]) => stage >= 4)
+  const routeKinds = new Set(entries.map(([id]) => id.startsWith('llm-') ? 'llm' : id.startsWith('img-') ? 'image' : id.includes('agent') ? 'agent' : id.includes('distill') ? 'distill' : 'foundation'))
+  return [
+    { id: 'mechanism', label: '机制直觉', score: average(entries), description: '概念浏览、手算与机制实验的综合成熟度', route: 'foundation' },
+    { id: 'experiment', label: '实验能力', score: entries.length ? Math.round(advanced.length / entries.length * 100) : 0, description: '已进入实验阶段的学习节点占比', route: 'labs' },
+    { id: 'judgment', label: '评审判断', score: entries.length ? Math.round(reviewed.length / entries.length * 100) : 0, description: '完成评审与决策自检的节点占比', route: 'reviews' },
+    { id: 'engineering', label: '工程严谨', score: average(agentEntries), description: 'Agent、工具、上下文和可靠性实践成熟度', route: 'agent-book' },
+    { id: 'breadth', label: '学习广度', score: Math.round(routeKinds.size / 5 * 100), description: '已涉足的核心学习路线数量', route: 'routes' },
+  ]
+}

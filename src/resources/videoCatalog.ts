@@ -64,7 +64,7 @@ const sourceTypes: readonly VideoSourceType[] = ['youtube', 'bilibili', 'course'
 const nonDurationSources: readonly VideoSourceType[] = ['paper', 'blog', 'report']
 
 function isAllowedHost(hostname: string) {
-  return allowedHosts.some((host) => hostname === host || hostname.endsWith(`.${host}`))
+  return hostname === 'youtu.be' || allowedHosts.some((host) => hostname === host || hostname.endsWith(`.${host}`))
 }
 
 function validateTrustedUrl(url: string, label: string, fieldLabel: string, errors: string[]) {

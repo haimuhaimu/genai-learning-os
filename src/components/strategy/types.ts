@@ -47,7 +47,26 @@ export type MissionSpec = {
 }
 export type MissionMetricSnapshot = { id: string; label: string; display: string; value: number }
 export type MissionSnapshot = { controls: ControlValues; metrics: MissionMetricSnapshot[]; savedAt: string }
-export type MissionStressRecord = { presetId: string; passed: boolean; metrics: MissionMetricSnapshot[]; ranAt: string }
+export type MissionStressRecord = {
+  presetId: string
+  passed: boolean
+  baseControls?: ControlValues
+  effectiveControls?: ControlValues
+  metrics: MissionMetricSnapshot[]
+  ranAt: string
+}
+export type MissionCompletionEvidence = {
+  attemptStartedAt: string
+  formedAt: string
+  prediction: string
+  finalControls: ControlValues
+  stress: {
+    presetId: string
+    passed: boolean
+    baseControls: ControlValues
+    ranAt: string
+  }
+}
 export type MissionAttempt = { snapshot?: MissionSnapshot; lastStress?: MissionStressRecord }
 
 export type MechanismSegment = { id: string; label: string; requested: number; retained: number }

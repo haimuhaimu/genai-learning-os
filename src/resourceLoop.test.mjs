@@ -130,3 +130,44 @@ test('旧记录兼容且损坏 mission 字段不牵连既有数据', () => {
   const bad = sanitizeResourceLoopRecord({ ...old, missionAttempt: { snapshot: { controls: { bad: {} }, metrics: [{ id: 'x', label: 'x', display: 'x', value: 'NaN' }], savedAt: 'bad' }, lastStress: { presetId: '../bad', passed: 'yes' } } })
   assert.equal(bad.reviewJudgment, '旧复盘'); assert.equal(bad.missionAttempt, undefined)
 })
+
+test('新压力记录往返保留基础和有效 controls 并清洗非法值', () => {
+  const restore = noEvents(), storage = memoryStorage()
+  try {
+    saveMissionStress('context-window-budget', {
+      presetId: 'eight-k-window', passed: true,
+      baseControls: { windowSize: 16000, answerMode: 'balanced', enabled: true },
+      effectiveControls: { windowSize: 8000, answerMode: 'balanced', enabled: true },
+      metrics: [{ id: 'coverage', label: '覆盖率', display: '100%', value: 100 }],
+      ranAt: '2026-08-26T04:00:00.000Z',
+    }, storage)
+    const result = readResourceLoops(storage)['context-window-budget'].missionAttempt.lastStress
+    assert.deepEqual({ ...result.baseControls }, { windowSize: 16000, answerMode: 'balanced', enabled: true })
+    assert.deepEqual({ ...result.effectiveControls }, { windowSize: 8000, answerMode: 'balanced', enabled: true })
+  } finally { restore() }
+})
+
+test('压力 controls 仅保留合法键和值，未知但合法的 control ID 保持可读', () => {
+  const safe = sanitizeResourceLoopRecord({
+    caseId: 'rag-chunking', initialJudgment: '预测', reviewJudgment: '复盘', resources: [], updatedAt: '2026-08-26T01:00:00.000Z',
+    missionAttempt: { lastStress: {
+      presetId: 'noisy-query', passed: false, ranAt: '2026-08-26T02:00:00.000Z',
+      baseControls: { chunkSize: 420, futureControl: 'kept', nested: { bad: true }, infinite: Infinity, 'bad key': 1 },
+      effectiveControls: { chunkSize: 280, overlap: 60 },
+      metrics: [{ id: 'recall', label: '召回', display: '72%', value: 72 }],
+    } },
+  })
+  assert.deepEqual({ ...safe.missionAttempt.lastStress.baseControls }, { chunkSize: 420, futureControl: 'kept' })
+  assert.deepEqual({ ...safe.missionAttempt.lastStress.effectiveControls }, { chunkSize: 280, overlap: 60 })
+  assert.equal(safe.reviewJudgment, '复盘')
+})
+
+test('旧未绑定压力记录继续可读且不猜测 controls', () => {
+  const safe = sanitizeResourceLoopRecord({
+    caseId: 'context-window-budget', initialJudgment: '预测', reviewJudgment: '', resources: [], updatedAt: '2026-08-26T01:00:00.000Z',
+    missionAttempt: { lastStress: { presetId: 'eight-k-window', passed: true, ranAt: '2026-08-26T02:00:00.000Z', metrics: [{ id: 'coverage', label: '覆盖', display: '90%', value: 90 }] } },
+  })
+  assert.equal(safe.missionAttempt.lastStress.passed, true)
+  assert.equal(safe.missionAttempt.lastStress.baseControls, undefined)
+  assert.equal(safe.missionAttempt.lastStress.effectiveControls, undefined)
+})

@@ -17,7 +17,7 @@ import MissionBrief from './MissionBrief'
 import MissionComparisonPanel from './MissionComparisonPanel'
 import MissionStressPanel from './MissionStressPanel'
 import MissionDebriefCard from './MissionDebriefCard'
-import { deriveMissionPhase } from './missionEngine'
+import { deriveMissionPhase, getMissionCompletionGate } from './missionEngine'
 import type { CaseId } from './caseCatalog'
 import type { ControlValue, ControlValues, MissionSnapshot, MissionStressRecord, RouteId } from './types'
 
@@ -45,23 +45,64 @@ export default function StrategyCaseRunner({ caseId, go }: Props) {
   const update = (id: string, value: ControlValue) => {
     const next = { ...controls, [id]: value }, nextEvidence = spec.compute(next)
     setControls(next); setExplored(true)
+    if (spec.mission) setFormedSummary('')
     saveStrategyEvidence({ caseId: spec.id, routeId: spec.routeId, level: 1, controls: next, metrics: nextEvidence.metrics.map(({ id: metricId, label, display, value: metricValue }) => ({ id: metricId, label, display, value: metricValue })), summaryText: '', updatedAt: new Date().toISOString() })
   }
-  const saveSummary = (text: string) => saveStrategyEvidence({ caseId: spec.id, routeId: spec.routeId, level: 2, controls, metrics, summaryText: text, updatedAt: new Date().toISOString() })
+  const saveSummary = (text: string) => {
+    const now = new Date().toISOString()
+    if (!spec.mission) {
+      saveStrategyEvidence({ caseId: spec.id, routeId: spec.routeId, level: 2, controls, metrics, summaryText: text, updatedAt: now })
+      return true
+    }
+    const currentRecord = readResourceLoop(caseKey)
+    const currentStress = currentRecord?.missionAttempt?.lastStress
+    const gate = getMissionCompletionGate({
+      prediction: currentRecord?.initialJudgment && currentRecord.initialUpdatedAt ? { text: currentRecord.initialJudgment, lockedAt: currentRecord.initialUpdatedAt } : undefined,
+      schema: spec.controls,
+      currentControls: controls,
+      stress: currentStress,
+    })
+    if (!gate.ready || !currentRecord?.initialUpdatedAt || !currentStress?.baseControls) return false
+    const missionCompletion = {
+      attemptStartedAt: currentRecord.initialUpdatedAt,
+      formedAt: now,
+      prediction: currentRecord.initialJudgment,
+      finalControls: { ...controls },
+      stress: { presetId: currentStress.presetId, passed: currentStress.passed, baseControls: { ...currentStress.baseControls }, ranAt: currentStress.ranAt },
+    }
+    const saved = saveStrategyEvidence({
+      caseId: spec.id,
+      routeId: spec.routeId,
+      level: 2,
+      controls,
+      metrics,
+      summaryText: text,
+      updatedAt: now,
+      missionCompletion,
+      missionEvidence: currentStress.passed ? { passedStressPresetIds: [currentStress.presetId], lastStressAt: currentStress.ranAt } : undefined,
+    })
+    return saved.some((item) => item.caseId === spec.id && item.missionCompletion?.formedAt === now)
+  }
   const resources = <ResourceLearningLoop caseId={caseKey} question={spec.question} hideInitialStep><StrategyVideoPanel videos={videoSelection.videos} remaining={videoSelection.remaining} onViewAll={() => go('videos')} onOpen={(video) => touchResource(caseKey, { type: 'video', id: video.id })} /><StrategyPaperPanel papers={papers} onOpen={recordPaperTouch} onOpenLab={(paper) => { recordPaperTouch(paper); go('paper-lab', { paper: paper.id }) }} onViewAll={() => go('papers')} /></ResourceLearningLoop>
   const shared = <><StrategyPredictionPanel caseId={caseKey} question={spec.question} mission={Boolean(spec.mission)} onLockChange={onLockChange} /><StrategyControlsPanel schema={spec.controls} values={controls} onChange={update} />{spec.mechanism ? <MechanismSandboxPanel spec={spec.mechanism} data={spec.mechanism.build(controls, evidence)} /> : null}<EvidencePanel fixedDataTitle={spec.fixedDataTitle} fixedDataRows={spec.fixedDataRows} evidence={evidence} /></>
   const shellProps = { spec, onExit: () => go(spec.routeId === 'ai-decision-math' ? 'decision-math' : 'strategy-cases'), exitLabel: spec.routeId === 'ai-decision-math' ? '返回数学路线' : undefined }
   if (!spec.mission) return <StrategyCaseShell {...shellProps}>{shared}<DecisionSummaryPanel summary={summary} onSave={saveSummary} onBackToCenter={() => go('strategy-cases')} nextAction={nextAction} />{resources}</StrategyCaseShell>
-  const phase = deriveMissionPhase({ predictionLocked, explored, snapshot, lastStress: stress, formed: Boolean(formedSummary) })
+  const completionGate = getMissionCompletionGate({
+    prediction: record?.initialJudgment && record.initialUpdatedAt ? { text: record.initialJudgment, lockedAt: record.initialUpdatedAt } : undefined,
+    schema: spec.controls,
+    currentControls: controls,
+    stress,
+  })
+  const phase = deriveMissionPhase({ predictionLocked, explored, snapshot, lastStress: stress, formed: Boolean(formedSummary), completionGate })
   return <StrategyCaseShell {...shellProps}>
     <MissionBrief mission={spec.mission} evidence={evidence} />
     <p className='mission-phase' aria-label='当前任务阶段'>当前阶段：<b>{phaseLabels[phase]}</b></p>
     {shared}
     {!predictionLocked ? <p className='mission-evidence-note'>你可以先探索，但锁定预测后才能形成完整任务证据。</p> : null}
     <MissionComparisonPanel caseId={caseKey} mission={spec.mission} controls={controls} baseline={baseline} current={evidence} snapshot={snapshot} onSnapshot={setSnapshot} />
-    <MissionStressPanel caseId={caseKey} spec={spec} controls={controls} result={stress} onResult={setStress} />
-    <DecisionSummaryPanel summary={summary} onSave={saveSummary} onFormed={setFormedSummary} onBackToCenter={() => go('strategy-cases')} nextAction={nextAction} />
-    <MissionDebriefCard title={spec.title} mission={spec.mission} prediction={readResourceLoop(caseKey)?.initialJudgment} controls={controls} baseline={baseline} current={evidence} stress={stress} summary={formedSummary} formed={Boolean(formedSummary)} />
+    <MissionStressPanel caseId={caseKey} spec={spec} controls={controls} result={stress} freshness={completionGate.stressFreshness} onResult={setStress} />
+    <DecisionSummaryPanel summary={summary} onSave={saveSummary} onFormed={setFormedSummary} formationGate={completionGate} onBackToCenter={() => go('strategy-cases')} nextAction={nextAction} />
+    <MissionDebriefCard title={spec.title} mission={spec.mission} prediction={record?.initialJudgment} controls={controls} baseline={baseline} current={evidence} stress={completionGate.stressFreshness.fresh ? stress : undefined} summary={formedSummary} formed={Boolean(formedSummary) && completionGate.ready} />
     {resources}
   </StrategyCaseShell>
 }

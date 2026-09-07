@@ -21,3 +21,4 @@ if (import.meta.env?.DEV && partition.issues.length) {
 export const visibleContentEntries = partition.validEntries
 export const contentById: ReadonlyMap<string, ContentEntry> = new Map(visibleContentEntries.map((entry) => [entry.id, entry]))
 export const registryIssues = partition.issues
+export { applicationScenarioEntries } from '../applicationScenarios'

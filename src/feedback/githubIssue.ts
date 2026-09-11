@@ -42,6 +42,18 @@ function answer(value: string) {
   return clipFeedbackText(value) || '未填写'
 }
 
+export function buildFeedbackIssueTitle(draft: FeedbackDraft) {
+  const signals = [
+    draft.learningGain ? `${draft.learningGain}/5` : '',
+    draft.depth ? depthLabels[draft.depth] : '',
+    draft.workTransfer ? `工作迁移：${transferLabels[draft.workTransfer]}` : '',
+  ].filter(Boolean)
+
+  return signals.length
+    ? `学习反馈：${signals.join(' · ')}`
+    : '学习反馈：帮助我们改进 GenAI Learning OS'
+}
+
 export function buildFeedbackMarkdown(draft: FeedbackDraft, routeContext?: FeedbackRouteContext) {
   const gain = draft.learningGain ? `${draft.learningGain} / 5` : '未选择'
   const routeLines = routeContext
@@ -71,7 +83,7 @@ export function buildFeedbackMarkdown(draft: FeedbackDraft, routeContext?: Feedb
 
 export function buildGitHubIssueUrl(draft: FeedbackDraft, routeContext?: FeedbackRouteContext) {
   const url = new URL(GITHUB_ISSUE_URL)
-  url.searchParams.set('title', '学习反馈：帮助我们改进 GenAI Learning OS')
+  url.searchParams.set('title', buildFeedbackIssueTitle(draft))
   url.searchParams.set('body', buildFeedbackMarkdown(draft, routeContext))
   return url.toString()
 }

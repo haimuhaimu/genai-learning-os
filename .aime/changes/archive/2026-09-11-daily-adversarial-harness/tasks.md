@@ -1,5 +1,0 @@
-- [x] 创建失败优先测试以复现 RAG 切块空洞
-- [x] 修改 `makeDocumentChunks` 逻辑以消除空洞
-- [x] 运行全量 `pnpm ci:check` 验证修复与门禁
-- [x] 归档 AimeSpec
-- [x] 提交改动并部署预览

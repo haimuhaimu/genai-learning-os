@@ -157,7 +157,8 @@ export const DEFAULT_RAG_CHUNKING = { chunkSize: 256, overlap: .2, splitter: '�
 function makeDocumentChunks(document: MiniDocument, chunkSize: number, overlap: number, splitter: string) {
   const chunks: SimulatedChunk[] = []
   const rawStep = Math.max(1, Math.round(chunkSize * (1 - overlap)))
-  const step = splitter === '句子' ? Math.max(48, Math.round(rawStep / 48) * 48) : rawStep
+  const alignedStep = Math.round(rawStep / 48) * 48
+  const step = splitter === '句子' ? Math.max(48, Math.min(rawStep, alignedStep)) : rawStep
   for (let start = 0, index = 0; start < document.tokens; start += step, index += 1) {
     const end = Math.min(document.tokens, start + chunkSize)
     const hits = document.evidence.filter((span) => span.start < end && span.end > start)

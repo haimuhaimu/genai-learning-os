@@ -4,6 +4,7 @@ import { centerCaseCatalog, strategyCaseCatalog } from './caseCatalog.ts'
 import {
   calculateContextWindow,
   calculateRagChunking,
+  simulateRagChunking,
   DEFAULT_CONTEXT_WINDOW,
   DEFAULT_RAG_CHUNKING,
 } from './mechanismCases.ts'
@@ -64,6 +65,16 @@ test('两个 mission 冻结默认与压力 raw 指标和失败旋钮', async () 
   assert.deepEqual(rag.failedControlIds, ['overlap'])
   assert.equal(runStressPreset(contextWindowBudgetSpec, { ...contextWindowBudgetSpec.defaults, historyTurns: 2, answerMode: '短答' }, contextWindowBudgetSpec.mission.stressPresets[0]).evaluation.passed, true)
   assert.equal(runStressPreset(ragChunkingSpec, { ...ragChunkingSpec.defaults, chunkSize: 128 }, ragChunkingSpec.mission.stressPresets[0]).evaluation.passed, true)
+})
+
+test('句子切块在 overlap=0 时不应产生 token 覆盖空洞', () => {
+  const result = simulateRagChunking({ chunkSize: 800, overlap: 0, splitter: '句子', topK: 10, contextCap: 8000 })
+  const policyChunks = result.chunks.filter((c) => c.id.startsWith('policy')).sort((a, b) => parseInt(a.rangeLabel) - parseInt(b.rangeLabel))
+  for (let i = 0; i < policyChunks.length - 1; i += 1) {
+    const currentEnd = parseInt(policyChunks[i].rangeLabel.split('-')[1])
+    const nextStart = parseInt(policyChunks[i + 1].rangeLabel.split('-')[0])
+    assert.ok(nextStart <= currentEnd, `空洞: ${currentEnd}-${nextStart}`)
+  }
 })
 
 test('机制与 mission 计算不读取随机数或网络', async () => {

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { contentEntries } from './registry/index.ts'
+import * as registry from './registry/index.ts'
 import { validateRegistry } from './validateRegistry.ts'
 
+const { contentEntries } = registry
 const base = contentEntries.find((entry) => entry.type === 'course')
 const clone = (patch) => ({ ...base, id: 'course:test', ...patch })
 
@@ -24,4 +25,20 @@ test('校验器报告悬空关联与错型关联', () => {
   assert.ok(issues.some((issue) => issue.code === 'wrong-relation-type' && issue.field === 'relatedLabIds'))
   assert.ok(issues.some((issue) => issue.code === 'missing-relation' && issue.field === 'relatedCaseIds'))
   assert.ok(issues.some((issue) => issue.code === 'wrong-relation-type' && issue.field === 'relatedCaseIds'))
+})
+
+test('工作场景入口指向四个不重复的已发布案例', () => {
+  const scenarios = registry.applicationScenarioEntries
+
+  assert.ok(Array.isArray(scenarios), '工作场景入口尚未导出')
+  assert.equal(scenarios.length, 4)
+  assert.equal(new Set(scenarios.map((scenario) => scenario.entry.id)).size, scenarios.length)
+
+  for (const scenario of scenarios) {
+    assert.ok(scenario.role.trim())
+    assert.ok(scenario.question.trim())
+    assert.equal(scenario.entry.type, 'case')
+    assert.equal(scenario.entry.status, 'published')
+    assert.equal(registry.contentById.get(scenario.entry.id), scenario.entry)
+  }
 })

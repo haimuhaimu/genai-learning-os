@@ -71,7 +71,10 @@ for (const file of files) {
     }
     if (tag.name === 'a' && attribute(tag.raw, 'target') === '_blank') {
       const rel = new Set((attribute(tag.raw, 'rel') ?? '').split(/\s+/).filter(Boolean))
-      if (!rel.has('noopener')) failures.push(`${location}：target="_blank" 必须包含 rel="noopener"`)
+      const requiredRel = ['noopener', 'noreferrer']
+      if (requiredRel.some((token) => !rel.has(token))) {
+        failures.push(`${location}：target="_blank" 必须包含 rel="noopener noreferrer"`)
+      }
     }
   }
 }
@@ -105,4 +108,4 @@ if (failures.length) {
   console.error(`静态 a11y 检查失败：\n- ${failures.join('\n- ')}`)
   process.exit(1)
 }
-console.log('静态 a11y 检查通过：非交互 onClick、新窗口 noopener、skip link/main-content 契约均正常。')
+console.log('静态 a11y 检查通过：非交互 onClick、新窗口 noopener/noreferrer、skip link/main-content 契约均正常。')

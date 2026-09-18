@@ -7,9 +7,13 @@ export function computeExample(controls: ControlValues): DecisionEvidence {
   const reviewRate = Number(controls.reviewRate)
   const policy = String(controls.policy)
   const explain = Boolean(controls.explain)
-  const preventedLoss = reviewRate * (policy === 'safe' ? 3.2 : 2.4)
+  const highValueReviewRate = Math.min(reviewRate, 40)
+  const marginalReviewRate = Math.max(0, reviewRate - 40)
+  const preventedLoss = highValueReviewRate * (policy === 'safe' ? 3.2 : 2.4)
+    + marginalReviewRate * (policy === 'safe' ? 1.1 : 0.8)
   const handlingCost = reviewRate * 1.5 + (explain ? 8 : 0)
   const netValue = Math.max(0, preventedLoss - handlingCost)
+  const shouldStopExpanding = reviewRate > 40 && handlingCost >= preventedLoss
 
   return {
     metrics: [
@@ -20,8 +24,14 @@ export function computeExample(controls: ControlValues): DecisionEvidence {
     costs: [{ label: '人工复核', value: `${reviewRate}%` }],
     feedbackSource: '固定工单样本中的复核结果与原因标签。',
     feedbackSignals: [`${reviewRate}% 的工单产生人工反馈`],
-    nextTrainingAction: reviewRate < 20 ? '提高高风险切片采样率' : '补充复核原因标签',
-    caution: '教学估算不代表生产收益。',
+    nextTrainingAction: shouldStopExpanding
+      ? '停止扩大复核，先降低单次处理成本'
+      : reviewRate < 20
+        ? '提高高风险切片采样率'
+        : '补充复核原因标签',
+    caution: shouldStopExpanding
+      ? '处理成本已达到避免损失；教学阈值不代表生产收益。'
+      : '教学估算不代表生产收益。',
   }
 }
 

@@ -12,7 +12,7 @@ export function GradientDescentLab({ nodeId }: { nodeId?: string }) {
   const [velocity, setVelocity] = useState(0)
   const x = points[points.length - 1]
   const gradient = 2 * x * (explode ? 8 : 1)
-  const status = Math.abs(x) < .08 ? '收敛' : Math.abs(x) > 20 ? '发散' : points.length > 4 && Math.sign(points.at(-1) ?? 0) !== Math.sign(points.at(-2) ?? 0) ? '震荡' : '迭代中'
+  const status = Math.abs(x) < .08 ? '收敛' : Math.abs(x) > 20 ? '发散' : points.length > 4 && Math.sign(x ?? 0) !== Math.sign(points[points.length - 2] ?? 0) ? '震荡' : '迭代中'
   const step = () => { const nextVelocity = momentum * velocity + gradient; const next = clamp(x - lr * nextVelocity, -50, 50); setVelocity(nextVelocity); setPoints((old) => [...old, next].slice(-24)); if (nodeId) markProgress(nodeId, 3) }
   const runSix = () => {
     let nextX = x

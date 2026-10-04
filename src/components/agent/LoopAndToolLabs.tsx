@@ -41,6 +41,7 @@ export function LoopSimulator() {
     return base
   }, [task, fault, retry, maxSteps, tokenBudget, toolBudget, wallClock])
 
+  const lastRow = trace[trace.length - 1]
   const total = trace.reduce((acc, row) => ({ tokens: acc.tokens + row.tokens, latency: acc.latency + row.latency, cost: acc.cost + row.cost }), { tokens: 0, latency: 0, cost: 0 })
   const run = () => setTrace(generated.slice(0, maxSteps))
   const step = () => setTrace((current) => current.length >= generated.length ? current : [...current, generated[current.length]])
@@ -61,7 +62,7 @@ export function LoopSimulator() {
     <div className='run-actions'><button onClick={run}><Play />运行</button><button onClick={step}><StepForward />单步执行</button><button className='secondary' onClick={() => setTrace([])}><RotateCcw />重置</button><span>{checkpoint ? 'Checkpoint ON' : 'No checkpoint'} · {stopPolicy}</span></div>
     <div className='trace-layout'>
       <div className='agent-trace'>{trace.length ? trace.map((row, index) => <div className={row.tone ?? ''} key={`${row.stage}-${index}`}><i>{index + 1}</i><b>{row.stage}</b><p>{row.detail}</p><span>{row.tokens} tok<br />{row.latency} ms<br />${row.cost.toFixed(3)}</span></div>) : <div className='empty-trace'>点击“运行”或“单步执行”开始状态迁移。</div>}</div>
-      <aside className='trace-summary'><span>RUN BUDGET</span><strong>{total.tokens}</strong><small>/ {tokenBudget} tokens</small><div><b>{(total.latency / 1000).toFixed(2)}s</b><small>wall-clock</small></div><div><b>${total.cost.toFixed(3)}</b><small>教学成本</small></div><div className='termination'><CircleStop /><p><small>TERMINATION REASON</small><b>{trace.at(-1)?.stage === 'STOP' ? trace.at(-1)?.detail.split('：')[0] : 'RUNNING / NOT STARTED'}</b></p></div></aside>
+      <aside className='trace-summary'><span>RUN BUDGET</span><strong>{total.tokens}</strong><small>/ {tokenBudget} tokens</small><div><b>{(total.latency / 1000).toFixed(2)}s</b><small>wall-clock</small></div><div><b>${total.cost.toFixed(3)}</b><small>教学成本</small></div><div className='termination'><CircleStop /><p><small>TERMINATION REASON</small><b>{lastRow?.stage === 'STOP' ? lastRow.detail.split('：')[0] : 'RUNNING / NOT STARTED'}</b></p></div></aside>
     </div>
     <div className={`verification-compare ${stopPolicy === '模型自报成功' ? 'risky' : ''}`}><AlertTriangle /><div><b>“模型说完成了” ≠ Verified Success</b><p>普通自报只证明生成了完成陈述；Verified Success 需要外部状态、证据 checksum 或副作用回读通过。当前策略：<strong>{stopPolicy}</strong>。</p></div></div>
   </div>

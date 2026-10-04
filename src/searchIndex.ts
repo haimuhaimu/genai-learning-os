@@ -42,7 +42,7 @@ const utilityEntries: SearchDestination[] = [
 ]
 
 const registryEntries: SearchDestination[] = visibleContentEntries.map((entry) => {
-  const legacyId = 'legacyId' in entry ? entry.legacyId : entry.id.split(':').at(-1) ?? entry.id
+  const legacyId = 'legacyId' in entry ? entry.legacyId : entry.id.split(':').pop() ?? entry.id
   const id = entry.type === 'case'
     ? `strategy-${legacyId}`
     : entry.type === 'lab'

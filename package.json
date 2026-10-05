@@ -36,6 +36,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "node scripts/run-tests.mjs",
+    "test:browser": "playwright test",
     "check:a11y": "node scripts/check-a11y-static.mjs",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:route-chunks": "node scripts/check-route-chunks.mjs",
@@ -53,6 +54,7 @@
     "recharts": "^2.15.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@eslint/js": "^9.17.0",
     "@types/node": "^22.10.7",
     "@types/react": "^18.3.18",

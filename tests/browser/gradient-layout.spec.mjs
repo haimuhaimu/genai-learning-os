@@ -51,3 +51,18 @@ for (const width of [320, 390, 768, 1280]) {
     await expectPageToFit()
   })
 }
+
+// These experiments share the same two-column container and mobile override.
+for (const experiment of ['softmax-ce', 'mlp-forward', 'transformer-block']) {
+  test(`shared ${experiment} panels stay inside a 320px viewport`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 })
+    await page.goto(`/?page=foundation-lab&experiment=${experiment}`)
+    await expect(page.locator('.foundation-console.two-col')).toBeVisible()
+    for (const panel of await page.locator('.foundation-console > section').all()) {
+      const bounds = await panel.boundingBox()
+      expect(bounds).not.toBeNull()
+      expect(bounds.x).toBeGreaterThanOrEqual(0)
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(321)
+    }
+  })
+}

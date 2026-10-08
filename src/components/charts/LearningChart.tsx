@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ResponsiveContainer } from 'recharts'
 
 export type ChartDatum = Record<string, string | number>
@@ -16,7 +17,7 @@ const colors = ['#2759d7', '#6987df', '#9aafe9']
 const formatValue = (format: LearningChartProps['valueFormat'], value: number) => format === 'percent' ? `${Math.round(value * 100)}%` : format === 'tflops' ? `${value.toFixed(2)} TFLOPs` : String(Math.round(value * 100) / 100)
 const colorOf = (series: ChartSeries[], index: number) => series[index].color ?? colors[index % colors.length]
 
-function Chart({ data, kind, xKey, series, valueFormat, showLegend = true, width = 640, height = 280 }: LearningChartProps & { width?: number; height?: number }) {
+function Chart({ data, kind, xKey, series, valueFormat, showLegend = true, width, height = 280 }: LearningChartProps & { width: number }) {
   const top = showLegend ? 42 : 16, left = 58, right = 18, bottom = 42
   const w = Math.max(1, width - left - right), h = Math.max(1, height - top - bottom)
   const values = data.flatMap((item) => series.map(({ key }) => Number(item[key])).filter(Number.isFinite))
@@ -35,5 +36,8 @@ function Chart({ data, kind, xKey, series, valueFormat, showLegend = true, width
 }
 
 export default function LearningChart(props: LearningChartProps) {
-  return <ResponsiveContainer width='100%' height={props.height ?? 280}><Chart {...props} /></ResponsiveContainer>
+  const [width, setWidth] = useState(0)
+  // Recharts 3 no longer clones custom children with measured dimensions.
+  // Use the public resize callback to keep our SVG geometry responsive.
+  return <ResponsiveContainer width='100%' height={props.height ?? 280} onResize={(measuredWidth) => setWidth(Math.round(measuredWidth))}><Chart {...props} width={width} /></ResponsiveContainer>
 }

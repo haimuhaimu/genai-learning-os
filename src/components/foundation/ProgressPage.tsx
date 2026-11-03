@@ -20,6 +20,7 @@ import ProgressTransfer from './ProgressTransfer'
 import StrategyEvidenceSection from './StrategyEvidenceSection'
 import CapabilityEvidenceMatrix from './CapabilityEvidenceMatrix'
 import CapabilityProfile from './CapabilityProfile'
+import { JourneyEntry } from '../journey/JourneyNavigation'
 
 type Go = (page: string, options?: Record<string, string>) => void
 
@@ -99,6 +100,7 @@ export default function ProgressPage({ go }: { go: Go }) {
       </header>
 
       <NextStepCard progress={progress} persona={persona} go={go} compact />
+      <JourneyEntry go={go} />
       <CapabilityProfile progress={progress} go={go} />
       <StrategyEvidenceSection go={go} />
       <CapabilityEvidenceMatrix go={go} />

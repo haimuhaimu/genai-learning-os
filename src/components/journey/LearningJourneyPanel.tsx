@@ -6,6 +6,7 @@ import {
 } from '../../learningJourney'
 import { PROGRESS_CHANGE_EVENT, readProgress } from '../../progress'
 import { replayPlaygroundReceipt } from '../../playgroundReplay'
+import { rememberCurrentJourney } from '../../journeyResume'
 import ModelCoachPanel from './ModelCoachPanel'
 
 type Go = (page: string, options?: Record<string, string>) => void
@@ -124,6 +125,7 @@ export default function LearningJourneyPanel({ go, playgroundBase, verify = repl
 
   function commit(next: JourneyState) {
     if (!writeJourney(next)) { tell('浏览器暂时不能保存。当前结果仍在页面里，原有记录没有改变；请检查存储空间后再试。', true); return false }
+    rememberCurrentJourney('model-learning')
     setState(next); setAnswers(next.reflection ?? blankAnswers()); return true
   }
 

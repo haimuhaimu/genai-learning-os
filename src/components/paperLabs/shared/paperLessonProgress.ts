@@ -3,6 +3,7 @@ import type { LessonStep } from './goldenLessonModel.ts'
 
 export const PAPER_LESSON_PROGRESS_KEY = 'genai-paper-lesson-progress-v1'
 export const PAPER_LESSON_PROGRESS_EVENT = 'genai-paper-lesson-progress-change'
+export const MOE_NOTEBOOK_KEY = 'genai-moe-experiment-notebook-v1'
 const MAX_ENTRIES = 100
 const PAPER_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
@@ -53,11 +54,25 @@ export function savePaperLessonStep(paperId: string, step: LessonStep, completed
 
 export function clearPaperLessonProgress(): boolean {
   try {
+    // Empty reset marker contains no experiment; its unique raw value invalidates queued old leases.
+    localStorage.setItem(MOE_NOTEBOOK_KEY, JSON.stringify({ schemaVersion: 1, resetToken: crypto.randomUUID() }))
     localStorage.removeItem(PAPER_LESSON_PROGRESS_KEY)
     window.dispatchEvent(new CustomEvent(PAPER_LESSON_PROGRESS_EVENT, { detail: { reason: 'clear' } }))
     return true
   } catch {
     console.warn('案例课程进度暂时无法从本机存储清除。')
+    return false
+  }
+}
+
+export async function clearPaperLessonProgressSafely(clearOtherProgress = () => true): Promise<boolean> {
+  const clear = () => clearOtherProgress() && clearPaperLessonProgress()
+  try {
+    // Use the same exclusive lock as MoE saves, including when its course has unmounted.
+    const locks = typeof navigator === 'undefined' ? undefined : navigator.locks
+    return locks ? await locks.request(MOE_NOTEBOOK_KEY, clear) : clear()
+  } catch {
+    console.warn('案例课程仍有操作未能安全结束，暂未清空本机进度。')
     return false
   }
 }

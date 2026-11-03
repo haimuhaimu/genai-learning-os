@@ -31,15 +31,16 @@ export function ContinueButton({ onClick, disabled = false, children = '进入�
   return <button className='golden-primary-button' type='button' onClick={onClick} disabled={disabled}>{children}<ChevronRight aria-hidden='true' /></button>
 }
 
-export function GoldenLessonShell({ step, eyebrow, title, lessonRef, children }: {
+export function GoldenLessonShell({ step, eyebrow, title, lessonRef, children, trackProgress = true }: {
   step: LessonStep
   eyebrow: string
   title: string
   lessonRef?: Ref<HTMLDivElement>
   children: ReactNode
+  trackProgress?: boolean
 }) {
   const { nextPaperId, goToNext, goToHub } = usePaperLesson()
-  usePaperLessonProgress(step)
+  usePaperLessonProgress(step, trackProgress)
   return (
     <div className='golden-lesson' ref={lessonRef} tabIndex={-1}>
       <StepHeader step={step} eyebrow={eyebrow} title={title} />

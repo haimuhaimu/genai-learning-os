@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { cleanPaperLessonProgress, getPaperLessonCta, getPaperLessonHubCta, getPaperLessonSummary, lessonStepToLearningStage, readPaperLessonProgress, savePaperLessonStep } from './paperLessonProgress.ts'
+import { cleanPaperLessonProgress, clearPaperLessonProgress, clearPaperLessonProgressSafely, getPaperLessonCta, getPaperLessonHubCta, getPaperLessonSummary, lessonStepToLearningStage, readPaperLessonProgress, savePaperLessonStep } from './paperLessonProgress.ts'
 import { applyFeedbackNudge } from '../../../feedback/nudgePolicy.ts'
 
 function installStorage(initial) {
@@ -23,6 +23,51 @@ test('损坏 JSON 与非法条目会清洗降级', () => {
   let mocks = installStorage('{bad')
   try { assert.deepEqual(readPaperLessonProgress(), {}) } finally { mocks.restore() }
   assert.deepEqual({ ...cleanPaperLessonProgress({ 'good-paper': { step: 3, completed: false }, Bad_ID: { step: 2 }, broken: { step: 9 }, list: [] }) }, { 'good-paper': { step: 3, completed: false } })
+})
+
+test('explicit case-progress clearing also removes MoE experiments but preserves unrelated records', () => {
+  const mocks = installStorage('{"switch-transformers":{"step":5,"completed":true}}')
+  mocks.values.set('genai-moe-experiment-notebook-v1', '{"schemaVersion":1}')
+  mocks.values.set('genai-model-learning-journey-v1', 'keep me')
+  try {
+    assert.equal(clearPaperLessonProgress(), true)
+    assert.equal(mocks.values.has('genai-paper-lesson-progress-v1'), false)
+    const reset = JSON.parse(mocks.values.get('genai-moe-experiment-notebook-v1'))
+    assert.equal(reset.schemaVersion, 1)
+    assert.equal(typeof reset.resetToken, 'string')
+    assert.equal(reset.lastCompleted, undefined)
+    assert.equal(reset.draft, undefined)
+    assert.equal(mocks.values.get('genai-model-learning-journey-v1'), 'keep me')
+  } finally { mocks.restore() }
+})
+
+test('safe clearing waits for the shared lock and groups other progress deletion inside it', async () => {
+  const mocks = installStorage('{"switch-transformers":{"step":5,"completed":true}}')
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+  mocks.values.set('genai-moe-experiment-notebook-v1', '{"schemaVersion":1}')
+  let release, otherClears = 0
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: { request(name, action) { assert.equal(name, 'genai-moe-experiment-notebook-v1'); return new Promise(resolve => { release = () => resolve(action()) }) } } } })
+  try {
+    const pending = clearPaperLessonProgressSafely(() => { otherClears++; return true })
+    assert.equal(otherClears, 0)
+    assert.equal(mocks.values.has('genai-moe-experiment-notebook-v1'), true)
+    release()
+    assert.equal(await pending, true)
+    assert.equal(otherClears, 1)
+    assert.equal(JSON.parse(mocks.values.get('genai-moe-experiment-notebook-v1')).lastCompleted, undefined)
+  } finally { if (descriptor) Object.defineProperty(globalThis, 'navigator', descriptor); else delete globalThis.navigator; mocks.restore() }
+})
+
+test('a blocked clear lock leaves both progress and the experiment untouched', async () => {
+  const mocks = installStorage('{"switch-transformers":{"step":5,"completed":true}}')
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+  mocks.values.set('genai-moe-experiment-notebook-v1', '{"schemaVersion":1}')
+  const before = [...mocks.values]
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: { request() { throw Error('blocked') } } } })
+  try {
+    assert.equal(await clearPaperLessonProgressSafely(() => { assert.fail('must not start another deletion') }), false)
+    assert.deepEqual([...mocks.values], before)
+  } finally { if (descriptor) Object.defineProperty(globalThis, 'navigator', descriptor); else delete globalThis.navigator; mocks.restore() }
 })
 
 test('按 paperId 保存关卡、保留通关记录并发事件', () => {

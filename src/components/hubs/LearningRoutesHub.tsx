@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Target } from 'lucide-react'
 import { applicationScenarioEntries, contentEntries, registryIssues, visibleContentEntries } from '../../content/registry'
 import { selectCourses } from '../../content/selectors'
@@ -7,6 +7,8 @@ import ContentEmptyState from '../content/ContentEmptyState'
 import ContentFilters, { emptyFilters } from '../content/ContentFilters'
 import ContentGrid from '../content/ContentGrid'
 import RegistryFallback from '../content/RegistryFallback'
+import LearningJourneyPanel from '../journey/LearningJourneyPanel'
+import '../journey/journey.css'
 import '../../styles/hubs.css'
 
 type Go = (page: string, options?: Record<string, string>) => void
@@ -16,8 +18,17 @@ const tags: readonly { value: ContentTag; label: string }[] = [
   { value: 'agent', label: '智能体' }, { value: 'distillation', label: '模型蒸馏' }, { value: 'frontier', label: '前沿探索' },
 ]
 
-export default function LearningRoutesHub({ go }: { go: Go }) {
+export default function LearningRoutesHub({ go, initialSection }: { go: Go; initialSection?: string }) {
   const [filters, setFilters] = useState(emptyFilters)
+  useEffect(() => {
+    if (initialSection !== 'journey') return
+    const frame = requestAnimationFrame(() => {
+      const panel = document.getElementById('learning-journey')
+      panel?.scrollIntoView({ block: 'start', behavior: 'instant' })
+      panel?.focus({ preventScroll: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [initialSection])
   const results = useMemo(() => selectCourses(visibleContentEntries, {
     tags: filters.tag === 'all' ? undefined : [filters.tag],
     levels: filters.level === 'all' ? undefined : [filters.level as ContentLevel],
@@ -26,6 +37,7 @@ export default function LearningRoutesHub({ go }: { go: Go }) {
   return <section className='lo-hub-page registry-hub lo-routes-page'>
     {registryIssues.length ? <RegistryFallback go={go} partial /> : null}
     <header className='registry-hub-intro'><span>结构化学习路径</span><h1>从基础机制，走向可靠系统</h1><p>先从一个具体工作问题进入短案例，或按学习顺序、主题和层级浏览完整课程。</p><button type='button' onClick={() => go('strategy-cases')}>进入案例中心<ArrowRight aria-hidden='true' /></button></header>
+    <LearningJourneyPanel go={go} />
     <section className='registry-hub-intro' aria-label='按工作问题选择案例'>
       <div className='content-grid' role='list'>
         {applicationScenarioEntries.map(({ id, role, question, entry }) => (

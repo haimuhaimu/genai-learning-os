@@ -19,7 +19,7 @@ function simple(load: () => Promise<{ default: ComponentType }>, css: readonly (
 
 export const pageLoaders: Record<Page, Loader> = {
   'unified-map': async () => { const [module] = await Promise.all([import('./components/foundation/UnifiedMap'), import('./learning-os.css'), import('./styles/home.css')]); return { default: ({ go }) => <module.default go={go} /> } },
-  routes: async () => { const [module] = await Promise.all([import('./components/hubs/LearningRoutesHub'), import('./learning-os.css')]); return { default: ({ go }) => <module.default go={go} /> } },
+  routes: async () => { const [module] = await Promise.all([import('./components/hubs/LearningRoutesHub'), import('./learning-os.css')]); return { default: ({ route, go }) => <module.default go={go} initialSection={route.section} /> } },
   'math-primer': simple(() => import('./components/MathPrimer'), [() => import('./mathPrimer.css')]),
   'decision-math': async () => { const [module] = await Promise.all([import('./components/hubs/DecisionMathHub'), import('./decisionMath.css')]); return { default: ({ go }) => <module.default go={go} /> } },
   labs: async () => { const [module] = await Promise.all([import('./components/hubs/LabsHub'), import('./learning-os.css')]); return { default: ({ go }) => <module.default go={go} /> } },

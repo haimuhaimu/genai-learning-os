@@ -1,0 +1,456 @@
+{
+  "format": "algorithm-playground/learning-run",
+  "schemaVersion": 1,
+  "experimentId": "learning-route",
+  "engineVersion": "learning-route-v1",
+  "numericFormat": "decimal-12-significant-digits",
+  "producer": "browser-session",
+  "fixture": {
+    "id": "six-spatial-points-v1",
+    "randomness": "none; authored fixed fixture",
+    "trainingExamples": 6,
+    "initialWeights": [
+      1,
+      -1,
+      0
+    ],
+    "heldOutGrid": 16
+  },
+  "actions": [
+    {
+      "action": "train"
+    },
+    {
+      "action": "probe"
+    },
+    {
+      "action": "guess",
+      "value": 0
+    },
+    {
+      "action": "explain",
+      "value": "parameters"
+    },
+    {
+      "action": "next"
+    },
+    {
+      "action": "guess",
+      "value": "points"
+    },
+    {
+      "action": "step"
+    },
+    {
+      "action": "explain",
+      "value": "parameters"
+    },
+    {
+      "action": "next"
+    },
+    {
+      "action": "train"
+    },
+    {
+      "action": "guess",
+      "value": "all"
+    },
+    {
+      "action": "explain",
+      "value": "unseen"
+    },
+    {
+      "action": "next"
+    }
+  ],
+  "steps": [
+    {
+      "status": "applied",
+      "stage": "classify"
+    },
+    {
+      "status": "applied",
+      "stage": "classify"
+    },
+    {
+      "status": "applied",
+      "stage": "classify"
+    },
+    {
+      "status": "applied",
+      "stage": "classify"
+    },
+    {
+      "status": "applied",
+      "stage": "gradient"
+    },
+    {
+      "status": "applied",
+      "stage": "gradient"
+    },
+    {
+      "status": "applied",
+      "stage": "gradient"
+    },
+    {
+      "status": "applied",
+      "stage": "gradient"
+    },
+    {
+      "status": "applied",
+      "stage": "test"
+    },
+    {
+      "status": "applied",
+      "stage": "test"
+    },
+    {
+      "status": "applied",
+      "stage": "test"
+    },
+    {
+      "status": "applied",
+      "stage": "test"
+    },
+    {
+      "status": "applied",
+      "stage": "summary"
+    }
+  ],
+  "result": {
+    "stage": "summary",
+    "workflowComplete": true,
+    "mastery": "not-assessed",
+    "evidence": {
+      "stage": "summary",
+      "index": 3,
+      "completed": [
+        true,
+        true,
+        true
+      ],
+      "canAdvance": false,
+      "guide": {
+        "examples": 6,
+        "steps": 120,
+        "lossBefore": 0.665626765614,
+        "lossAfter": 0.125472236647,
+        "mistakesBefore": [
+          2,
+          5
+        ],
+        "mistakesNow": [],
+        "changedParameters": 3,
+        "probe": {
+          "x": -0.36,
+          "y": -0.65,
+          "id": "A",
+          "before": 0.571996132932,
+          "after": 0.147815255754,
+          "label": 0
+        },
+        "guess": 0,
+        "matchesGuess": true,
+        "reflection": "parameters"
+      },
+      "gradient": {
+        "examples": 6,
+        "steps": 1,
+        "lossBefore": 0.665626765614,
+        "lossAfter": 0.647444924011,
+        "mistakesBefore": [
+          2,
+          5
+        ],
+        "mistakesNow": [
+          2,
+          5
+        ],
+        "changedParameters": 3,
+        "probe": {
+          "x": -0.36,
+          "y": -0.65,
+          "id": "A",
+          "before": 0.571996132932,
+          "after": 0.562823673297,
+          "label": 1
+        },
+        "guess": null,
+        "matchesGuess": null,
+        "rate": 0.15,
+        "lastWeights": [
+          1,
+          -1,
+          0
+        ],
+        "lastGradient": [
+          -0.25020149216,
+          -0.244711168759,
+          1.85037170771e-17
+        ],
+        "answer": "parameters"
+      },
+      "test": {
+        "train": {
+          "points": [
+            {
+              "x": -0.8,
+              "y": -0.6,
+              "label": 0,
+              "id": 1,
+              "probability": 0.047095564517,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": -0.65,
+              "y": -0.1,
+              "label": 0,
+              "id": 2,
+              "probability": 0.115366907593,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": -0.25,
+              "y": -0.7,
+              "label": 0,
+              "id": 3,
+              "probability": 0.185836234611,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": 0.8,
+              "y": 0.6,
+              "label": 1,
+              "id": 4,
+              "probability": 0.952904435483,
+              "predicted": 1,
+              "correct": true
+            },
+            {
+              "x": 0.65,
+              "y": 0.1,
+              "label": 1,
+              "id": 5,
+              "probability": 0.884633092407,
+              "predicted": 1,
+              "correct": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.7,
+              "label": 1,
+              "id": 6,
+              "probability": 0.814163765389,
+              "predicted": 1,
+              "correct": true
+            }
+          ],
+          "correct": 6,
+          "total": 6
+        },
+        "test": {
+          "points": [
+            {
+              "x": -0.75,
+              "y": -0.85,
+              "label": 0,
+              "id": 1,
+              "probability": 0.0422531926797,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": -0.25,
+              "y": -0.85,
+              "label": 0,
+              "id": 2,
+              "probability": 0.163199305698,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": 0.25,
+              "y": -0.85,
+              "label": 0,
+              "id": 3,
+              "probability": 0.462986848326,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": 0.75,
+              "y": -0.85,
+              "label": 0,
+              "id": 4,
+              "probability": 0.792155229005,
+              "predicted": 1,
+              "correct": false
+            },
+            {
+              "x": -0.75,
+              "y": -0.35,
+              "label": 0,
+              "id": 5,
+              "probability": 0.0693633623888,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": -0.25,
+              "y": -0.35,
+              "label": 0,
+              "id": 6,
+              "probability": 0.247829819748,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": 0.25,
+              "y": -0.35,
+              "label": 0,
+              "id": 7,
+              "probability": 0.592924764467,
+              "predicted": 1,
+              "correct": false
+            },
+            {
+              "x": 0.75,
+              "y": -0.35,
+              "label": 1,
+              "id": 8,
+              "probability": 0.865571706029,
+              "predicted": 1,
+              "correct": true
+            },
+            {
+              "x": -0.75,
+              "y": 0.15,
+              "label": 0,
+              "id": 9,
+              "probability": 0.111836618932,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": -0.25,
+              "y": 0.15,
+              "label": 0,
+              "id": 10,
+              "probability": 0.357592936125,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.15,
+              "label": 1,
+              "id": 11,
+              "probability": 0.711044625348,
+              "predicted": 1,
+              "correct": true
+            },
+            {
+              "x": 0.75,
+              "y": 0.15,
+              "label": 1,
+              "id": 12,
+              "probability": 0.915811538675,
+              "predicted": 1,
+              "correct": true
+            },
+            {
+              "x": -0.75,
+              "y": 0.65,
+              "label": 0,
+              "id": 13,
+              "probability": 0.175415347176,
+              "predicted": 0,
+              "correct": true
+            },
+            {
+              "x": -0.25,
+              "y": 0.65,
+              "label": 1,
+              "id": 14,
+              "probability": 0.484646469404,
+              "predicted": 0,
+              "correct": false
+            },
+            {
+              "x": 0.25,
+              "y": 0.65,
+              "label": 1,
+              "id": 15,
+              "probability": 0.806098611968,
+              "predicted": 1,
+              "correct": true
+            },
+            {
+              "x": 0.75,
+              "y": 0.65,
+              "label": 1,
+              "id": 16,
+              "probability": 0.948394688947,
+              "predicted": 1,
+              "correct": true
+            }
+          ],
+          "correct": 13,
+          "total": 16
+        },
+        "wrong": [
+          3,
+          6,
+          13
+        ],
+        "selected": {
+          "x": 0.75,
+          "y": -0.85,
+          "label": 0,
+          "id": 4,
+          "probability": 0.792155229005,
+          "predicted": 1,
+          "correct": false
+        },
+        "frozen": true,
+        "steps": 120,
+        "guess": "all",
+        "answer": "unseen"
+      },
+      "stepGuess": "points",
+      "point": null
+    },
+    "availableActions": [
+      {
+        "action": "reset"
+      },
+      {
+        "action": "back"
+      }
+    ]
+  },
+  "boundaries": [
+    "固定合成教学案例，不是图像识别或生产模型性能。",
+    "分类、一步更新和新题检验使用独立模型；测试站固定以步长 0.15 训练 120 步，不继承梯度站的步长。",
+    "16 个新位置是固定网格，不是现实准确率估计；揭晓或选择新题不会训练模型。",
+    "完成流程、猜对一次与掌握概念不同；本记录不认证操作者身份，也不写入 GenAI OS 进度。",
+    "记录只含这条固定路线的操作与计算；未读取自由画布、草稿或浏览器存储。主动复制给外部 AI 后，记录将离开本页。"
+  ],
+  "genai": [
+    {
+      "concept": "数学符号与学习基础",
+      "url": "https://haimuhaimu.github.io/genai-learning-os/?page=math-primer"
+    },
+    {
+      "concept": "梯度下降",
+      "url": "https://haimuhaimu.github.io/genai-learning-os/?page=foundation&node=gradient-descent"
+    },
+    {
+      "concept": "残差与 Transformer Block（进阶）",
+      "url": "https://haimuhaimu.github.io/genai-learning-os/?page=foundation&node=transformer-block"
+    }
+  ]
+}

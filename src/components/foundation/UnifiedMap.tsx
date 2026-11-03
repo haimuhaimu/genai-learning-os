@@ -8,6 +8,7 @@ import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
 import { getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
 import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
 import NextStepCard from './NextStepCard'
+import { JourneyEntry } from '../journey/JourneyNavigation'
 
 const modelShowcase = new URL('../../assets/genai-model-blue-v1.png', import.meta.url).href
 
@@ -87,6 +88,8 @@ export default function UnifiedMap({ go }: { go: Go }) {
       <section className='lo-model-roadmap' aria-label='模型搭建学习路线'>
         <K3HeroCard progress={progress} go={go} />
       </section>
+
+      <JourneyEntry go={go} />
 
       <section className='lo-persona-section'>
         <header><div><span>按角色开始</span><h2>选择你的起点</h2></div><p>不改变课程内容，只改变你看到的第一步。选择会保存在本机。</p></header>

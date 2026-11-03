@@ -8,6 +8,7 @@ import PageLoadErrorBoundary from './components/shell/PageLoadErrorBoundary'
 import PageLoading from './components/shell/PageLoading'
 import ProductHeader from './components/shell/ProductHeader'
 import { JourneyReturnBar } from './components/journey/JourneyNavigation'
+import { journeyForSection, rememberCurrentJourney } from './journeyResume'
 import { PageRenderer } from './pageRegistry'
 import { normalizePage, pages, routeKeys, type GoOptions, type Page, type RouteState } from './routeConfig'
 import './styles/shell.css'
@@ -62,7 +63,7 @@ export default function Business({ user }: BusinessProps) {
   useEffect(() => {
     if (pendingPageNavigation.current !== route.page) return
     pendingPageNavigation.current = null
-    if (route.page === 'routes' && route.section === 'journey') return
+    if (route.page === 'routes' && ['journey', 'bayes-journey', 'choose-journey'].includes(route.section ?? '')) return
     const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
     const frame = window.requestAnimationFrame(() => { mainContentRef.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior }) })
     return () => window.cancelAnimationFrame(frame)
@@ -81,6 +82,8 @@ export default function Business({ user }: BusinessProps) {
   const go = useCallback((rawPage: string, options: GoOptions = {}) => {
     if (!pages.has(rawPage)) return
     const page = normalizePage(rawPage)
+    const journey = page === 'routes' ? journeyForSection(options.section) : null
+    if (journey) rememberCurrentJourney(journey)
     const next: RouteState = { page, ...options }
     if (page !== routeRef.current.page) pendingPageNavigation.current = page
     routeRef.current = next; setRoute(next); writeRoute(next)

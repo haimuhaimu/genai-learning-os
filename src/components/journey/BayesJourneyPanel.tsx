@@ -8,6 +8,7 @@ import {
 } from '../../bayesJourney'
 import { PROGRESS_CHANGE_EVENT, readProgress } from '../../progress'
 import { replayPlaygroundReceipt } from '../../playgroundReplay'
+import { rememberCurrentJourney } from '../../journeyResume'
 import BayesCoachPanel from './BayesCoachPanel'
 
 type Go = (page: string, options?: Record<string, string>) => void
@@ -90,6 +91,7 @@ export default function BayesJourneyPanel({ go, playgroundBase, verify = replayP
 
   function commit(next: BayesJourneyState) {
     if (!writeBayesJourney(next)) { tell('浏览器暂时不能保存，当前结果仍在页面里；原有记录没有改变。', true); return false }
+    rememberCurrentJourney('bayes-learning')
     setState(next); setAnswers(next.reflection ?? blank()); return true
   }
   function openCourse() { if (commit({ ...readBayesJourney(), active: true })) go('foundation', { node: 'probability' }) }

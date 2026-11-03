@@ -8,6 +8,12 @@ The routes page includes a first end-to-end example, **model-learning**:
 
 Other course catalogs and experiments remain available. This does not make every curriculum a guided journey or certify mastery.
 
+## Resume the chosen journey
+
+The homepage journey card, learning-desk entry and foundation return bar follow the same explicit model/Bayes journey choice. Selecting an entry or taking an action inside a journey remembers that choice separately in `genai-current-learning-journey-v1`; opening a link, rendering a page or automatically inspecting a receipt does not overwrite it. Choosing a route does not add learning progress.
+
+Without this preference, one existing active journey can be resumed directly. If both old journeys are active, the homepage asks which to continue rather than guessing from scores or timestamps. A completed chosen journey stays available as a review. Existing course, practice and recap records are not migrated or rewritten. If saving the choice is blocked, this visit still follows it and explains that refreshing may restore the old choice. Cross-tab preference changes update both homepage entries.
+
 ## Second journey: evidence and Bayesian updating
 
 Choose **贝叶斯更新** on the routes page (`?page=routes&section=bayes-journey`). Start with the existing F01 probability foundation, then try the separate fixed Bayesian lesson in `mining.html#bayes-lesson`, bring back its real operation record and explain the two before/after comparisons. The foundation lesson is not renamed or claimed to be a full Bayesian course.

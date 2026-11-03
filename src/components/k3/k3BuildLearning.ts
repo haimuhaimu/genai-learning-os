@@ -1,12 +1,5 @@
-export const K3_STEP_IDS = [
-  'goal',
-  'runtime',
-  'model',
-  'infer',
-  'api',
-  'evaluate',
-] as const;
-export type K3StepId = (typeof K3_STEP_IDS)[number];
+import { K3_COURSE_STEPS, K3_STEP_IDS, type K3StepId } from '../../content/k3Summary';
+export { K3_STEP_IDS, type K3StepId } from '../../content/k3Summary';
 export type K3Draft = Record<K3StepId, Record<string, string>>;
 export type K3Scenario = 'summary' | 'qa' | 'rewrite';
 export type K3Device = 'windows' | 'mac' | 'gpu';
@@ -221,62 +214,46 @@ export interface K3Experiment {
   details: string;
 }
 
-export const K3_EXPERIMENTS: K3Experiment[] = [
-  {
-    id: 'goal',
-    title: 'Token 化',
-    lead: '先输入一句话，亲手把它拆成模型能接收的小块。',
+const experimentContent: Record<K3StepId, Omit<K3Experiment, 'id' | 'title' | 'lead'>> = {
+  goal: {
     action: '切成 Token',
     conclusion: '模型先看到的不是整句话，而是一串可以编号的小块。',
     explanation: '你改一个字，切分结果就可能变化。真实模型使用更大的词表；这里用简化切分，只展示过程。',
     details: `const tokens = text.match(/[A-Za-z]+|\\d+|[\\u3400-\\u9fff]|[^\\s]/gu)\n// “AI 很有趣！” → [“AI”, “很”, “有”, “趣”, “！”]`,
   },
-  {
-    id: 'runtime',
-    title: '预测下一个 Token',
-    lead: '给模型一句没说完的话，看它怎样给几个下一步排队。',
+  runtime: {
     action: '预测下一块',
     conclusion: '一次生成只选下一块，完整回答是这个动作不断重复。',
     explanation: '条越长，表示这一块此刻更可能被选中；它不是在资料库里复制整句答案。',
     details: `candidates = score(context, vocabulary)\nnextToken = candidates.sort(byScore)[0]\n// 教学分数相加为 100%，不代表 K3 的真实输出。`,
   },
-  {
-    id: 'model',
-    title: '训练前后对比',
-    lead: '让一个只会乱猜的小模型看几轮正确答案，观察它的选择怎样移动。',
+  model: {
     action: '训练 10 轮',
     conclusion: '训练就是反复看答案，再把下次猜对的机会往上推。',
     explanation: '每轮都会把“5”的位置抬高、其他答案压低；真实训练规模更大，但反馈方向相同。',
     details: `guess = model("2 + 3 =")\nloss = distance(guess, "5")\nmodel.adjust(loss)\n// 重复后，“5”的分数逐步升高。`,
   },
-  {
-    id: 'infer',
-    title: '上下文影响',
-    lead: '同一个问题，只加一小段上文，看看回答会不会改变。',
+  infer: {
     action: '加入上文',
     conclusion: '模型此刻能看到的上文，会直接改变它接下来怎么答。',
     explanation: '模型没有自动知道你的私事；把相关信息放进上下文，它才有材料继续预测。',
     details: `answer = generate(context + question)\n// 无上文：我不知道。\n// 有上文：钥匙在蓝色抽屉。`,
   },
-  {
-    id: 'api',
-    title: '续写变聊天',
-    lead: '把一段普通续写，装进“谁说了什么”的消息结构里。',
+  api: {
     action: '组装聊天消息',
     conclusion: '聊天模型仍在续写，只是消息角色让它知道该用什么身份接话。',
     explanation: '产品把系统要求、用户输入和助手位置排好，模型就在“助手”后面继续生成。',
     details: `messages = [\n  { role: "system", content: "回答简洁" },\n  { role: "user", content: "推荐周末活动" }\n]\n// 下一段从 assistant 角色开始续写。`,
   },
-  {
-    id: 'evaluate',
-    title: '回看 K3',
-    lead: '把一个 Token 送进 K3 的“专家团队”，看它如何只叫一小组人上场。',
+  evaluate: {
     action: '让 K3 分工',
     conclusion: 'K3 很大，但处理每个 Token 时只激活一部分专家。',
     explanation: 'K3 有 896 个路由专家，每个 Token 选择 16 个，另有 2 个共享专家一直参与；这就是稀疏工作。',
     details: `active = route(token, experts=896, topK=16)\nshared = 2\n// K3：2.8T 总参数，约 104B 激活参数，1M 上下文。`,
   },
-];
+};
+
+export const K3_EXPERIMENTS: K3Experiment[] = K3_COURSE_STEPS.map((step) => ({ ...step, ...experimentContent[step.id] }));
 
 export function tokenizeForLearning(input: string): string[] {
   return input.trim().match(/[A-Za-z]+(?:'[A-Za-z]+)?|\d+|[\u3400-\u9fff]|[^\s]/gu) ?? [];

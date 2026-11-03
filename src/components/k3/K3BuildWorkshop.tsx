@@ -4,35 +4,34 @@ import { markProgress, type ProgressMap } from '../../progress';
 import K3ExperimentStage from './K3ExperimentStage';
 import { K3_EXPERIMENTS, K3_STEP_IDS, type K3StepId } from './k3BuildLearning';
 import { K3_INTERACTION_CSS, workshopStyles as styles } from './k3ExperimentStyles.mts';
-
-const progressKey = (id: K3StepId): string => `k3:concept:${id}`;
+import { getK3Entry, isK3StepDone, isK3StepUnlocked, k3ProgressKey } from '../../content/k3Summary';
 
 export default function K3BuildWorkshop({
   progress,
   onProgress,
+  initialStep,
 }: {
   progress: ProgressMap;
   onProgress: (next: ProgressMap) => void;
+  initialStep?: string;
 }) {
-  const [activeStep, setActiveStep] = useState<K3StepId>(() =>
-    K3_STEP_IDS.find((id) => (progress[progressKey(id)] ?? 0) < 4) ?? 'evaluate',
-  );
+  const [entry] = useState(() => getK3Entry(progress, initialStep));
+  const [activeStep, setActiveStep] = useState<K3StepId>(entry.step);
   const [operated, setOperated] = useState<Partial<Record<K3StepId, boolean>>>({});
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState(entry.notice);
   const completed = useMemo(
-    () => K3_STEP_IDS.filter((id) => (progress[progressKey(id)] ?? 0) >= 4).length,
+    () => K3_STEP_IDS.filter((id) => isK3StepDone(progress, id)).length,
     [progress],
   );
 
   const finish = (id: K3StepId) => {
-    let nextProgress = markProgress(progressKey(id), 4);
-    nextProgress = markProgress(`k3:build:${id}`, 4);
+    const nextProgress = markProgress(k3ProgressKey(id), 4);
     onProgress(nextProgress);
-    const nextIndex = K3_STEP_IDS.indexOf(id) + 1;
+    const nextStep = K3_STEP_IDS.find((step) => !isK3StepDone(nextProgress, step));
     const experiment = K3_EXPERIMENTS.find((item) => item.id === id);
-    if (nextIndex < K3_STEP_IDS.length) {
-      setActiveStep(K3_STEP_IDS[nextIndex]);
-      setNotice(`已完成「${experiment?.title}」，下一关已解锁。`);
+    if (nextStep) {
+      setActiveStep(nextStep);
+      setNotice(`已记录「${experiment?.title}」的操作，继续下一关。`);
     } else {
       setNotice('六关已完成。你已经亲手走过一个模型从文字到 K3 的完整路径。');
     }
@@ -66,8 +65,8 @@ export default function K3BuildWorkshop({
     {notice ? <p style={styles.notice} role="status">{notice}</p> : null}
     <div className="k3-steps">
       {K3_EXPERIMENTS.map((experiment, index) => {
-        const done = (progress[progressKey(experiment.id)] ?? 0) >= 4;
-        const unlocked = index === 0 || (progress[progressKey(K3_EXPERIMENTS[index - 1].id)] ?? 0) >= 4;
+        const done = isK3StepDone(progress, experiment.id);
+        const unlocked = isK3StepUnlocked(progress, experiment.id);
         const open = unlocked && activeStep === experiment.id;
         return <article key={experiment.id} style={styles.step}>
           <header style={styles.stepHeader}>
@@ -101,7 +100,7 @@ export default function K3BuildWorkshop({
       })}
     </div>
     {completed === K3_STEP_IDS.length ? <section style={styles.summary} aria-label="K3 实验总结">
-      <span style={styles.summaryLabel}>实验记录 / 6 OF 6</span><h3 style={styles.summaryTitle}>你不是“听懂”了，而是亲手看见了</h3>
+      <span style={styles.summaryLabel}>实验记录 / 6 OF 6</span><h3 style={styles.summaryTitle}>六关操作已记录，不等于通过能力评测</h3>
       {K3_EXPERIMENTS.map((item) => <p key={item.id} style={styles.summaryItem}><Check size={15} style={styles.summaryIcon} /> <b>{item.title}</b>：{item.conclusion}</p>)}
       <div className="k3-actions"><button type="button" onClick={copy}><Clipboard size={16} />复制总结</button><button type="button" className="secondary" onClick={download}><Download size={16} />下载总结</button></div>
     </section> : null}

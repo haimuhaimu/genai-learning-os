@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { ArrowUpRight, Beaker, Home, Menu, MessageCircle, Route, Search, Target, TrendingUp, Wrench, X } from 'lucide-react'
+import { ArrowUpRight, Beaker, Home, Menu, MessageCircle, Moon, Route, Search, Sun, Target, TrendingUp, Wrench, X } from 'lucide-react'
 import { primarySectionForPage, primarySections } from '../../navigation'
 import type { GoOptions, Page } from '../../routeConfig'
 import ShareButton from './ShareButton'
@@ -7,12 +7,14 @@ import ShareButton from './ShareButton'
 type Go = (page: string, options?: GoOptions) => void
 const icons = { home: Home, academy: Route, cases: Target, labs: Beaker, toolbox: Wrench }
 
-export default function ProductHeader({ page, go, onSearch, onFeedback, searchButtonRef }: {
+export default function ProductHeader({ page, go, onSearch, onFeedback, searchButtonRef, homeDark, onToggleHomeTheme }: {
   page: Page
   go: Go
   onSearch: (trigger: HTMLButtonElement) => void
   onFeedback: (trigger: HTMLButtonElement) => void
   searchButtonRef: RefObject<HTMLButtonElement>
+  homeDark?: boolean
+  onToggleHomeTheme?: () => void
 }) {
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -47,6 +49,7 @@ export default function ProductHeader({ page, go, onSearch, onFeedback, searchBu
       <button className='lo-feedback-trigger' type='button' onClick={(event) => onFeedback(event.currentTarget)}><MessageCircle aria-hidden='true' /><span>反馈</span></button>
       <button className='lo-progress-shortcut' type='button' onClick={() => navigate('progress')} aria-label='打开学习进度'><TrendingUp aria-hidden='true' /><span>我的进度</span><ArrowUpRight aria-hidden='true' /></button>
     </div>
+    {onToggleHomeTheme && <button className='lo-home-theme-toggle' type='button' onClick={onToggleHomeTheme} aria-label={homeDark ? '切换首页浅色外观' : '切换首页深色外观'}>{homeDark ? <Sun aria-hidden='true' /> : <Moon aria-hidden='true' />}</button>}
     <button ref={menuButtonRef} className='lo-menu-toggle' type='button' aria-controls='lo-primary-navigation' onClick={() => setOpen((value) => !value)} aria-label={open ? '收起导航' : '展开导航'} aria-expanded={open}>{open ? <X aria-hidden='true' /> : <Menu aria-hidden='true' />}</button>
   </header>
 }

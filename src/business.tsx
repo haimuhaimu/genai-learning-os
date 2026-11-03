@@ -27,11 +27,20 @@ export default function Business({ user }: BusinessProps) {
   const [paletteTrigger, setPaletteTrigger] = useState<HTMLElement | null>(null)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackTrigger, setFeedbackTrigger] = useState<HTMLElement | null>(null)
+  const [homeDark, setHomeDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const homeAppearanceChosen = useRef(false)
   const { nudgeVisible, dismissNudge } = useFeedbackNudge()
   const searchButtonRef = useRef<HTMLButtonElement>(null)
   const mainContentRef = useRef<HTMLElement>(null)
   const routeRef = useRef(route)
   const pendingPageNavigation = useRef<Page | null>(null)
+
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-color-scheme: dark)')
+    const syncAppearance = () => { if (!homeAppearanceChosen.current) setHomeDark(preference.matches) }
+    preference.addEventListener('change', syncAppearance)
+    return () => preference.removeEventListener('change', syncAppearance)
+  }, [])
 
   const writeRoute = useCallback((next: RouteState, replace = false) => {
     const url = new URL(window.location.href)
@@ -75,9 +84,9 @@ export default function Business({ user }: BusinessProps) {
   }, [writeRoute])
 
   const openFeedback = (trigger: HTMLButtonElement) => { setPaletteOpen(false); setFeedbackTrigger(trigger); setFeedbackOpen(true) }
-  return <div className='model-lab expert-edition unified-edition learning-os-shell'>
+  return <div className='model-lab expert-edition unified-edition learning-os-shell' data-page={route.page} data-home-theme={homeDark ? 'dark' : 'light'}>
     <a className='lo-skip-link' href='#main-content'>跳到主要内容</a>
-    <ProductHeader page={route.page} go={go} searchButtonRef={searchButtonRef} onSearch={(trigger) => { setFeedbackOpen(false); setPaletteTrigger(trigger); setPaletteOpen(true) }} onFeedback={openFeedback} />
+    <ProductHeader page={route.page} go={go} searchButtonRef={searchButtonRef} onSearch={(trigger) => { setFeedbackOpen(false); setPaletteTrigger(trigger); setPaletteOpen(true) }} onFeedback={openFeedback} homeDark={homeDark} onToggleHomeTheme={route.page === 'unified-map' ? () => { homeAppearanceChosen.current = true; setHomeDark((value) => !value) } : undefined} />
     <main ref={mainContentRef} className='lab-main' id='main-content' tabIndex={-1}><PageLoadErrorBoundary page={route.page} onHome={() => go('unified-map')}><Suspense fallback={<PageLoading />}><PageRenderer route={route} go={go} onFeedback={openFeedback} /></Suspense></PageLoadErrorBoundary></main>
     <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 / AI 决策数学 / LLM / 图像生成 / Agent / 蒸馏</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button type='button' className='lo-footer-co-build' onClick={() => go('co-build')}>参与共建</button><button type='button' onClick={() => go('routes')}><Route />查看学习路线</button></footer>
     <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} go={go} returnFocus={paletteTrigger} />

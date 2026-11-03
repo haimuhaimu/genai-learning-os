@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, BookOpen, BrainCircuit, Calculator, CheckCircle2, Cpu, FlaskConical, Image as ImageIcon, Network, Sparkles } from 'lucide-react'
 import { foundationNodeSummaries, foundationProgressIds } from '../../content/foundationSummary'
+import { getK3Entry, isK3StepDone, isK3StepUnlocked, K3_COURSE_STEPS } from '../../content/k3Summary'
 import { getPersona, personas, readPersona, savePersona, type PersonaId } from '../../learningPath'
 import { progressPercent, PROGRESS_CHANGE_EVENT, readProgress, stageLabels, type ProgressMap } from '../../progress'
 import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
 import { getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
 import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
 import NextStepCard from './NextStepCard'
+
+const modelShowcase = new URL('../../assets/genai-model-blue-v1.png', import.meta.url).href
 
 type Go = (page: string, options?: Record<string, string>) => void
 
@@ -19,31 +22,27 @@ const routes = [
   { label: '模型蒸馏', page: 'distill-course', icon: FlaskConical, note: '能力到部署' },
 ]
 
-const k3BuildSteps = [
-  ['goal', '定义问题', '先明确任务，再选择模型', BrainCircuit],
-  ['runtime', '理解运行', '区分模型权重与推理工具', Cpu],
-  ['model', '估算大小', '判断自己的设备能否运行', Calculator],
-  ['infer', '看懂推理', '认识 token、速度和内存', Sparkles],
-  ['api', '理解 API', '知道模型如何进入产品', Network],
-  ['evaluate', '学会评测', '用固定样本代替主观感觉', FlaskConical],
-] as const
+const k3Icons = [BrainCircuit, Cpu, Calculator, Sparkles, Network, FlaskConical]
 
 function K3HeroCard({ progress, go }: { progress: ProgressMap; go: Go }) {
-  const completed = k3BuildSteps.filter(([id]) => (progress[`k3:concept:${id}`] ?? 0) >= 4).length
-  const nextStep = k3BuildSteps.find(([id]) => (progress[`k3:concept:${id}`] ?? 0) < 4)?.[1]
+  const completed = K3_COURSE_STEPS.filter(({ id }) => isK3StepDone(progress, id)).length
+  const next = getK3Entry(progress).step
+  const nextIndex = K3_COURSE_STEPS.findIndex(({ id }) => id === next)
   return (
     <aside className='lo-hero-path' aria-label={`个人模型搭建进度 ${completed}/6`}>
       <header>
         <span>K3 BUILD LAB</span>
-        <b>{completed === 6 ? '六个模型判断已经掌握' : '学会搭模型的六个判断'}</b>
+        <b>{completed === 6 ? '六关操作已记录' : '看懂模型工作的六个小实验'}</b>
       </header>
       <div className='lo-hero-path-list'>
-        {k3BuildSteps.map(([id, label, note, Icon], index) => {
-          const done = (progress[`k3:concept:${id}`] ?? 0) >= 4
-          return <button key={id} type='button' onClick={() => go('k3-build-lab', { section: 'build' })}><i>{done ? <CheckCircle2 aria-label='已完成' /> : index + 1}</i><Icon aria-hidden='true' /><span><b>{label}</b><small>{note}</small></span><ArrowRight aria-hidden='true' /></button>
+        {K3_COURSE_STEPS.map(({ id, title, lead }, index) => {
+          const done = isK3StepDone(progress, id)
+          const unlocked = isK3StepUnlocked(progress, id)
+          const Icon = k3Icons[index]
+          return <button key={id} type='button' aria-label={`${title}：${done ? '已完成操作，可复习' : unlocked ? '可开始' : '待解锁，查看前置关卡'}`} onClick={() => go('k3-build-lab', { section: 'build', experiment: id })}><i>{done ? <CheckCircle2 aria-label='已完成' /> : index + 1}</i><Icon aria-hidden='true' /><span><b>{title}</b><small>{unlocked ? lead : '待解锁 · 先完成前面的实验'}</small></span><ArrowRight aria-hidden='true' /></button>
         })}
       </div>
-      <footer><span>{completed === 6 ? '成果：六条可复述的模型知识' : `下一关：${nextStep}`}</span><button type='button' onClick={() => go('k3-build-lab')}>{completed ? '复习知识' : '开始学习'}</button></footer>
+      <footer><span>{completed === 6 ? '记录完成 ≠ 通过能力评测' : `下一关：${K3_COURSE_STEPS[nextIndex].title}`}</span><button type='button' onClick={() => go('k3-build-lab', { section: 'build', experiment: next })}>{completed === 6 ? '复习六关' : completed ? `继续第 ${nextIndex + 1} 关` : '开始第 1 关'}</button></footer>
     </aside>
   )
 }
@@ -79,8 +78,15 @@ export default function UnifiedMap({ go }: { go: Go }) {
             <button type='button' className='is-secondary' onClick={() => go('routes')}>浏览全部路线</button>
           </div>
         </div>
-        <K3HeroCard progress={progress} go={go} />
+        <figure className='lo-model-showcase'>
+          <img src={modelShowcase} width={2020} height={779} alt='蓝白像素方块组成的模型模块示意，不代表真实 K3 架构' decoding='async' />
+          <figcaption>模型搭建的像素示意</figcaption>
+        </figure>
       </div>
+
+      <section className='lo-model-roadmap' aria-label='模型搭建学习路线'>
+        <K3HeroCard progress={progress} go={go} />
+      </section>
 
       <section className='lo-persona-section'>
         <header><div><span>按角色开始</span><h2>选择你的起点</h2></div><p>不改变课程内容，只改变你看到的第一步。选择会保存在本机。</p></header>

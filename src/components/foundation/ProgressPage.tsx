@@ -13,7 +13,7 @@ import {
 import { PERSONA_CHANGE_EVENT, readPersona, type PersonaId } from '../../learningPath'
 import { clearProgress, progressPercent, readProgress, stageLabels, type LearningStage, type ProgressMap } from '../../progress'
 import { goldenPaperLabs } from '../paperLabs/paperLabsRegistry'
-import { clearPaperLessonProgress, getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
+import { clearPaperLessonProgressSafely, getPaperLessonSummary } from '../paperLabs/shared/paperLessonProgress'
 import { usePaperLessonProgressMap } from '../paperLabs/shared/usePaperLessonProgressMap'
 import NextStepCard from './NextStepCard'
 import ProgressTransfer from './ProgressTransfer'
@@ -32,6 +32,7 @@ export default function ProgressPage({ go }: { go: Go }) {
   const [progress, setProgress] = useState<ProgressMap>(() => readProgress())
   const [persona, setPersona] = useState<PersonaId>(() => readPersona())
   const [confirming, setConfirming] = useState(false)
+  const [clearing, setClearing] = useState(false)
   const caseProgress = usePaperLessonProgressMap()
   const caseSummary = getPaperLessonSummary(caseProgress, goldenPaperLabs.map((lab) => lab.paperId))
   const nextCase = goldenPaperLabs.find((lab) => lab.paperId === caseSummary.nextId) ?? goldenPaperLabs[0]
@@ -62,12 +63,16 @@ export default function ProgressPage({ go }: { go: Go }) {
   const labDone = countDone(progress, labKeys, 3)
   const reviewDone = countDone(progress, reviewKeys, 4)
 
-  const reset = () => {
+  const reset = async () => {
     if (!confirming) {
       setConfirming(true)
       return
     }
-    if (!clearProgress() || !clearPaperLessonProgress()) {
+    if (clearing) return
+    setClearing(true)
+    const cleared = await clearPaperLessonProgressSafely(clearProgress)
+    setClearing(false)
+    if (!cleared) {
       setConfirming(false)
       return
     }
@@ -148,7 +153,7 @@ export default function ProgressPage({ go }: { go: Go }) {
 
       <ProgressTransfer />
 
-      <div className={`reset-zone ${confirming ? 'confirming' : ''}`}><div><RotateCcw /><span><b>{confirming ? '确认清空全部本地进度？' : '清空本机进度'}</b><small>{confirming ? '此操作不可撤销。再次点击确认清空。' : '需要二次确认，避免误触。'}</small></span></div><button type='button' onClick={reset}>{confirming ? '再次点击，确认清空' : '开始清空'}</button>{confirming ? <button type='button' className='cancel' onClick={() => setConfirming(false)}>取消</button> : null}</div>
+      <div className={`reset-zone ${confirming ? 'confirming' : ''}`}><div><RotateCcw /><span><b>{confirming ? '确认清空全部本地进度？' : '清空本机进度'}</b><small>{confirming ? '此操作不可撤销。再次点击确认清空。' : '需要二次确认，避免误触。'}</small></span></div><button type='button' disabled={clearing} onClick={reset}>{clearing ? '正在安全清空…' : confirming ? '再次点击，确认清空' : '开始清空'}</button>{confirming && !clearing ? <button type='button' className='cancel' onClick={() => setConfirming(false)}>取消</button> : null}</div>
     </section>
   )
 }

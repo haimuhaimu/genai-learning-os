@@ -106,7 +106,7 @@ export function RuleStep({ title, prompt, choices, selected, onSelect, feedback,
   )
 }
 
-export function PaperRevealStep({ principle, source, mappings, formulaTitle, formula, deepDive, boundary, onRestart, note }: {
+export function PaperRevealStep({ principle, source, mappings, formulaTitle, formula, deepDive, boundary, onRestart, note, completionLabel = '通关', completionHint = '现在试着不看页面，用自己的话复述上面的规律。' }: {
   principle: string
   source: string
   mappings: readonly Mapping[]
@@ -116,6 +116,8 @@ export function PaperRevealStep({ principle, source, mappings, formulaTitle, for
   boundary: string
   onRestart: () => void
   note?: string
+  completionLabel?: string
+  completionHint?: string
 }) {
   return (
     <section aria-labelledby='golden-step-5'>
@@ -132,7 +134,7 @@ export function PaperRevealStep({ principle, source, mappings, formulaTitle, for
         <div>{deepDive}<p className='golden-boundary'>教学边界：{boundary}</p></div>
       </details>
       <button className='golden-restart-button' type='button' onClick={onRestart}><RotateCcw aria-hidden='true' />重新挑战</button>
-      <div className='golden-complete'><Target aria-hidden='true' /><span><b>通关</b> 现在试着不看页面，用自己的话复述上面的规律。</span></div>
+      <div className='golden-complete'><Target aria-hidden='true' /><span><b>{completionLabel}</b> {completionHint}</span></div>
     </section>
   )
 }

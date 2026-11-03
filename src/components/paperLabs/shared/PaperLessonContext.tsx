@@ -38,11 +38,12 @@ export function usePaperLesson() {
   return context
 }
 
-export function usePaperLessonProgress(step: LessonStep) {
+export function usePaperLessonProgress(step: LessonStep, enabled = true) {
   const { paperId } = usePaperLesson()
   useEffect(() => {
+    if (!enabled) return
     const completed = step === 5
     savePaperLessonStep(paperId, step, completed)
     markProgress(`paper-lab:${paperId}`, lessonStepToLearningStage(step))
-  }, [paperId, step])
+  }, [paperId, step, enabled])
 }

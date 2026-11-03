@@ -1,4 +1,5 @@
 .lo-learning-journey{margin:28px 0 40px;padding:clamp(20px,3vw,36px);border:1px solid var(--lo-line);border-radius:24px;background:var(--lo-surface);color:var(--lo-ink);scroll-margin-top:90px}
+.journey-choice{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:0;padding:12px}.journey-choice button{flex:1 1 260px;min-width:0;text-align:left}.journey-choice [aria-pressed=true]{border-color:var(--lo-accent);background:var(--lo-accent-soft)}
 .lo-learning-journey :is(h3,h4){scroll-margin-top:90px}
 .lo-learning-journey>header,.lo-learning-journey .journey-finish{display:flex;justify-content:space-between;gap:24px}
 .lo-learning-journey h2{margin:8px 0 14px;font-size:clamp(26px,3vw,40px);line-height:1.2;letter-spacing:-.04em}.lo-learning-journey p{color:var(--lo-muted);font-size:14px;line-height:1.75}

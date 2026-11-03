@@ -1,0 +1,260 @@
+{
+  "format": "algorithm-playground/learning-run",
+  "schemaVersion": 1,
+  "experimentId": "bayes-update",
+  "engineVersion": "bayes-update-v1",
+  "numericFormat": "decimal-12-significant-digits",
+  "producer": "browser-session",
+  "fixture": {
+    "id": "two-mining-logs-beta-bernoulli-v1",
+    "prior": {
+      "distribution": "Beta",
+      "alpha": 1,
+      "beta": 1
+    },
+    "logs": [
+      {
+        "id": "little",
+        "successes": 3,
+        "failures": 2
+      },
+      {
+        "id": "many",
+        "successes": 18,
+        "failures": 12
+      }
+    ],
+    "newFeedback": {
+      "successes": 0,
+      "failures": 1
+    },
+    "assumptions": [
+      "fixed unknown success probability",
+      "conditionally independent Bernoulli observations"
+    ],
+    "randomness": "none; authored fixed fixture"
+  },
+  "actions": [
+    {
+      "action": "guess",
+      "value": "same"
+    },
+    {
+      "action": "reveal"
+    },
+    {
+      "action": "change-guess",
+      "value": "many"
+    },
+    {
+      "action": "update"
+    },
+    {
+      "action": "answer",
+      "value": "never"
+    },
+    {
+      "action": "answer",
+      "value": "evidence"
+    }
+  ],
+  "steps": [
+    {
+      "status": "applied",
+      "stage": "predict"
+    },
+    {
+      "status": "applied",
+      "stage": "compare"
+    },
+    {
+      "status": "applied",
+      "stage": "compare"
+    },
+    {
+      "status": "applied",
+      "stage": "updated"
+    },
+    {
+      "status": "applied",
+      "stage": "updated"
+    },
+    {
+      "status": "applied",
+      "stage": "done"
+    }
+  ],
+  "result": {
+    "stage": "done",
+    "workflowComplete": true,
+    "mastery": "not-assessed",
+    "evidence": {
+      "phase": "done",
+      "guess": "same",
+      "changeGuess": "many",
+      "baseline": [
+        {
+          "id": "little",
+          "successes": 3,
+          "failures": 2,
+          "sampleRate": 0.6,
+          "belief": {
+            "successes": 3,
+            "failures": 2,
+            "total": 5,
+            "sampleRate": 0.6,
+            "alpha": 4,
+            "beta": 3,
+            "mean": 0.571428571429,
+            "variance": 0.030612244898,
+            "credibleMass": 0.9,
+            "interval": [
+              0.27133837252,
+              0.846838882025
+            ]
+          }
+        },
+        {
+          "id": "many",
+          "successes": 18,
+          "failures": 12,
+          "sampleRate": 0.6,
+          "belief": {
+            "successes": 18,
+            "failures": 12,
+            "total": 30,
+            "sampleRate": 0.6,
+            "alpha": 19,
+            "beta": 13,
+            "mean": 0.59375,
+            "variance": 0.00730942234848,
+            "credibleMass": 0.9,
+            "interval": [
+              0.449556625969,
+              0.731173723777
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "little",
+          "successes": 3,
+          "failures": 3,
+          "sampleRate": 0.5,
+          "belief": {
+            "successes": 3,
+            "failures": 3,
+            "total": 6,
+            "sampleRate": 0.5,
+            "alpha": 4,
+            "beta": 4,
+            "mean": 0.5,
+            "variance": 0.0277777777778,
+            "credibleMass": 0.9,
+            "interval": [
+              0.225321584032,
+              0.774678415968
+            ]
+          }
+        },
+        {
+          "id": "many",
+          "successes": 18,
+          "failures": 13,
+          "sampleRate": 0.58064516129,
+          "belief": {
+            "successes": 18,
+            "failures": 13,
+            "total": 31,
+            "sampleRate": 0.58064516129,
+            "alpha": 19,
+            "beta": 14,
+            "mean": 0.575757575758,
+            "variance": 0.00718414087398,
+            "credibleMass": 0.9,
+            "interval": [
+              0.433487372989,
+              0.712725083408
+            ]
+          }
+        }
+      ],
+      "transfer": [
+        {
+          "id": "one",
+          "successes": 0,
+          "failures": 1,
+          "sampleRate": 0,
+          "belief": {
+            "successes": 0,
+            "failures": 1,
+            "total": 1,
+            "sampleRate": 0,
+            "alpha": 1,
+            "beta": 2,
+            "mean": 0.333333333333,
+            "variance": 0.0555555555556,
+            "credibleMass": 0.9,
+            "interval": [
+              0.0253205655191,
+              0.77639320225
+            ]
+          }
+        },
+        {
+          "id": "ten",
+          "successes": 0,
+          "failures": 10,
+          "sampleRate": 0,
+          "belief": {
+            "successes": 0,
+            "failures": 10,
+            "total": 10,
+            "sampleRate": 0,
+            "alpha": 1,
+            "beta": 11,
+            "mean": 0.0833333333333,
+            "variance": 0.00587606837607,
+            "credibleMass": 0.9,
+            "interval": [
+              0.0046521717322,
+              0.238404190381
+            ]
+          }
+        }
+      ],
+      "ending": {
+        "firstAttemptCorrect": false,
+        "attemptsCount": 2
+      },
+      "attempts": [
+        "never",
+        "evidence"
+      ]
+    },
+    "availableActions": [
+      {
+        "action": "reset"
+      }
+    ]
+  },
+  "boundaries": [
+    "固定的 Beta–Bernoulli 教学模型，不是自由探矿游戏的真实概率推断。",
+    "Beta(1,1) 是共同建模先验，不是实际多挖了两次。",
+    "样本比例、后验均值和真实成功率不同；90% 可信区间依赖本课先验与模型假设，不是现实保证。",
+    "一次空手反馈更新已有判断，不会抹掉旧观察；有限次空手不能证明成功概率为零。",
+    "流程完成或猜对不等于掌握；记录不认证操作者身份，不自动写入学习进度。",
+    "只记录本课操作，不读取自由探索、草稿或浏览器存储；主动分享后记录才会离开本页。"
+  ],
+  "genai": [
+    {
+      "concept": "概率基础",
+      "url": "https://haimuhaimu.github.io/genai-learning-os/?page=foundation&node=probability"
+    },
+    {
+      "concept": "贝叶斯判断与放量决策",
+      "url": "https://haimuhaimu.github.io/genai-learning-os/?page=strategy-case&case=bayes-rollout"
+    }
+  ]
+}

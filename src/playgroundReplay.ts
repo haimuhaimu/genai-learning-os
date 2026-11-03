@@ -13,6 +13,14 @@ export function modelCoachModuleURLs(configuredBase = 'https://haimuhaimu.github
 }
 const moduleURLs = () => modelCoachModuleURLs(import.meta.env?.VITE_PLAYGROUND_BASE_URL)
 
+export function playgroundReplayURL(experimentId: string, configuredBase?: string) {
+  const url = new URL(modelCoachModuleURLs(configuredBase).engine)
+  // Existing visitors may still cache the pre-Bayes engine at the model URL.
+  // Preserve that released model URL and version only the new tool dependency.
+  if (experimentId === 'bayes-update') url.searchParams.set('v', 'bayes-journey-v1')
+  return url.href
+}
+
 export async function loadModelCoachRuntime(): Promise<ModelCoachRuntime> {
   const urls = moduleURLs()
   try {
@@ -25,7 +33,7 @@ export async function loadModelCoachRuntime(): Promise<ModelCoachRuntime> {
 }
 export async function replayPlaygroundReceipt(receipt: LearningReceipt): Promise<unknown> {
   let module: { replayLearningReceipt?: (value: unknown) => unknown }
-  try { module = await import(/* @vite-ignore */ moduleURLs().engine) } catch {
+  try { module = await import(/* @vite-ignore */ playgroundReplayURL(String(receipt.experimentId), import.meta.env?.VITE_PLAYGROUND_BASE_URL)) } catch {
     throw Error('暂时无法载入游乐场的公开核对模块。记录仍在这里；联网后可重试，没有上传或推进进度。')
   }
   if (typeof module.replayLearningReceipt !== 'function') throw Error('公开核对模块暂不兼容，原记录没有改变。')

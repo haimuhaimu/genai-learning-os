@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ArrowRight, Route } from 'lucide-react'
 import { JOURNEY_EVENT, JOURNEY_KEY, deriveJourneyStatus, readJourney } from '../../learningJourney'
 import { PROGRESS_CHANGE_EVENT, readProgress } from '../../progress'
+import { BAYES_JOURNEY_EVENT, BAYES_JOURNEY_KEY, readBayesJourney } from '../../bayesJourney'
 
 type Go = (page: string, options?: Record<string, string>) => void
 function useJourneySnapshot() {
@@ -26,8 +27,19 @@ export function JourneyEntry({ go }: { go: Go }) {
   </aside>
 }
 
-export function JourneyReturnBar({ page, go }: { page: string; go: Go }) {
+export function JourneyReturnBar({ page, node, go }: { page: string; node?: string; go: Go }) {
   const { journey } = useJourneySnapshot()
+  const [bayes, setBayes] = useState(readBayesJourney)
+  useEffect(() => {
+    const sync = () => setBayes(readBayesJourney())
+    const storage = (event: StorageEvent) => { if (event.key === BAYES_JOURNEY_KEY || event.key === null) sync() }
+    window.addEventListener(BAYES_JOURNEY_EVENT, sync); window.addEventListener('storage', storage)
+    return () => { window.removeEventListener(BAYES_JOURNEY_EVENT, sync); window.removeEventListener('storage', storage) }
+  }, [])
+  if (bayes.active && page === 'foundation' && node === 'probability') return <aside className='lo-journey-return' aria-label='当前完整学习路径'>
+    <span>当前路径：新线索来了，怎样改判断？<small>看完机制后，回到贝叶斯路径亲手试。</small></span>
+    <button type='button' onClick={() => go('routes', { section: 'bayes-journey' })}>回到贝叶斯路径<ArrowRight aria-hidden='true' /></button>
+  </aside>
   if (!journey.active || page !== 'foundation') return null
   return <aside className='lo-journey-return' aria-label='当前完整学习路径'>
     <span>当前路径：模型怎样从例子里学会？<small>看完机制后，回到路径继续动手与复盘。</small></span>

@@ -1,4 +1,4 @@
-# One complete learning journey with Algorithm Playground
+# Complete learning journeys with Algorithm Playground
 
 The routes page includes a first end-to-end example, **model-learning**:
 
@@ -7,6 +7,18 @@ The routes page includes a first end-to-end example, **model-learning**:
 3. Explicitly bring the operation receipt back, inspect recomputed results, confirm personal practice, and answer two recap questions.
 
 Other course catalogs and experiments remain available. This does not make every curriculum a guided journey or certify mastery.
+
+## Second journey: evidence and Bayesian updating
+
+Choose **贝叶斯更新** on the routes page (`?page=routes&section=bayes-journey`). Start with the existing F01 probability foundation, then try the separate fixed Bayesian lesson in `mining.html#bayes-lesson`, bring back its real operation record and explain the two before/after comparisons. The foundation lesson is not renamed or claimed to be a full Bayesian course.
+
+The lesson uses the same Beta(1,1) prior for two authored logs, 3/5 and18/30 successes. It adds one failure to each log. The unknown probability is assumed fixed, with observations conditionally independent given it. This is not the original mining game's hidden generator. The receipt preserves original guesses and incorrect explanation attempts, not only the final correct option. A partial wrong answer remains an answered-but-unfinished attempt.
+
+The pure `bayes-update` tool in the Playground supports the same list/describe/run/replay interface. Its engine version is `bayes-update-v1`. `genaiJourney=bayes-learning` returns only to `?page=routes&section=bayes-journey`; it cannot return a model-learning receipt. Request binding and explicit manual-import fallback follow the same safety boundaries as the model journey. The model receipt format remains unchanged.
+
+Bayesian journey state uses `genai-bayes-learning-journey-v1`, separate from the model route and original course progress. Only a completed browser receipt, freshly replayed and self-declared by the learner, may count as practice. The recap distinguishes a change in our evidence-based judgment from a change in the world, and finite failures from proof of zero probability. Route completion still does not certify mastery.
+
+The `genai-learning-os/bayes-coach-task` package defaults to course-only, with no personal record or recap. Explicit evidence opt-in freshly replays the selected receipt and projects only supported actions, observed results and the submitted recap. It does not include drawing drafts, free mining history, other learning records or hidden future results. No AI service is connected or called automatically. The shared copy/download panel retains the same cancellation and source-specific consent protections as the model task package.
 
 ## Optional AI coaching task package
 

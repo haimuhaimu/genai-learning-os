@@ -8,6 +8,18 @@ const cases = [
   ['react', '阻止 Agent 自信犯错', 'end', '动作前查证，冲突时停止', 'dreamerv3'],
   ['dreamerv3', '在想象中训练决策', 'end', '推得越远，越要防小错累积', 'switch-transformers'],
 ]
+async function chooseControl(page, control) {
+  // These unchanged lessons move focus after a step transition. Wait for that real UI state.
+  await expect(page.locator('.golden-lesson')).toBeFocused()
+  const slider = page.getByRole('slider')
+  await slider.press('Home')
+  if (control === 'end') await slider.press('End')
+  if (control === 'temperature') {
+    await expect(slider).toHaveValue('0.5')
+    for (const value of ['1', '1.5', '2']) { await slider.press('ArrowRight'); await expect(slider).toHaveValue(value) }
+  }
+  await expect(page.locator('.golden-primary-button')).toBeEnabled()
+}
 for (const [paper, title, control, rule, next] of cases) {
   test(`existing ${title} still completes, restarts without dropping completion, and opens next lesson`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
@@ -16,11 +28,7 @@ for (const [paper, title, control, rule, next] of cases) {
     await page.locator('.golden-primary-button').click()
     await page.getByRole('button', { name: control === 'home' ? '查看它最关注了哪句话' : '定位错误节点', exact: true }).click()
     await page.locator('.golden-primary-button').click()
-    const slider = page.getByRole('slider')
-    await slider.press('Home')
-    if (control === 'end') await slider.press('End')
-    if (control === 'temperature') for (let i = 0; i < 3; i++) await slider.press('ArrowRight')
-    await expect(page.locator('.golden-primary-button')).toBeEnabled()
+    await chooseControl(page, control)
     await page.locator('.golden-primary-button').click()
     await page.getByRole('button', { name: rule, exact: true }).click()
     await page.locator('.golden-primary-button').click()
@@ -37,8 +45,7 @@ for (const [paper, title, control, rule, next] of cases) {
     await page.locator('.golden-primary-button').click()
     await page.getByRole('button', { name: control === 'home' ? '查看它最关注了哪句话' : '定位错误节点', exact: true }).click()
     await page.locator('.golden-primary-button').click()
-    await slider.press(control === 'home' ? 'Home' : 'End')
-    if (control === 'temperature') { await slider.press('Home'); for (let i = 0; i < 3; i++) await slider.press('ArrowRight') }
+    await chooseControl(page, control)
     await page.locator('.golden-primary-button').click()
     await page.getByRole('button', { name: rule, exact: true }).click()
     await page.locator('.golden-primary-button').click()

@@ -167,7 +167,14 @@ test('simultaneous tabs retain the completed experiment and reject one stale ret
   await completeMoe(page)
   const other = await context.newPage()
   await other.goto('/?page=paper-lab&paper=switch-transformers')
-  await Promise.all([page.getByRole('button', { name: '重新挑战', exact: true }).click(), other.getByRole('button', { name: '重新挑战', exact: true }).click()])
+  // Navigation can finish before the lazy lesson mounts. Establish two ready, stale sessions first.
+  for (const tab of [page, other]) await expect(tab.getByLabel('本轮实验记录')).toContainText('按这次完整实验复习')
+  await page.evaluate(() => { void navigator.locks.request('genai-moe-experiment-notebook-v1', () => new Promise(resolve => { window.releaseMoeTestLock = resolve })) })
+  await expect.poll(() => page.evaluate(() => typeof window.releaseMoeTestLock)).toBe('function')
+  try {
+    await Promise.all([page.getByRole('button', { name: '重新挑战', exact: true }).click(), other.getByRole('button', { name: '重新挑战', exact: true }).click()])
+    await expect.poll(() => page.evaluate(async () => (await navigator.locks.query()).pending.filter(lock => lock.name === 'genai-moe-experiment-notebook-v1').length)).toBe(2)
+  } finally { await page.evaluate(() => window.releaseMoeTestLock()) }
   await expect.poll(async () => (await page.getByRole('status').filter({ hasText: /未能确认保存|另一页面更新/ }).count()) + (await other.getByRole('status').filter({ hasText: /未能确认保存|另一页面更新/ }).count())).toBeGreaterThan(0)
   const notebook = await page.evaluate(() => JSON.parse(localStorage.getItem('genai-moe-experiment-notebook-v1')))
   expect(notebook.lastCompleted.concern).toBe(5)

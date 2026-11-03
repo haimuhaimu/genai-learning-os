@@ -90,7 +90,7 @@ export default function Business({ user }: BusinessProps) {
   return <div className='model-lab expert-edition unified-edition learning-os-shell' data-page={route.page} data-home-theme={homeDark ? 'dark' : 'light'}>
     <a className='lo-skip-link' href='#main-content'>跳到主要内容</a>
     <ProductHeader page={route.page} go={go} searchButtonRef={searchButtonRef} onSearch={(trigger) => { setFeedbackOpen(false); setPaletteTrigger(trigger); setPaletteOpen(true) }} onFeedback={openFeedback} homeDark={homeDark} onToggleHomeTheme={route.page === 'unified-map' ? () => { homeAppearanceChosen.current = true; setHomeDark((value) => !value) } : undefined} />
-    <JourneyReturnBar page={route.page} go={go} />
+    <JourneyReturnBar page={route.page} node={route.node} go={go} />
     <main ref={mainContentRef} className='lab-main' id='main-content' tabIndex={-1}><PageLoadErrorBoundary page={route.page} onHome={() => go('unified-map')}><Suspense fallback={<PageLoading />}><PageRenderer route={route} go={go} onFeedback={openFeedback} /></Suspense></PageLoadErrorBoundary></main>
     <footer className='lo-footer'><div><BookOpen /><span><b>GenAI Learning OS</b><small>算法基础 / AI 决策数学 / LLM / 图像生成 / Agent / 蒸馏</small></span></div><p>{user?.name ? `${user.name}，` : ''}把学习变成一条可验证、可继续的路径。</p><button type='button' className='lo-footer-co-build' onClick={() => go('co-build')}>参与共建</button><button type='button' onClick={() => go('routes')}><Route />查看学习路线</button></footer>
     <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} go={go} returnFocus={paletteTrigger} />

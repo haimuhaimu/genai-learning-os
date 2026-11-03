@@ -19,3 +19,10 @@ test('an arbitrary remote module, credential URL or privileged local port is nev
     assert.throws(() => api.modelCoachModuleURLs(base))
   }
 })
+test('Bayes replay uses a fresh engine URL while the released model engine URL stays unchanged', () => {
+  assert.equal(typeof api.playgroundReplayURL, 'function')
+  assert.equal(api.playgroundReplayURL('bayes-update'), 'https://haimuhaimu.github.io/algorithm-playground/learning-tool.mjs?v=bayes-journey-v1')
+  assert.equal(api.playgroundReplayURL('learning-route'), 'https://haimuhaimu.github.io/algorithm-playground/learning-tool.mjs')
+  assert.equal(api.playgroundReplayURL('bayes-update', 'http://127.0.0.1:3103/'), 'http://127.0.0.1:3103/learning-tool.mjs?v=bayes-journey-v1')
+  assert.throws(() => api.playgroundReplayURL('bayes-update', 'https://evil.example/'))
+})

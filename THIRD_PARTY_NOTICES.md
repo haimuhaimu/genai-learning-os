@@ -1,5 +1,9 @@
 # Third-Party Notices
 
+## 首页像素主视觉
+
+`src/assets/genai-model-blue-v1.png` 为本项目使用 OpenAI 图像生成工具制作的蓝白像素插画。它是模型模块的概念示意，不是 Kimi K3 的真实架构图、运行结果或性能证据；未使用第三方品牌标志或字体素材。
+
 ## AI Agent 手册 / AI Agent Book
 
 本项目的 **Agent Book** 学习模块参考并改编自以下开源项目：

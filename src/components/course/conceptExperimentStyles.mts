@@ -5,8 +5,8 @@ export const conceptExperimentStyles = {
   intro: { margin: 0, color: '#596477', lineHeight: 1.65 },
   control: { display: 'grid', gap: 7, padding: 12, border: '1px solid #dfe4ea', borderRadius: 10, background: '#fff' },
   controlTop: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' },
-  range: { width: '100%', accentColor: '#5261bd' },
-  run: { display: 'inline-flex', width: 'fit-content', alignItems: 'center', gap: 7, padding: '9px 13px', border: 0, borderRadius: 8, color: '#fff', background: '#4655b5', fontWeight: 800, cursor: 'pointer' },
+  range: { width: '100%', accentColor: 'var(--lo-accent)' },
+  run: { display: 'inline-flex', width: 'fit-content', alignItems: 'center', gap: 7, padding: '9px 13px', border: 0, borderRadius: 'var(--lo-control-radius)', color: '#fff', background: 'var(--lo-accent)', fontWeight: 750, cursor: 'pointer' },
   compare: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'stretch' },
   compareCard: { flex: '1 1 210px', minWidth: 0, padding: 13, border: '1px solid #dfe4ea', borderRadius: 10, background: '#fff' },
   afterCard: { borderColor: '#a9cdbd', background: '#f2f8f5' },
@@ -28,5 +28,5 @@ export const conceptExperimentStyles = {
   metric: { display: 'grid', gap: 5, padding: 10, borderRadius: 8, background: '#eef1f5' },
   choiceRow: { display: 'flex', flexWrap: 'wrap', gap: 7 },
   choice: { padding: '8px 11px', border: '1px solid #d5dbe5', borderRadius: 8, color: '#505b6d', background: '#fff', cursor: 'pointer' },
-  activeChoice: { color: '#fff', borderColor: '#4655b5', background: '#4655b5' },
+  activeChoice: { color: '#fff', borderColor: 'var(--lo-accent)', background: 'var(--lo-accent)' },
 } satisfies Record<string, CSSProperties>

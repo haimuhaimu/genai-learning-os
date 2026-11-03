@@ -31,6 +31,8 @@ for (const width of [320, 390, 768, 1280]) {
 
     const overflow = await history.evaluate((element) => element.scrollWidth > element.clientWidth)
     if (overflow) {
+      // Keep the wheel target away from the viewport edge before real input.
+      await history.evaluate((element) => element.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }))
       await history.hover()
       await page.mouse.wheel(2000, 0)
       await expect.poll(() => history.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)

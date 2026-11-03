@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import K3BuildWorkshop from './K3BuildWorkshop';
 import { K3_STEP_IDS } from './k3BuildLearning';
+import { isK3StepDone } from '../../content/k3Summary';
 import type { Go } from '../../pageRegistry';
 import type { RouteState } from '../../routeConfig';
 import { PROGRESS_CHANGE_EVENT, readProgress } from '../../progress';
@@ -66,7 +67,6 @@ interface LayerStyle extends CSSProperties {
 
 const layerStyle = (index: number): LayerStyle => ({ '--i': index });
 
-const stepKeys = K3_STEP_IDS.map((id) => `k3:concept:${id}`);
 const presets = [0.5, 1.5, 3, 7];
 
 function SectionNav({ go }: { go: Go }) {
@@ -100,7 +100,7 @@ export default function K3BuildLabPage({
   const ConceptIcon = concept.icon;
   const memory = ((presets[preset] * 1e9 * bits) / 8 / 1024 ** 3) * 1.15;
   const completed = useMemo(
-    () => stepKeys.filter((key) => (progress[key] ?? 0) >= 4).length,
+    () => K3_STEP_IDS.filter((id) => isK3StepDone(progress, id)).length,
     [progress],
   );
 
@@ -317,7 +317,7 @@ export default function K3BuildLabPage({
           </div>
           <strong>{completed}/6</strong>
         </header>
-        <K3BuildWorkshop progress={progress} onProgress={setProgress} />
+        <K3BuildWorkshop key={route.experiment ?? 'continue'} initialStep={route.experiment} progress={progress} onProgress={setProgress} />
       </section>
     </div>
   );

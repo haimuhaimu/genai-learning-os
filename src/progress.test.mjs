@@ -108,20 +108,35 @@ test('相同或更低阶段不会重复写入或发送变化事件', () => {
   }
 })
 
-test('能力画像把实验、评审、工程与路线广度聚合为可解释分数', () => {
+test('学习记录覆盖使用完整课程分母，不把少量已开始节点当作满分', () => {
   const capabilities = calculateLearningCapabilities({
     softmax: 3,
     'llm-token': 4,
     'img-space': 2,
-    'agent-book:ch1': 4,
-    'agent-book:kv-cache': 3,
+    'agent-book-ch1': 4,
+    'agent-book-lab-kv-cache': 3,
   })
   const scores = Object.fromEntries(capabilities.map((item) => [item.id, item.score]))
-  assert.equal(scores.mechanism, 80)
-  assert.equal(scores.experiment, 80)
-  assert.equal(scores.judgment, 40)
-  assert.equal(scores.engineering, 88)
-  assert.equal(scores.breadth, 80)
+  assert.deepEqual(scores, { mechanism: 12, experiment: 10, judgment: 3, engineering: 10, breadth: 100 })
+  assert.deepEqual(capabilities.map(({ covered, total }) => [covered, total]), [[3, 25], [3, 31], [1, 30], [2, 21], [4, 4]])
+})
+
+test('未知键、论文记录和 K3 双键不会制造课程证据覆盖', () => {
+  const capabilities = calculateLearningCapabilities({
+    'paper-lab:attention-is-all-you-need': 4,
+    'k3:concept:goal': 4,
+    'k3:build:goal': 4,
+    'llm-unknown': 4,
+    'agent-book:ch1': 4,
+  })
+  assert.deepEqual(capabilities.map((item) => item.score), [0, 0, 0, 0, 0])
+})
+
+test('未达手算门槛的正式节点不会稀释已有机制记录的固定覆盖率', () => {
+  const before = calculateLearningCapabilities({ softmax: 4 }).find((item) => item.id === 'mechanism')
+  const after = calculateLearningCapabilities({ softmax: 4, probability: 1 }).find((item) => item.id === 'mechanism')
+  assert.equal(before.score, 4)
+  assert.equal(after.score, 4)
 })
 
 test('空进度生成零分能力画像而不是报错', () => {

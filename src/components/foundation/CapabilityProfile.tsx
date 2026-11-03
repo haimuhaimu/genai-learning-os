@@ -15,23 +15,23 @@ export default function CapabilityProfile({ progress, go }: { progress: Progress
 
   return <section aria-labelledby='capability-profile-title' style={styles.shell}>
     <header style={styles.header}>
-      <div><span style={styles.eyebrow}>GENAI TALENT PROFILE</span><h2 id='capability-profile-title' style={styles.title}>我的能力画像</h2><p style={styles.muted}>分数不是结论：点击能力，查看由哪些学习行为形成，以及下一步怎么补齐。</p></div>
-      {plan.nextSteps[0] ? <button type='button' onClick={() => go(plan.nextSteps[0].page, plan.nextSteps[0].options)} style={styles.primary}>开始补齐：{selected.label}<ArrowRight size={16} /></button> : <span style={styles.complete}><CheckCircle2 size={17} />当前建议已完成</span>}
+      <div><span style={styles.eyebrow}>GENAI LEARNING RECORDS</span><h2 id='capability-profile-title' style={styles.title}>学习记录覆盖</h2><p style={styles.muted}>统计算法基础、LLM、图像与 Agent 四条课程路线的阶段记录，不等于能力认证。K3 与论文记录保留，但暂未纳入此覆盖率。</p></div>
+      {plan.nextSteps[0] ? <button type='button' onClick={() => go(plan.nextSteps[0].page, plan.nextSteps[0].options)} style={styles.primary}>继续学习：{selected.label}<ArrowRight size={16} /></button> : <span style={styles.complete}><CheckCircle2 size={17} />此范围记录已覆盖</span>}
     </header>
 
-    <div style={styles.cards}>{capabilities.map((capability) => <button key={capability.id} type='button' aria-pressed={capability.id === selected.id} onClick={() => setSelectedId(capability.id)} style={{ ...styles.card, ...(capability.id === selected.id ? styles.cardActive : {}) }}><span style={styles.cardTitle}><b>{capability.label}</b><strong style={styles.score}>{capability.score}</strong></span><i aria-hidden='true' style={styles.track}><em style={{ ...styles.fill, width: `${capability.score}%` }} /></i><small style={styles.cardCopy}>{capability.description}</small><span style={styles.detailHint}>{capability.id === selected.id ? '正在查看证据' : '查看证据与补课路径'}</span></button>)}</div>
+    <div style={styles.cards}>{capabilities.map((capability) => <button key={capability.id} type='button' aria-pressed={capability.id === selected.id} onClick={() => setSelectedId(capability.id)} style={{ ...styles.card, ...(capability.id === selected.id ? styles.cardActive : {}) }}><span style={styles.cardTitle}><b>{capability.label}</b><strong style={styles.score}>{capability.score}%</strong></span><i aria-hidden='true' style={styles.track}><em style={{ ...styles.fill, width: `${capability.score}%` }} /></i><small style={styles.cardCopy}>{`${capability.covered} / ${capability.total} ${capability.unit}`} · {capability.description}</small><span style={styles.detailHint}>{capability.id === selected.id ? '正在查看记录' : '查看记录与下一步'}</span></button>)}</div>
 
     <div style={styles.detail}>
-      <div style={styles.detailHeading}><div><span style={styles.detailLabel}>为什么是 {selected.score} 分</span><h3 style={styles.detailTitle}>{selected.label} · 能力证据</h3></div><p style={styles.basis}>{plan.basis}</p></div>
+      <div style={styles.detailHeading}><div><span style={styles.detailLabel}>覆盖 {selected.covered} / {selected.total} {selected.unit} · {selected.score}%</span><h3 style={styles.detailTitle}>{selected.label} · 学习记录</h3></div><p style={styles.basis}>{plan.basis}</p></div>
       <div style={styles.columns}>
         <article style={styles.panel}>
-          <h4 style={styles.panelTitle}><CheckCircle2 size={18} />已经形成的证据</h4>
-          {visibleEvidence.length ? <div style={styles.list}>{visibleEvidence.map((item) => <button key={item.id} type='button' onClick={() => go(item.page, item.options)} style={styles.row}><span><b>{item.title}</b><small style={styles.rowCopy}>{item.reason}</small></span><span style={styles.stage}>{stageLabels[item.stage]}</span></button>)}</div> : <p style={styles.empty}>尚无可验证证据。完成下方第一步后，这里会出现你的真实学习记录。</p>}
-          {plan.evidence.length > visibleEvidence.length ? <small style={styles.more}>另有 {plan.evidence.length - visibleEvidence.length} 条证据已计入画像</small> : null}
+          <h4 style={styles.panelTitle}><CheckCircle2 size={18} />已计入的课程记录</h4>
+          {visibleEvidence.length ? <div style={styles.list}>{visibleEvidence.map((item) => <button key={item.id} type='button' onClick={() => go(item.page, item.options)} style={styles.row}><span><b>{item.title}</b><small style={styles.rowCopy}>{item.reason}</small></span><span style={styles.stage}>{stageLabels[item.stage]}</span></button>)}</div> : <p style={styles.empty}>尚无达到记录门槛的课程节点。完成下方第一步后，这里会出现对应的学习记录。</p>}
+          {plan.evidence.length > visibleEvidence.length ? <small style={styles.more}>另有 {plan.evidence.length - visibleEvidence.length} 条课程记录已计入覆盖率</small> : null}
         </article>
         <article style={styles.panel}>
-          <h4 style={styles.panelTitle}><Sparkles size={18} />为你生成的补课路径</h4>
-          {plan.nextSteps.length ? <ol style={styles.steps}>{plan.nextSteps.map((item, index) => <li key={item.id}><button type='button' onClick={() => go(item.page, item.options)} style={styles.step}><span style={styles.stepNo}>{index + 1}</span><span><b>{item.title}</b><small style={styles.rowCopy}>{item.stage ? `从“${stageLabels[item.stage]}”继续，目标到“${stageLabels[item.target]}”` : item.reason}</small></span><ArrowRight size={16} /></button></li>)}</ol> : <p style={styles.empty}><CheckCircle2 size={17} />这项能力的核心路径已完成，可以进入路线页选择进阶主题。</p>}
+          <h4 style={styles.panelTitle}><Sparkles size={18} />下一步课程建议</h4>
+          {plan.nextSteps.length ? <ol style={styles.steps}>{plan.nextSteps.map((item, index) => <li key={item.id}><button type='button' onClick={() => go(item.page, item.options)} style={styles.step}><span style={styles.stepNo}>{index + 1}</span><span><b>{item.title}</b><small style={styles.rowCopy}>{item.stage ? `从“${stageLabels[item.stage]}”继续，目标到“${stageLabels[item.target]}”` : item.reason}</small></span><ArrowRight size={16} /></button></li>)}</ol> : <p style={styles.empty}><CheckCircle2 size={17} />此统计范围的记录已覆盖；这不表示能力已认证，可到路线页选择进阶主题。</p>}
         </article>
       </div>
     </div>
@@ -43,13 +43,13 @@ const styles = {
   header: { display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'end', flexWrap: 'wrap' },
   eyebrow: { color: '#5169a8', fontSize: '12px', fontWeight: 800, letterSpacing: '.08em' },
   title: { margin: '6px 0' }, muted: { margin: 0, color: '#5c6477' },
-  primary: { display: 'inline-flex', alignItems: 'center', gap: '8px', border: 0, borderRadius: '12px', padding: '10px 14px', background: '#2f5bd3', color: '#fff', fontWeight: 700, cursor: 'pointer' },
+  primary: { display: 'inline-flex', alignItems: 'center', gap: '8px', border: 0, borderRadius: 'var(--lo-control-radius)', padding: '10px 14px', background: 'var(--lo-accent)', color: '#fff', fontWeight: 750, cursor: 'pointer' },
   complete: { display: 'inline-flex', alignItems: 'center', gap: '7px', color: '#24745a', fontWeight: 700 },
   cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '18px' },
   card: { border: '1px solid rgba(72, 99, 160, .16)', borderRadius: '16px', padding: '16px', background: '#fff', textAlign: 'left' as const, cursor: 'pointer' },
   cardActive: { borderColor: '#315fd8', boxShadow: '0 0 0 2px rgba(49,95,216,.1)' },
-  cardTitle: { display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'baseline' }, score: { color: '#2f5bd3', fontSize: '22px' },
-  track: { display: 'block', height: '7px', margin: '12px 0', borderRadius: '99px', background: '#e9edf6', overflow: 'hidden' }, fill: { display: 'block', height: '100%', borderRadius: 'inherit', background: 'linear-gradient(90deg, #315fd8, #7b5fd6)' },
+  cardTitle: { display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'baseline' }, score: { color: 'var(--lo-accent)', fontSize: '22px' },
+  track: { display: 'block', height: '7px', margin: '12px 0', borderRadius: '99px', background: 'var(--lo-line)', overflow: 'hidden' }, fill: { display: 'block', height: '100%', borderRadius: 'inherit', background: 'var(--lo-accent)' },
   cardCopy: { display: 'block', color: '#687084', lineHeight: 1.5 }, detailHint: { display: 'block', marginTop: '12px', color: '#315fd8', fontSize: '12px', fontWeight: 700 },
   detail: { marginTop: '16px', padding: '18px', borderRadius: '16px', background: '#fff', border: '1px solid rgba(72,99,160,.14)' },
   detailHeading: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: '18px', alignItems: 'end', marginBottom: '14px' },

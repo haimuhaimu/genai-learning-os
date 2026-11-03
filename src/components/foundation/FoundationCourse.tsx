@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Beaker, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Lightbulb, ShieldCheck, Sigma, Stethoscope, Target } from 'lucide-react'
 import { foundationNodes } from '../../foundationData'
+import { resolveFoundationNodeId } from '../../content/foundationSummary'
 import ShareButton from '../shell/ShareButton'
 import { ActivationExperiment, CrossEntropyExperiment, GradientDescentExperiment, KLDivergenceExperiment, MlpWidthExperiment, MoeRoutingExperiment, ResidualPathExperiment, SoftmaxTemperatureExperiment } from '../course/ConceptExperiments'
 import { markProgress, readProgress, stageLabels, type LearningStage, type ProgressMap } from '../../progress'
@@ -8,8 +9,8 @@ import { markProgress, readProgress, stageLabels, type LearningStage, type Progr
 type Go = (page: string, options?: Record<string, string>) => void
 
 export default function FoundationCourse({ initialNode, initialSection, go }: { initialNode?: string; initialSection?: string; go: Go }) {
-  const initialIndex = Math.max(0, foundationNodes.findIndex((node) => node.id === initialNode))
-  const [index, setIndex] = useState(initialIndex)
+  const resolvedNode = resolveFoundationNodeId(initialNode)
+  const index = Math.max(0, foundationNodes.findIndex((node) => node.id === resolvedNode))
   const [answer, setAnswer] = useState('')
   const [checked, setChecked] = useState<'idle' | 'pass' | 'fail'>('idle')
   const [hint, setHint] = useState(false)
@@ -21,18 +22,14 @@ export default function FoundationCourse({ initialNode, initialSection, go }: { 
   const sectionId = initialSection === 'hand-calc' ? 'foundation-hand-calc' : undefined
 
   useEffect(() => {
-    const requested = foundationNodes.findIndex((item) => item.id === initialNode)
-    if (requested >= 0) setIndex(requested)
-  }, [initialNode])
-  useEffect(() => {
+    if (!resolvedNode) return
     setAnswer(''); setChecked('idle'); setHint(false); setRubric([false, false, false, false, false])
     setProgress(markProgress(node.id, 1))
     requestAnimationFrame(() => document.getElementById(sectionId ?? '')?.scrollIntoView({ behavior: 'smooth' }))
-  }, [node.id, sectionId])
+  }, [node.id, sectionId, resolvedNode])
 
   const goNode = (next: number) => {
     const safe = Math.max(0, Math.min(foundationNodes.length - 1, next))
-    setIndex(safe)
     go('foundation', { node: foundationNodes[safe].id })
   }
   const checkAnswer = () => {
@@ -60,9 +57,12 @@ export default function FoundationCourse({ initialNode, initialSection, go }: { 
     return url.toString()
   }
 
+  if (!resolvedNode) return <section className='foundation-course'><article className='foundation-card'><h1>课程入口未找到</h1><p>这个链接没有对应的课程，未替你开始或完成其他节点。</p><button type='button' onClick={() => go('foundation')}>打开算法基础目录<ArrowRight /></button></article></section>
+
   return <section className='foundation-course'>
     <aside className='foundation-rail'><header><span>ALGORITHM FOUNDATION</span><h2>算法能力路线</h2><p>硬先修 · 11 节点</p></header>{foundationNodes.map((item, itemIndex) => <button key={item.id} className={itemIndex === index ? 'active' : ''} onClick={() => goNode(itemIndex)}><i>{item.code}</i><span><b>{item.title}</b><small>{stageLabels[(progress[item.id] ?? 0) as LearningStage]}</small></span></button>)}</aside>
     <main className='foundation-lesson'>
+      {initialNode === 'attention' ? <p role='status'>旧入口 Attention 已归到 Transformer Block，旧完成记录不会自动转移。</p> : null}
       <header className='foundation-title'><div><span>{node.code} · PHASE {node.phase}</span><h1>{node.title}</h1><p>当前状态：<b>{stageLabels[stage]}</b></p><div className='foundation-share-actions'><button type='button' className='strategy-route-entry' onClick={() => go('foundation-lab', { experiment: 'case-overconfident' })}><Target />该路线策略案例</button><ShareButton label='复制本节点' url={() => nodeUrl()} /><ShareButton label='复制手算题' url={() => nodeUrl('hand-calc')} /></div></div><div className={`stage-orbit stage-${stage}`}><strong>{stage}/4</strong><small>学习阶段</small></div></header>
       <div className='foundation-six-grid'>
         <article className='foundation-card intuition-card'><header><Lightbulb />01 · 一句话直觉与决策价值</header><h2>{node.intuition}</h2><p><b>产品价值：</b>{node.decision}</p></article>

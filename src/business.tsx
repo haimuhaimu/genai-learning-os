@@ -45,12 +45,12 @@ export default function Business({ user }: BusinessProps) {
     return () => preference.removeEventListener('change', syncAppearance)
   }, [])
 
-  const writeRoute = useCallback((next: RouteState, replace = false) => {
+  const writeRoute = useCallback((next: RouteState, replace = false, preserveHash = true) => {
     const url = new URL(window.location.href)
     url.searchParams.set('page', next.page)
     routeKeys.forEach((key) => { const value = next[key]; if (value) url.searchParams.set(key, value); else url.searchParams.delete(key) })
     const search = url.searchParams.toString()
-    window.history[replace ? 'replaceState' : 'pushState']({}, '', `${url.pathname}${search ? `?${search}` : ''}${url.hash}`)
+    window.history[replace ? 'replaceState' : 'pushState']({}, '', `${url.pathname}${search ? `?${search}` : ''}${preserveHash ? url.hash : ''}`)
   }, [])
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function Business({ user }: BusinessProps) {
   useEffect(() => {
     if (pendingPageNavigation.current !== route.page) return
     pendingPageNavigation.current = null
-    if (route.page === 'routes' && ['journey', 'bayes-journey', 'choose-journey'].includes(route.section ?? '')) return
+    if (route.page === 'routes' && ['journey', 'bayes-journey', 'agent-journey', 'agent-reroute-journey', 'choose-journey'].includes(route.section ?? '')) return
     const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
     const frame = window.requestAnimationFrame(() => { mainContentRef.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior }) })
     return () => window.cancelAnimationFrame(frame)
@@ -85,8 +85,11 @@ export default function Business({ user }: BusinessProps) {
     const journey = page === 'routes' ? journeyForSection(options.section) : null
     if (journey) rememberCurrentJourney(journey)
     const next: RouteState = { page, ...options }
-    if (page !== routeRef.current.page) pendingPageNavigation.current = page
-    routeRef.current = next; setRoute(next); writeRoute(next)
+    const previous = routeRef.current
+    if (page !== previous.page) pendingPageNavigation.current = page
+    const leavesAgentHandoff = previous.page === 'routes' && ['agent-journey', 'agent-reroute-journey'].includes(previous.section ?? '') &&
+      (page !== previous.page || next.section !== previous.section) && window.location.hash.startsWith('#playground=')
+    routeRef.current = next; setRoute(next); writeRoute(next, false, !leavesAgentHandoff)
   }, [writeRoute])
 
   const openFeedback = (trigger: HTMLButtonElement) => { setPaletteOpen(false); setFeedbackTrigger(trigger); setFeedbackOpen(true) }

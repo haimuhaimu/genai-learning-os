@@ -9,6 +9,10 @@ import ContentGrid from '../content/ContentGrid'
 import RegistryFallback from '../content/RegistryFallback'
 import LearningJourneyPanel from '../journey/LearningJourneyPanel'
 import BayesJourneyPanel from '../journey/BayesJourneyPanel'
+import AgentJourneyPanel from '../journey/AgentJourneyPanel'
+import AgentReroutePanel, { AgentLevelNavigation } from '../journey/AgentReroutePanel'
+import { AGENT_JOURNEY_SECTION } from '../../agentJourney'
+import { REROUTE_JOURNEY_SECTION } from '../../agentRerouteJourney'
 import '../journey/journey.css'
 import '../../styles/hubs.css'
 
@@ -22,16 +26,18 @@ const tags: readonly { value: ContentTag; label: string }[] = [
 export default function LearningRoutesHub({ go, initialSection }: { go: Go; initialSection?: string }) {
   const [filters, setFilters] = useState(emptyFilters)
   const bayes = initialSection === 'bayes-journey'
+  const reroute = initialSection === REROUTE_JOURNEY_SECTION
+  const agent = initialSection === AGENT_JOURNEY_SECTION || reroute
   const choosing = initialSection === 'choose-journey'
   useEffect(() => {
-    if (!['journey', 'bayes-journey', 'choose-journey'].includes(initialSection ?? '')) return
+    if (!['journey', 'bayes-journey', AGENT_JOURNEY_SECTION, REROUTE_JOURNEY_SECTION, 'choose-journey'].includes(initialSection ?? '')) return
     const frame = requestAnimationFrame(() => {
-      const panel = document.getElementById(initialSection === 'choose-journey' ? 'journey-picker' : initialSection === 'bayes-journey' ? 'bayes-learning-journey' : 'learning-journey')
+      const panel = document.getElementById(choosing ? 'journey-picker' : bayes ? 'bayes-learning-journey' : agent ? 'agent-level-picker' : 'learning-journey')
       panel?.scrollIntoView({ block: 'start', behavior: 'instant' })
       panel?.focus({ preventScroll: true })
     })
     return () => cancelAnimationFrame(frame)
-  }, [initialSection])
+  }, [agent, bayes, choosing, initialSection])
   const results = useMemo(() => selectCourses(visibleContentEntries, {
     tags: filters.tag === 'all' ? undefined : [filters.tag],
     levels: filters.level === 'all' ? undefined : [filters.level as ContentLevel],
@@ -41,10 +47,11 @@ export default function LearningRoutesHub({ go, initialSection }: { go: Go; init
     {registryIssues.length ? <RegistryFallback go={go} partial /> : null}
     <header className='registry-hub-intro'><span>结构化学习路径</span><h1>从基础机制，走向可靠系统</h1><p>先从一个具体工作问题进入短案例，或按学习顺序、主题和层级浏览完整课程。</p><button type='button' onClick={() => go('strategy-cases')}>进入案例中心<ArrowRight aria-hidden='true' /></button></header>
     <nav className='lo-learning-journey journey-choice' id='journey-picker' tabIndex={-1} aria-label='选择一条完整学习路径'>
-      <button type='button' aria-pressed={!choosing && !bayes} onClick={() => go('routes', { section: 'journey' })}><span className='journey-kicker'>01 · 模型学习</span><br /><strong>模型怎样从例子里学会？</strong></button>
+      <button type='button' aria-pressed={!choosing && !bayes && !agent} onClick={() => go('routes', { section: 'journey' })}><span className='journey-kicker'>01 · 模型学习</span><br /><strong>模型怎样从例子里学会？</strong></button>
       <button type='button' aria-pressed={bayes} onClick={() => go('routes', { section: 'bayes-journey' })}><span className='journey-kicker'>02 · 贝叶斯更新</span><br /><strong>新线索来了，怎样改判断？</strong></button>
+      <button type='button' aria-pressed={agent} aria-label='显示成功，补给真的到了吗？' onClick={() => go('routes', { section: AGENT_JOURNEY_SECTION })}><span className='journey-kicker'>03 · Agent 实战</span><br /><strong>显示成功，补给真的到了吗？</strong></button>
     </nav>
-    {choosing ? <p>选上面的一条路线继续。已有记录都会保留。</p> : bayes ? <BayesJourneyPanel go={go} /> : <LearningJourneyPanel go={go} />}
+    {choosing ? <p>选上面的一条路线继续。已有记录都会保留。</p> : agent ? <><AgentLevelNavigation go={go} reroute={reroute} />{reroute ? <AgentReroutePanel /> : <AgentJourneyPanel go={go} />}</> : bayes ? <BayesJourneyPanel go={go} /> : <LearningJourneyPanel go={go} />}
     <section className='registry-hub-intro' aria-label='按工作问题选择案例'>
       <div className='content-grid' role='list'>
         {applicationScenarioEntries.map(({ id, role, question, entry }) => (

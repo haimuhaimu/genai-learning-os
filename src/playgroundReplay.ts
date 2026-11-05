@@ -18,6 +18,8 @@ export function playgroundReplayURL(experimentId: string, configuredBase?: strin
   // Existing visitors may still cache the pre-Bayes engine at the model URL.
   // Preserve that released model URL and version only the new tool dependency.
   if (experimentId === 'bayes-update') url.searchParams.set('v', 'bayes-journey-v1')
+  if (experimentId === 'agent-tool-loop') url.searchParams.set('v', 'agent-tool-loop-v1')
+  if (experimentId === 'agent-reroute') url.searchParams.set('v', 'agent-reroute-v1')
   return url.href
 }
 

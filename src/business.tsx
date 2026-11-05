@@ -63,7 +63,7 @@ export default function Business({ user }: BusinessProps) {
   useEffect(() => {
     if (pendingPageNavigation.current !== route.page) return
     pendingPageNavigation.current = null
-    if (route.page === 'routes' && ['journey', 'bayes-journey', 'agent-journey', 'agent-reroute-journey', 'choose-journey'].includes(route.section ?? '')) return
+    if (route.page === 'routes' && ['journey', 'bayes-journey', 'agent-journey', 'agent-reroute-journey', 'agent-frames-journey', 'choose-journey'].includes(route.section ?? '')) return
     const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
     const frame = window.requestAnimationFrame(() => { mainContentRef.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior }) })
     return () => window.cancelAnimationFrame(frame)
@@ -87,7 +87,7 @@ export default function Business({ user }: BusinessProps) {
     const next: RouteState = { page, ...options }
     const previous = routeRef.current
     if (page !== previous.page) pendingPageNavigation.current = page
-    const leavesAgentHandoff = previous.page === 'routes' && ['agent-journey', 'agent-reroute-journey'].includes(previous.section ?? '') &&
+    const leavesAgentHandoff = previous.page === 'routes' && ['agent-journey', 'agent-reroute-journey', 'agent-frames-journey'].includes(previous.section ?? '') &&
       (page !== previous.page || next.section !== previous.section) && window.location.hash.startsWith('#playground=')
     routeRef.current = next; setRoute(next); writeRoute(next, false, !leavesAgentHandoff)
   }, [writeRoute])

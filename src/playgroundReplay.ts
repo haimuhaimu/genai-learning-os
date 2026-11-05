@@ -20,6 +20,7 @@ export function playgroundReplayURL(experimentId: string, configuredBase?: strin
   if (experimentId === 'bayes-update') url.searchParams.set('v', 'bayes-journey-v1')
   if (experimentId === 'agent-tool-loop') url.searchParams.set('v', 'agent-tool-loop-v1')
   if (experimentId === 'agent-reroute') url.searchParams.set('v', 'agent-reroute-v1')
+  if (experimentId === 'agent-frames') url.searchParams.set('v', 'agent-frames-v1')
   return url.href
 }
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState, type ChangeEvent } from 'react'
 import { AGENT_JOURNEY_SECTION, AGENT_RECORD_MAX_BYTES, readAgentHandoff, removeAgentHandoff } from '../../agentJourney'
+import { FRAMES_JOURNEY_SECTION } from '../../agentFramesJourney'
 import {
   REROUTE_JOURNEY_EVENT, REROUTE_JOURNEY_KEY, REROUTE_JOURNEY_SECTION, deriveRerouteStatus,
   parseRerouteImport, readRerouteJourney, recordReroutePractice, saveRerouteReflection,
@@ -33,10 +34,11 @@ function focusHeading(node: HTMLHeadingElement | null) {
   node?.scrollIntoView({ block: 'start', behavior: 'instant' })
 }
 
-export function AgentLevelNavigation({ go, reroute }: { go: Go; reroute: boolean }) {
+export function AgentLevelNavigation({ go, reroute = false, frames = false }: { go: Go; reroute?: boolean; frames?: boolean }) {
   return <nav className='lo-learning-journey journey-choice' id='agent-level-picker' tabIndex={-1} aria-label='Agent 实战关卡'>
-    <button type='button' aria-pressed={!reroute} aria-label='第 1 关：显示成功，补给真的到了吗？' onClick={() => go('routes', { section: AGENT_JOURNEY_SECTION })}><span className='journey-kicker'>第 1 关</span><br /><strong>显示成功，补给真的到了吗？</strong></button>
+    <button type='button' aria-pressed={!reroute && !frames} aria-label='第 1 关：显示成功，补给真的到了吗？' onClick={() => go('routes', { section: AGENT_JOURNEY_SECTION })}><span className='journey-kicker'>第 1 关</span><br /><strong>显示成功，补给真的到了吗？</strong></button>
     <button type='button' aria-pressed={reroute} aria-label='第 2 关：新指令来了，旧任务还该继续吗？' onClick={() => go('routes', { section: REROUTE_JOURNEY_SECTION })}><span className='journey-kicker'>第 2 关</span><br /><strong>新指令来了，旧任务还该继续吗？</strong></button>
+    <button type='button' aria-pressed={frames} aria-label='第 3 关：只留三帧，你会留下哪一帧？' onClick={() => go('routes', { section: FRAMES_JOURNEY_SECTION })}><span className='journey-kicker'>第 3 关</span><br /><strong>只留三帧，你会留下哪一帧？</strong></button>
   </nav>
 }
 

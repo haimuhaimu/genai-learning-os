@@ -14,12 +14,16 @@ const api = await tsImport('./AgentReroutePanel.tsx', {
 })
 const show = (Component, props = {}) => renderToStaticMarkup(createElement(Component, props))
 
-test('level navigation shows both distinct Agent levels and marks the open level', () => {
+test('level navigation shows all three distinct Agent levels and marks the open level', () => {
   assert.equal(typeof api.AgentLevelNavigation, 'function')
   const html = show(api.AgentLevelNavigation, { reroute: true, go: () => {} })
   assert.match(html, /<nav[^>]+aria-label="Agent 实战关卡"/)
   assert.match(html, /aria-pressed="false"[^>]+aria-label="第 1 关：显示成功，补给真的到了吗？"/)
   assert.match(html, /aria-pressed="true"[^>]+aria-label="第 2 关：新指令来了，旧任务还该继续吗？"/)
+  assert.match(html, /aria-pressed="false"[^>]+aria-label="第 3 关：只留三帧，你会留下哪一帧？"/)
+  const third = show(api.AgentLevelNavigation, { frames: true, go: () => {} })
+  assert.match(third, /aria-pressed="true"[^>]+aria-label="第 3 关：只留三帧，你会留下哪一帧？"/)
+  assert.equal([...third.matchAll(/aria-pressed="true"/g)].length, 1)
 })
 
 test('empty level two exposes launch and manual fallback without counting or enabling reflection', () => {

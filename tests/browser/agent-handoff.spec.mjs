@@ -14,7 +14,17 @@ const secondSteps = [
   { action: 'advance', phase: 'review', event: 'old-receipt' },
   { action: 'verify-new', phase: 'done', event: 'new-receipt-verified' },
 ]
+const framesSteps = [
+  ...Array.from({ length: 8 }, (_, i) => ({ action: 'advance', phase: i === 7 ? 'baseline-done' : 'baseline', frame: i + 1 })),
+  { action: 'start-manual', phase: 'manual', frame: 0 },
+  ...Array.from({ length: 8 }, (_, i) => {
+    const frame = i + 1
+    const advance = { action: 'advance', phase: frame === 8 ? 'done' : 'manual', frame }
+    return frame === 4 ? [advance, { action: 'pin', phase: 'manual', frame }] : [advance]
+  }).flat(),
+]
 const completed = { stage: 'done', workflowComplete: true, mastery: 'not-assessed', availableActions: [] }
+const missedRound = { frameIds: [0, 4, 8], signFrame: null, conclusion: 'insufficient-evidence' }
 const levels = [
   {
     section: 'agent-journey', journey: 'agent-learning', save: '确认保存到这条路径',
@@ -32,6 +42,15 @@ const levels = [
       fixture: { id: 'reroute-07-to-08-v1', from: '07', to: '08' },
       steps: secondSteps, actions: secondSteps.map(({ action }) => ({ action })),
       result: { ...completed, evidence: { activeTarget: '08', dispatched08: true, oldReceipt: { orderId: 'SUP-07', station: '07' }, newReceipt: { orderId: 'SUP-08', station: '08' }, outcome: 'verified' } },
+    },
+  },
+  {
+    section: 'agent-frames-journey', journey: 'agent-frames', save: '确认保存到第三关',
+    receipt: {
+      ...common, experimentId: 'agent-frames', engineVersion: 'agent-frames-v1', numericFormat: 'integer-events',
+      fixture: { id: 'station-08-stream-v1', station: '08', frameCount: 9, budget: 3, fixedFrames: [0, 4, 8] },
+      steps: framesSteps, actions: framesSteps.map(({ action }) => ({ action })),
+      result: { ...completed, evidence: { frame: 8, manualPick: 4, fixed: missedRound, manual: missedRound } },
     },
   },
 ]
@@ -80,8 +99,21 @@ for (const level of levels) {
     await save.click()
     expect(fragment(page)).toBe('')
     expect(await page.evaluate(key => Boolean(JSON.parse(localStorage.getItem(key)).practice), key(level))).toBe(true)
+    if (level.journey === 'agent-frames') {
+      await expect(page.getByText('证据不足', { exact: true })).toHaveCount(2)
+      const submit = page.getByRole('button', { name: '核对我的理解' })
+      await expect(submit).toBeDisabled()
+      await page.getByRole('radio', { name: '把看不清门牌记为禁止卸货' }).check()
+      await submit.click()
+      await expect(page.getByText(/看不清不等于禁止/)).toBeVisible()
+      await expect(page.getByText('这次复盘已完成')).toHaveCount(0)
+      await page.getByRole('radio', { name: '先不放行，请求一张当前门牌的清晰画面' }).check()
+      await submit.click()
+      await expect(page.getByText('这次复盘已完成')).toBeVisible()
+    }
     await page.reload()
     await expect(consent).toHaveCount(0)
+    if (level.journey === 'agent-frames') await expect(page.getByText('这次复盘已完成')).toBeVisible()
   })
 }
 

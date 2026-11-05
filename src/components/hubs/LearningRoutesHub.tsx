@@ -11,8 +11,10 @@ import LearningJourneyPanel from '../journey/LearningJourneyPanel'
 import BayesJourneyPanel from '../journey/BayesJourneyPanel'
 import AgentJourneyPanel from '../journey/AgentJourneyPanel'
 import AgentReroutePanel, { AgentLevelNavigation } from '../journey/AgentReroutePanel'
+import AgentFramesPanel from '../journey/AgentFramesPanel'
 import { AGENT_JOURNEY_SECTION } from '../../agentJourney'
 import { REROUTE_JOURNEY_SECTION } from '../../agentRerouteJourney'
+import { FRAMES_JOURNEY_SECTION } from '../../agentFramesJourney'
 import '../journey/journey.css'
 import '../../styles/hubs.css'
 
@@ -27,10 +29,11 @@ export default function LearningRoutesHub({ go, initialSection }: { go: Go; init
   const [filters, setFilters] = useState(emptyFilters)
   const bayes = initialSection === 'bayes-journey'
   const reroute = initialSection === REROUTE_JOURNEY_SECTION
-  const agent = initialSection === AGENT_JOURNEY_SECTION || reroute
+  const frames = initialSection === FRAMES_JOURNEY_SECTION
+  const agent = initialSection === AGENT_JOURNEY_SECTION || reroute || frames
   const choosing = initialSection === 'choose-journey'
   useEffect(() => {
-    if (!['journey', 'bayes-journey', AGENT_JOURNEY_SECTION, REROUTE_JOURNEY_SECTION, 'choose-journey'].includes(initialSection ?? '')) return
+    if (!agent && !bayes && !choosing && initialSection !== 'journey') return
     const frame = requestAnimationFrame(() => {
       const panel = document.getElementById(choosing ? 'journey-picker' : bayes ? 'bayes-learning-journey' : agent ? 'agent-level-picker' : 'learning-journey')
       panel?.scrollIntoView({ block: 'start', behavior: 'instant' })
@@ -51,7 +54,7 @@ export default function LearningRoutesHub({ go, initialSection }: { go: Go; init
       <button type='button' aria-pressed={bayes} onClick={() => go('routes', { section: 'bayes-journey' })}><span className='journey-kicker'>02 · 贝叶斯更新</span><br /><strong>新线索来了，怎样改判断？</strong></button>
       <button type='button' aria-pressed={agent} aria-label='显示成功，补给真的到了吗？' onClick={() => go('routes', { section: AGENT_JOURNEY_SECTION })}><span className='journey-kicker'>03 · Agent 实战</span><br /><strong>显示成功，补给真的到了吗？</strong></button>
     </nav>
-    {choosing ? <p>选上面的一条路线继续。已有记录都会保留。</p> : agent ? <><AgentLevelNavigation go={go} reroute={reroute} />{reroute ? <AgentReroutePanel /> : <AgentJourneyPanel go={go} />}</> : bayes ? <BayesJourneyPanel go={go} /> : <LearningJourneyPanel go={go} />}
+    {choosing ? <p>选上面的一条路线继续。已有记录都会保留。</p> : agent ? <><AgentLevelNavigation go={go} reroute={reroute} frames={frames} />{frames ? <AgentFramesPanel /> : reroute ? <AgentReroutePanel /> : <AgentJourneyPanel go={go} />}</> : bayes ? <BayesJourneyPanel go={go} /> : <LearningJourneyPanel go={go} />}
     <section className='registry-hub-intro' aria-label='按工作问题选择案例'>
       <div className='content-grid' role='list'>
         {applicationScenarioEntries.map(({ id, role, question, entry }) => (

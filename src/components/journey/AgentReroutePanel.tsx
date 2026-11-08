@@ -68,7 +68,7 @@ export default function AgentReroutePanel({ playgroundBase, verify = replayPlayg
   const generation = useRef(0)
   const review = useRef<HTMLHeadingElement>(null), recap = useRef<HTMLHeadingElement>(null)
   const status = deriveRerouteStatus(state)
-  const pending = busy || candidate !== null
+  const pending = busy || handoffPending || candidate !== null
   const summary = candidate?.summary ?? (state.practice ? summarizeRerouteRun(state.practice.receipt) : null)
   const canSave = candidate?.summary.complete && candidate.summary.producer === 'browser-session'
   const base = playgroundBase ?? import.meta.env?.VITE_PLAYGROUND_BASE_URL ?? PUBLIC_PLAYGROUND_BASE
@@ -121,6 +121,7 @@ export default function AgentReroutePanel({ playgroundBase, verify = replayPlayg
     setState(next); setAnswer(next.reflection ?? ''); return true
   }
   function launch() {
+    if (pending) return
     try {
       const next = startRerouteLaunch(readRerouteJourney(), base, window.location.href, window.crypto.randomUUID())
       if (commit(next.state)) window.location.assign(next.url)
@@ -173,7 +174,7 @@ export default function AgentReroutePanel({ playgroundBase, verify = replayPlayg
     <header><div><span className='journey-kicker'>Agent 实战 · 第 2 关</span><h2 id={`${id}-title`}>新指令来了，旧任务还该继续吗？</h2><p>07 号补给还在路上，指令改成了 08。你可以改派，也可以等等。等旧回执到了，看看它能证明什么。</p></div><strong className='journey-count'>{Number(status.practiced) + Number(status.reflected)} / 2<small>实操与复盘记录</small></strong></header>
     <ol className='journey-steps'>
       <li><span>01 · 听完指令</span><h3>字幕会分两次出现</h3><p>先看指令什么时候说完。固定字幕，不用麦克风。</p></li>
-      <li data-done={status.practiced}><span>02 · 亲手试</span><h3>判断旧回执</h3><p>改派不会撤销旧任务。等签收回来，看看它对应哪张工单。</p><button type='button' className='is-primary' onClick={launch} disabled={busy}>去游乐场改派补给</button></li>
+      <li data-done={status.practiced}><span>02 · 亲手试</span><h3>判断旧回执</h3><p>改派不会撤销旧任务。等签收回来，看看它对应哪张工单。</p><button type='button' className='is-primary' onClick={launch} disabled={pending}>去游乐场改派补给</button></li>
       <li data-done={status.reflected}><span>03 · 用结果解释</span><h3>哪张工单对得上？</h3><p>保留这次实操轨迹，再核对最新指令与签收。</p><button type='button' disabled={!state.practice || pending} onClick={() => focusHeading(recap.current)}>看结果并复盘</button></li>
     </ol>
     <div className='journey-message' role='status' aria-live='polite' data-error={notice.error}>{notice.message}</div>

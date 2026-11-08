@@ -82,13 +82,14 @@ export default function Business({ user }: BusinessProps) {
   const go = useCallback((rawPage: string, options: GoOptions = {}) => {
     if (!pages.has(rawPage)) return
     const page = normalizePage(rawPage)
-    const journey = page === 'routes' ? journeyForSection(options.section) : null
-    if (journey) rememberCurrentJourney(journey)
     const next: RouteState = { page, ...options }
     const previous = routeRef.current
-    if (page !== previous.page) pendingPageNavigation.current = page
     const leavesAgentHandoff = previous.page === 'routes' && ['agent-journey', 'agent-reroute-journey', 'agent-frames-journey'].includes(previous.section ?? '') &&
       (page !== previous.page || next.section !== previous.section) && window.location.hash.startsWith('#playground=')
+    if (leavesAgentHandoff && !window.confirm('这次带回的实操还没有确认保存。离开会取消这次预览，已保存的学习记录不会改变。确定离开吗？')) return
+    const journey = page === 'routes' ? journeyForSection(options.section) : null
+    if (journey) rememberCurrentJourney(journey)
+    if (page !== previous.page) pendingPageNavigation.current = page
     routeRef.current = next; setRoute(next); writeRoute(next, false, !leavesAgentHandoff)
   }, [writeRoute])
 

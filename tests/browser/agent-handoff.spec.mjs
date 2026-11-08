@@ -27,7 +27,7 @@ const completed = { stage: 'done', workflowComplete: true, mastery: 'not-assesse
 const missedRound = { frameIds: [0, 4, 8], signFrame: null, conclusion: 'insufficient-evidence' }
 const levels = [
   {
-    section: 'agent-journey', journey: 'agent-learning', save: '确认保存到这条路径',
+    section: 'agent-journey', journey: 'agent-learning', save: '确认保存到这条路径', launch: '去游乐场执行任务',
     receipt: {
       ...common, experimentId: 'agent-tool-loop', engineVersion: 'agent-tool-loop-v1', numericFormat: 'integer-events',
       fixture: { id: 'supply-receipt-v1', toolBudget: 3, initialToolStatus: 'accepted' },
@@ -36,7 +36,7 @@ const levels = [
     },
   },
   {
-    section: 'agent-reroute-journey', journey: 'agent-reroute', save: '确认保存到第二关',
+    section: 'agent-reroute-journey', journey: 'agent-reroute', save: '确认保存到第二关', launch: '去游乐场改派补给',
     receipt: {
       ...common, experimentId: 'agent-reroute', engineVersion: 'agent-reroute-v1', numericFormat: 'integer-events',
       fixture: { id: 'reroute-07-to-08-v1', from: '07', to: '08' },
@@ -45,7 +45,7 @@ const levels = [
     },
   },
   {
-    section: 'agent-frames-journey', journey: 'agent-frames', save: '确认保存到第三关',
+    section: 'agent-frames-journey', journey: 'agent-frames', save: '确认保存到第三关', launch: '去游乐场挑三帧',
     receipt: {
       ...common, experimentId: 'agent-frames', engineVersion: 'agent-frames-v1', numericFormat: 'integer-events',
       fixture: { id: 'station-08-stream-v1', station: '08', frameCount: 9, budget: 3, fixedFrames: [0, 4, 8] },
@@ -80,6 +80,7 @@ for (const level of levels) {
     const consent = page.getByRole('checkbox', { name: '这是我刚才亲手操作的记录', exact: true })
     const save = page.getByRole('button', { name: level.save, exact: true })
     await expect(consent).toBeVisible()
+    await expect(page.getByRole('button', { name: level.launch, exact: true })).toBeDisabled()
     expect(fragment(page)).toBe(hash(level))
     expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)).practice, key(level))).toBeUndefined()
     await page.reload()
@@ -114,6 +115,66 @@ for (const level of levels) {
     await page.reload()
     await expect(consent).toHaveCount(0)
     if (level.journey === 'agent-frames') await expect(page.getByText('这次复盘已完成')).toBeVisible()
+  })
+}
+
+for (const level of levels) {
+  test(level.section + ' requires explicit cancellation before navigation can drop an unconfirmed return', async ({ page }) => {
+    await page.route(/learning-tool\.mjs\?v=agent-/, route => route.fulfill({
+      status: 200, contentType: 'application/javascript', headers: { 'Access-Control-Allow-Origin': '*' },
+      body: 'export function replayLearningReceipt(receipt) { return {matches:true,authenticatesUser:false,receipt} }',
+    }))
+    await seed(page, level)
+    await page.goto(routeURL(level) + hash(level))
+    const consent = page.getByRole('checkbox', { name: '这是我刚才亲手操作的记录', exact: true })
+    await expect(consent).toBeVisible()
+    const before = await page.evaluate(k => localStorage.getItem(k), key(level))
+    const other = level.journey === 'agent-learning' ? 2 : 1
+    const target = page.getByRole('button', { name: new RegExp('^第 ' + other + ' 关：') })
+    const prompts = []
+    const stay = async dialog => { prompts.push(dialog.message()); await dialog.dismiss() }
+    page.on('dialog', stay)
+    await target.click()
+    expect(prompts).toEqual(['这次带回的实操还没有确认保存。离开会取消这次预览，已保存的学习记录不会改变。确定离开吗？'])
+    expect(fragment(page)).toBe(hash(level))
+    await expect(consent).toBeVisible()
+    expect(await page.evaluate(k => localStorage.getItem(k), key(level))).toBe(before)
+    page.off('dialog', stay)
+    page.once('dialog', dialog => dialog.accept())
+    await target.click()
+    await expect(page).toHaveURL(new RegExp('section=' + levels[other - 1].section + '$'))
+    expect(fragment(page)).toBe('')
+    expect(await page.evaluate(k => localStorage.getItem(k), key(level))).toBe(before)
+  })
+
+  test(level.section + ' blocks relaunch and old recap until a failed return is saved or explicitly cancelled', async ({ page }) => {
+    const answer = level.journey === 'agent-learning' ? '查到签收记录，才能确认送达'
+      : level.journey === 'agent-reroute' ? 'SUP-08 · 08 号站' : '先不放行，请求一张当前门牌的清晰画面'
+    await page.route(/learning-tool\.mjs\?v=agent-/, route => route.fulfill({
+      status: 200, contentType: 'application/javascript', headers: { 'Access-Control-Allow-Origin': '*' },
+      body: 'export function replayLearningReceipt(receipt) { return {matches:true,authenticatesUser:false,receipt} }',
+    }))
+    await seed(page, level)
+    await page.goto(routeURL(level) + hash(level))
+    await page.getByRole('checkbox', { name: '这是我刚才亲手操作的记录', exact: true }).check()
+    await page.getByRole('button', { name: level.save, exact: true }).click()
+    await page.getByRole('radio', { name: answer, exact: true }).check()
+    await page.getByRole('button', { name: '核对我的理解', exact: true }).click()
+    await expect(page.getByText('这次复盘已完成', { exact: true })).toBeVisible()
+    const before = await page.evaluate(k => localStorage.getItem(k), key(level))
+    await page.unroute(/learning-tool\.mjs\?v=agent-/)
+    await page.route(/learning-tool\.mjs\?v=agent-/, route => route.abort())
+    await page.goto(routeURL(level) + '&retry=1' + hash(level))
+    await expect(page.getByText(/暂时无法载入游乐场的公开核对模块/)).toBeVisible()
+    await expect(page.getByRole('button', { name: level.launch, exact: true })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '核对我的理解', exact: true })).toBeDisabled()
+    expect(fragment(page)).toBe(hash(level))
+    expect(await page.evaluate(k => localStorage.getItem(k), key(level))).toBe(before)
+    await page.getByRole('button', { name: '取消新记录预览', exact: true }).click()
+    await expect(page.getByRole('button', { name: level.launch, exact: true })).toBeEnabled()
+    await expect(page.getByRole('button', { name: '核对我的理解', exact: true })).toBeEnabled()
+    expect(fragment(page)).toBe('')
+    expect(await page.evaluate(k => localStorage.getItem(k), key(level))).toBe(before)
   })
 }
 

@@ -55,7 +55,7 @@ export default function AgentJourneyPanel({ go, playgroundBase, verify = replayP
   const generation = useRef(0)
   const review = useRef<HTMLHeadingElement>(null), recap = useRef<HTMLHeadingElement>(null)
   const status = deriveAgentStatus(state)
-  const pending = busy || candidate !== null
+  const pending = busy || handoffPending || candidate !== null
   const summary = candidate?.summary ?? (state.practice ? summarizeAgentRun(state.practice.receipt) : null)
   const hasSignature = !candidate && summary?.trials.some(trial => trial.receipt === 'delivered')
   const recapMessage = recapError || (state.reflection === 'signed'
@@ -109,6 +109,7 @@ export default function AgentJourneyPanel({ go, playgroundBase, verify = replayP
     setState(next); setAnswer(next.reflection ?? ''); return true
   }
   function launch() {
+    if (pending) return
     try {
       const next = startAgentLaunch(readAgentJourney(), base, window.location.href, window.crypto.randomUUID())
       if (commit(next.state)) window.location.assign(next.url)
@@ -163,7 +164,7 @@ export default function AgentJourneyPanel({ go, playgroundBase, verify = replayP
     <header><div><span className='journey-kicker'>第三条完整学习路径 · Agent 实战</span><h2 id={`${id}-title`}>显示成功，补给真的到了吗？</h2><p>工具显示“已受理”，主线路却卡住了。三次机会，你会查签收、重试，还是停止？从同一个起点试两轮，把真实操作带回来。</p></div><strong className='journey-count'>{Number(status.practiced) + Number(status.reflected)} / 2<small>实操与复盘记录</small></strong></header>
     <ol className='journey-steps'>
       <li><span>01 · 看机制</span><h3>Agent 什么情况下该停？</h3><p>认识观察、行动和停止。课程可随时回看。</p><button type='button' onClick={() => go('expert-agent', { module: 'agent-loop' })}>打开 Agent Loop 课程</button></li>
-      <li data-done={status.practiced}><span>02 · 亲手试</span><h3>相同起点，再试一轮</h3><p>查签收和重试都会消耗机会，停止不代表送达。</p><button type='button' className='is-primary' onClick={launch} disabled={busy}>去游乐场执行任务</button></li>
+      <li data-done={status.practiced}><span>02 · 亲手试</span><h3>相同起点，再试一轮</h3><p>查签收和重试都会消耗机会，停止不代表送达。</p><button type='button' className='is-primary' onClick={launch} disabled={pending}>去游乐场执行任务</button></li>
       <li data-done={status.reflected}><span>03 · 用结果解释</span><h3>哪一步才算确认送达？</h3><p>保留两轮实际动作，比较真正拿到的证据。</p><button type='button' disabled={!state.practice || pending} onClick={() => focusHeading(recap.current)}>看结果并复盘</button></li>
     </ol>
     <div className='journey-message' role='status' aria-live='polite' data-error={notice.error}>{notice.message}</div>
